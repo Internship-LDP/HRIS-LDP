@@ -11,6 +11,15 @@ export default function Authenticated({
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const user = usePage().props.auth.user;
 
+    // Daftar route dashboard yang aktif berdasarkan role
+    const dashboardRoutes = [
+        'dashboard',
+        'admin.dashboard',
+        'staff.dashboard',
+        'pelamar.dashboard',
+        'super-admin.dashboard',
+    ];
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -20,22 +29,27 @@ export default function Authenticated({
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
+                            {/* Logo */}
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
+                            {/* Menu Navigasi Desktop */}
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    active={dashboardRoutes.some((name) =>
+                                        route().current(name),
+                                    )}
                                 >
                                     Dashboard
                                 </NavLink>
                             </div>
                         </div>
 
+                        {/* Dropdown User */}
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -64,9 +78,7 @@ export default function Authenticated({
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
+                                        <Dropdown.Link href={route('profile.edit')}>
                                             Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
@@ -81,6 +93,7 @@ export default function Authenticated({
                             </div>
                         </div>
 
+                        {/* Tombol Dropdown Mobile */}
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() =>
@@ -124,21 +137,24 @@ export default function Authenticated({
                     </div>
                 </div>
 
+                {/* Navigasi Responsif (Mobile) */}
                 <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
+                    className={`${
+                        showingNavigationDropdown ? 'block' : 'hidden'
+                    } sm:hidden`}
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
                             href={route('dashboard')}
-                            active={route().current('dashboard')}
+                            active={dashboardRoutes.some((name) =>
+                                route().current(name),
+                            )}
                         >
                             Dashboard
                         </ResponsiveNavLink>
                     </div>
 
+                    {/* Info User di Mobile */}
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="px-4">
                             <div className="text-base font-medium text-gray-800">
@@ -165,6 +181,7 @@ export default function Authenticated({
                 </div>
             </nav>
 
+            {/* Header opsional */}
             {header && (
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -173,6 +190,7 @@ export default function Authenticated({
                 </header>
             )}
 
+            {/* Konten utama */}
             <main>{children}</main>
         </div>
     );

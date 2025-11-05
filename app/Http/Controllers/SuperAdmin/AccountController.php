@@ -14,6 +14,9 @@ use Inertia\Response;
 
 class AccountController extends Controller
 {
+    /**
+     * Tampilkan daftar akun dengan filter, pencarian, dan statistik.
+     */
     public function index(Request $request): Response
     {
         $filters = [
@@ -24,6 +27,7 @@ class AccountController extends Controller
 
         $query = User::query()->latest();
 
+        // 🔍 Filter pencarian
         if ($filters['search']) {
             $query->where(function ($builder) use ($filters) {
                 $search = '%' . $filters['search'] . '%';
@@ -34,14 +38,17 @@ class AccountController extends Controller
             });
         }
 
+        // 🎭 Filter role
         if ($filters['role'] && $filters['role'] !== 'all') {
             $query->where('role', $filters['role']);
         }
 
+        // ⚙️ Filter status
         if ($filters['status'] && $filters['status'] !== 'all') {
             $query->where('status', $filters['status']);
         }
 
+        // 📋 Daftar akun
         $users = $query
             ->paginate(10)
             ->withQueryString()
@@ -54,17 +61,18 @@ class AccountController extends Controller
                 'division' => $user->division,
                 'status' => $user->status,
                 'registered_at' => optional($user->registered_at)->format('Y-m-d'),
-                'last_login_at' => optional($user->last_login_at)->toDateTimeString(),
+                'last_login_at' => optional($user->last_login_at)?->toDateTimeString(),
                 'created_at' => $user->created_at?->toDateTimeString(),
             ]);
 
+        // 📊 Statistik jumlah akun
         $stats = [
             'total' => User::count(),
             'super_admin' => User::where('role', User::ROLES['super_admin'])->count(),
             'admin' => User::where('role', User::ROLES['admin'])->count(),
             'staff' => User::where('role', User::ROLES['staff'])->count(),
             'karyawan' => User::where('role', User::ROLES['karyawan'])->count(),
-            'external' => User::where('role', User::ROLES['external_sender'])->count(),
+            'pelamar' => User::where('role', User::ROLES['pelamar'])->count(),
         ];
 
         return Inertia::render('SuperAdmin/KelolaAkun/Index', [
@@ -77,6 +85,9 @@ class AccountController extends Controller
         ]);
     }
 
+    /**
+     * Formulir buat akun baru.
+     */
     public function create(): Response
     {
         return Inertia::render('SuperAdmin/KelolaAkun/Create', [
@@ -86,6 +97,9 @@ class AccountController extends Controller
         ]);
     }
 
+    /**
+     * Simpan akun baru.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -97,8 +111,6 @@ class AccountController extends Controller
             'registered_at' => ['nullable', 'date'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
-
-        $validated['division'] = $validated['division'] ?: null;
 
         if (!$this->roleRequiresDivision($validated['role'])) {
             $validated['division'] = null;
@@ -115,6 +127,9 @@ class AccountController extends Controller
             ->with('success', 'Akun baru berhasil dibuat.');
     }
 
+    /**
+     * Formulir edit akun.
+     */
     public function edit(User $user): Response
     {
         return Inertia::render('SuperAdmin/KelolaAkun/Edit', [
@@ -134,6 +149,9 @@ class AccountController extends Controller
         ]);
     }
 
+    /**
+     * Update data akun.
+     */
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
@@ -150,8 +168,6 @@ class AccountController extends Controller
             'registered_at' => ['nullable', 'date'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
-
-        $validated['division'] = $validated['division'] ?: null;
 
         if (!$this->roleRequiresDivision($validated['role'])) {
             $validated['division'] = null;
@@ -170,6 +186,9 @@ class AccountController extends Controller
             ->with('success', 'Akun berhasil diperbarui.');
     }
 
+    /**
+     * Hapus akun.
+     */
     public function destroy(User $user): RedirectResponse
     {
         $user->delete();
@@ -179,6 +198,9 @@ class AccountController extends Controller
             ->with('success', 'Akun berhasil dihapus.');
     }
 
+    /**
+     * Toggle status aktif/nonaktif.
+     */
     public function toggleStatus(User $user): RedirectResponse
     {
         $user->status = $user->status === 'Active' ? 'Inactive' : 'Active';
@@ -189,9 +211,13 @@ class AccountController extends Controller
             ->with('success', "Status akun {$user->name} telah diperbarui.");
     }
 
+    /**
+     * Reset password acak.
+     */
     public function resetPassword(User $user): RedirectResponse
     {
         $plainPassword = Str::random(12);
+
         $user->forceFill([
             'password' => Hash::make($plainPassword),
         ])->save();
@@ -204,6 +230,9 @@ class AccountController extends Controller
             ]);
     }
 
+    /**
+     * Tentukan apakah role butuh divisi.
+     */
     private function roleRequiresDivision(string $role): bool
     {
         return in_array(
@@ -213,7 +242,7 @@ class AccountController extends Controller
                 User::ROLES['staff'],
                 User::ROLES['karyawan'],
             ],
-            true,
+            true
         );
     }
 }
