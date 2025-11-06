@@ -86,7 +86,7 @@ class User extends Authenticatable
 
         return match ($this->role) {
             self::ROLES['super_admin'] => 'super-admin.dashboard',
-            self::ROLES['staff'] => 'admin-staff.dashboard',
+            self::ROLES['staff'] => 'staff.dashboard',
             self::ROLES['pelamar'] => 'pelamar.dashboard',
             default => 'dashboard',
         };

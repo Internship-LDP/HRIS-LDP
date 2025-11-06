@@ -71,14 +71,13 @@ class AccountController extends Controller
             'super_admin' => User::where('role', User::ROLES['super_admin'])->count(),
             'admin' => User::where('role', User::ROLES['admin'])->count(),
             'staff' => User::where('role', User::ROLES['staff'])->count(),
-            'karyawan' => User::where('role', User::ROLES['karyawan'])->count(),
             'pelamar' => User::where('role', User::ROLES['pelamar'])->count(),
         ];
 
         return Inertia::render('SuperAdmin/KelolaAkun/Index', [
             'users' => $users,
             'filters' => $filters,
-            'roleOptions' => array_values(User::ROLES),
+            'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
             'divisionOptions' => User::DIVISIONS,
             'stats' => $stats,
@@ -91,7 +90,7 @@ class AccountController extends Controller
     public function create(): Response
     {
         return Inertia::render('SuperAdmin/KelolaAkun/Create', [
-            'roleOptions' => array_values(User::ROLES),
+            'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
             'divisionOptions' => User::DIVISIONS,
         ]);
@@ -105,7 +104,7 @@ class AccountController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'string', Rule::in(array_values(User::ROLES))],
+            'role' => ['required', 'string', Rule::in($this->allowedRoles())],
             'division' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
@@ -143,7 +142,7 @@ class AccountController extends Controller
                 'status' => $user->status,
                 'registered_at' => optional($user->registered_at)->format('Y-m-d'),
             ],
-            'roleOptions' => array_values(User::ROLES),
+            'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
             'divisionOptions' => User::DIVISIONS,
         ]);
@@ -162,7 +161,7 @@ class AccountController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'role' => ['required', 'string', Rule::in(array_values(User::ROLES))],
+            'role' => ['required', 'string', Rule::in($this->allowedRoles())],
             'division' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
@@ -240,9 +239,21 @@ class AccountController extends Controller
             [
                 User::ROLES['admin'],
                 User::ROLES['staff'],
-                User::ROLES['karyawan'],
             ],
             true
         );
+    }
+
+    /**
+     * Role yang tersedia untuk menu Kelola Akun.
+     */
+    private function allowedRoles(): array
+    {
+        return [
+            User::ROLES['super_admin'],
+            User::ROLES['admin'],
+            User::ROLES['staff'],
+            User::ROLES['pelamar'],
+        ];
     }
 }

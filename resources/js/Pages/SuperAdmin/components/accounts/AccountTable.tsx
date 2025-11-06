@@ -50,8 +50,8 @@ export default function AccountTable({
                     )}
                     {users.map((user) => (
                         <tr key={user.id} className="hover:bg-slate-50/60">
-                            <td className="px-4 py-3 font-medium">
-                                {user.employee_code ?? '-'}
+                                <td className="px-4 py-3 font-medium">
+                                    {user.employee_code ?? '-'}
                             </td>
                             <td className="px-4 py-3">{user.name}</td>
                             <td className="px-4 py-3">{user.email}</td>
@@ -118,7 +118,7 @@ export default function AccountTable({
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                        ))}
                 </tbody>
             </table>
             {links.length > 1 && (

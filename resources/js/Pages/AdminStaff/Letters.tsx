@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import AdminStaffLayout from '@/Pages/AdminStaff/Layout';
+import ComposeLetterDialog from '@/Pages/AdminStaff/components/ComposeLetterDialog';
 import type { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -11,11 +12,8 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Textarea } from '@/Components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -45,9 +43,7 @@ import {
     Inbox,
     Search,
     Send,
-    Upload,
     Users,
-    X,
 } from 'lucide-react';
 
 interface LetterRecord {
@@ -84,14 +80,20 @@ interface LettersPageProps extends Record<string, unknown> {
         status: string;
         education?: string | null;
     }>;
-    divisionOptions: string[];
+    options: {
+        letterTypes: string[];
+        categories: string[];
+        priorities: Record<string, string>;
+        divisions: string[];
+    };
+    nextLetterNumber: string;
 }
 
 type TabValue = 'inbox' | 'outbox' | 'archive';
 
 export default function AdminStaffLetters() {
     const {
-        props: { auth, stats, letters, recruitments, divisionOptions },
+        props: { auth, stats, letters, recruitments, options, nextLetterNumber },
     } = usePage<PageProps<LettersPageProps>>();
 
     const [composerOpen, setComposerOpen] = useState(false);
@@ -102,13 +104,14 @@ export default function AdminStaffLetters() {
     const [detailOpen, setDetailOpen] = useState(false);
 
     const form = useForm({
+        penerima: 'Admin HR',
+        perihal: '',
+        isi_surat: '',
+        jenis_surat: '',
+        kategori: '',
+        prioritas: '',
         target_division: '',
-        subject: '',
-        content: '',
-        letter_type: '',
-        category: '',
-        priority: '',
-        attachment: null as File | null,
+        lampiran: null as File | null,
     });
 
     const filteredLetters = useMemo(() => {
@@ -172,227 +175,22 @@ export default function AdminStaffLetters() {
                 { label: 'Kelola Surat' },
             ]}
             actions={
-                <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="bg-blue-900 hover:bg-blue-800">
-                            <Send className="mr-2 h-4 w-4" />
-                            Buat Surat
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-y-auto bg-white">
-                        <DialogHeader>
-                            <DialogTitle>Buat Surat Baru</DialogTitle>
-                        </DialogHeader>
-
-                        <form
-                            className="space-y-4"
-                            onSubmit={(event) => {
-                                event.preventDefault();
-                                handleSubmit();
-                            }}
-                        >
-                            <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-blue-900">
-                                    Informasi Pengirim
-                                </p>
-                                <div className="mt-3 grid gap-4 md:grid-cols-3">
-                                    <InfoTile label="Nama" value={auth.user.name} />
-                                    <InfoTile label="Divisi" value={auth.user.division ?? '-'} />
-                                    <InfoTile label="Jabatan" value={auth.user.role ?? '-'} />
-                                </div>
-                            </section>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div>
-                                    <Label>Divisi Tujuan</Label>
-                                    <Select
-                                        value={form.data.target_division}
-                                        onValueChange={(value) =>
-                                            form.setData('target_division', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Pilih divisi tujuan" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            {divisionOptions.map((division) => (
-                                                <SelectItem key={division} value={division}>
-                                                    {division}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <p className="mt-1 text-xs text-slate-500">
-                                        Pilih divisi penerima untuk memudahkan disposisi HR.
-                                    </p>
-                                    <FormError message={form.errors.target_division} />
-                                </div>
-                                <div>
-                                    <Label>Jenis Surat</Label>
-                                    <Select
-                                        value={form.data.letter_type}
-                                        onValueChange={(value) =>
-                                            form.setData('letter_type', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Pilih jenis surat" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            {[
-                                                'Permohonan',
-                                                'Undangan',
-                                                'Laporan',
-                                                'Pemberitahuan',
-                                                'Surat Tugas',
-                                                'Surat Cuti',
-                                                'Surat Peringatan',
-                                                'Surat Kerjasama',
-                                            ].map((item) => (
-                                                <SelectItem key={item} value={item}>
-                                                    {item}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormError message={form.errors.letter_type} />
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div>
-                                    <Label>Tanggal Surat</Label>
-                                    <Input
-                                        type="text"
-                                        value={new Date().toLocaleDateString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric',
-                                        })}
-                                        disabled
-                                        className="bg-slate-50"
-                                    />
-                                </div>
-                                <div>
-                                    <Label>Subjek Surat</Label>
-                                    <Input
-                                        value={form.data.subject}
-                                        onChange={(event) => form.setData('subject', event.target.value)}
-                                        placeholder="Subjek surat"
-                                    />
-                                    <FormError message={form.errors.subject} />
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div>
-                                    <Label>Kategori</Label>
-                                    <Select
-                                        value={form.data.category}
-                                        onValueChange={(value) =>
-                                            form.setData('category', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Pilih kategori" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            {['Internal', 'Eksternal', 'Keuangan', 'Operasional'].map(
-                                                (item) => (
-                                                    <SelectItem key={item} value={item}>
-                                                        {item}
-                                                    </SelectItem>
-                                                )
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormError message={form.errors.category} />
-                                </div>
-                                <div>
-                                    <Label>Prioritas</Label>
-                                    <Select
-                                        value={form.data.priority}
-                                        onValueChange={(value) =>
-                                            form.setData('priority', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Pilih prioritas" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            <SelectItem value="high">Tinggi</SelectItem>
-                                            <SelectItem value="medium">Sedang</SelectItem>
-                                            <SelectItem value="low">Rendah</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormError message={form.errors.priority} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label>Isi Surat</Label>
-                                <Textarea
-                                    rows={8}
-                                    placeholder="Tulis isi surat di sini..."
-                                    value={form.data.content}
-                                    onChange={(event) => form.setData('content', event.target.value)}
-                                />
-                                <FormError message={form.errors.content} />
-                            </div>
-
-                            <div>
-                                <Label>Lampiran (Opsional - PDF atau JPG, Max 5MB)</Label>
-                                <label
-                                    htmlFor="staff-letter-attachment"
-                                    className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 p-4 text-sm text-slate-500 hover:border-blue-500"
-                                >
-                                    <Upload className="mb-2 h-5 w-5" />
-                                    Klik untuk unggah lampiran
-                                    <span className="text-xs text-slate-400">
-                                        Format: PDF, JPG, PNG (Maks 5MB)
-                                    </span>
-                                </label>
-                                <input
-                                    id="staff-letter-attachment"
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    className="hidden"
-                                    onChange={(event) =>
-                                        form.setData('attachment', event.target.files?.[0] ?? null)
-                                    }
-                                />
-
-                                {form.data.attachment && (
-                                    <div className="mt-3 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
-                                        <div>
-                                            <p className="font-medium text-slate-900">
-                                                {form.data.attachment.name}
-                                            </p>
-                                            <p className="text-xs text-slate-500">
-                                                {(form.data.attachment.size / 1024).toFixed(2)} KB
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => form.setData('attachment', null)}
-                                        >
-                                            <X className="h-4 w-4 text-red-500" />
-                                        </button>
-                                    </div>
-                                )}
-                                <FormError message={form.errors.attachment} />
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="w-full bg-blue-900 hover:bg-blue-800"
-                                disabled={form.processing}
-                            >
-                                {form.processing ? 'Mengirim...' : 'Kirim Surat'}
-                            </Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                <ComposeLetterDialog
+                    open={composerOpen}
+                    onOpenChange={setComposerOpen}
+                    data={form.data}
+                    setData={form.setData}
+                    errors={form.errors}
+                    processing={form.processing}
+                    onSubmit={handleSubmit}
+                    userInfo={{
+                        name: auth.user.name,
+                        division: auth.user.division,
+                        role: auth.user.role,
+                    }}
+                    options={options}
+                    letterNumberPreview={nextLetterNumber}
+                />
             }
         >
             <Head title="Kelola Surat" />
@@ -604,7 +402,7 @@ function StatCard({
 }: {
     label: string;
     value: number;
-    icon: React.ReactNode;
+    icon: ReactNode;
     color?: string;
 }) {
     return (
@@ -648,11 +446,6 @@ function EmptyState({ message }: { message: string }) {
             {message}
         </div>
     );
-}
-
-function FormError({ message }: { message?: string }) {
-    if (!message) return null;
-    return <p className="mt-1 text-xs text-red-500">{message}</p>;
 }
 
 function InfoTile({ label, value }: { label: string; value?: string | null }) {

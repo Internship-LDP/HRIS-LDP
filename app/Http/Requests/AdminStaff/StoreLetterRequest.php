@@ -29,12 +29,13 @@ class StoreLetterRequest extends FormRequest
     {
         return [
             'target_division' => ['required', 'string', 'max:255'],
-            'subject' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
-            'letter_type' => ['required', 'string', 'max:100'],
-            'category' => ['required', 'string', 'max:100'],
-            'priority' => ['required', 'string', 'in:high,medium,low'],
-            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'penerima' => ['required', 'string', 'max:255'],
+            'perihal' => ['required', 'string', 'max:255'],
+            'isi_surat' => ['required', 'string'],
+            'jenis_surat' => ['required', 'string', 'max:100'],
+            'kategori' => ['required', 'string', 'max:100'],
+            'prioritas' => ['required', 'string', 'in:high,medium,low'],
+            'lampiran' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ];
     }
 }

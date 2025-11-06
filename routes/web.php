@@ -6,6 +6,9 @@ use App\Http\Controllers\AdminStaff\RecruitmentController as AdminStaffRecruitme
 use App\Http\Controllers\Pelamar\ApplicationController as PelamarApplicationController;
 use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Staff\ComplaintController as StaffComplaintController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\ResignationController as StaffResignationController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\AdminHrDashboardController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
@@ -49,7 +52,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('admin.dashboard');
 
-    Route::get('/staff/dashboard', AdminStaffDashboardController::class)->name('staff.dashboard');
+    Route::prefix('staff')
+        ->name('staff.')
+        ->group(function () {
+            Route::get('/dashboard', StaffDashboardController::class)->name('dashboard');
+            Route::get('/keluhan-dan-saran', [StaffComplaintController::class, 'index'])->name('complaints.index');
+            Route::post('/keluhan-dan-saran', [StaffComplaintController::class, 'store'])->name('complaints.store');
+            Route::get('/pengajuan-resign', [StaffResignationController::class, 'index'])->name('resignation.index');
+            Route::post('/pengajuan-resign', [StaffResignationController::class, 'store'])->name('resignation.store');
+        });
 
     Route::get('/pelamar/dashboard', PelamarDashboardController::class)->name('pelamar.dashboard');
 

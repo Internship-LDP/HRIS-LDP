@@ -22,6 +22,7 @@ const statusOrder: ApplicantStatus[] = [
 ];
 
 export default function KelolaRekrutmenIndex({
+    auth,
     applications,
     statusOptions,
     interviews,
@@ -58,14 +59,25 @@ export default function KelolaRekrutmenIndex({
         setDetailOpen(true);
     };
 
+    const isHumanCapitalAdmin =
+        auth.user?.role === 'Admin' &&
+        typeof auth.user?.division === 'string' &&
+        /human\s+(capital|resources)/i.test(auth.user.division ?? '');
+    const breadcrumbs = isHumanCapitalAdmin
+        ? [
+              { label: 'Admin', href: route('admin-staff.dashboard') },
+              { label: 'Recruitment & Onboarding' },
+          ]
+        : [
+              { label: 'Super Admin', href: route('super-admin.dashboard') },
+              { label: 'Recruitment & Onboarding' },
+          ];
+
     return (
         <SuperAdminLayout
             title="Recruitment & Onboarding"
             description="Kelola pelamar dan proses rekrutmen"
-            breadcrumbs={[
-                { label: 'Super Admin', href: route('super-admin.dashboard') },
-                { label: 'Recruitment & Onboarding' },
-            ]}
+            breadcrumbs={breadcrumbs}
             actions={<AddApplicantDialog />}
         >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">

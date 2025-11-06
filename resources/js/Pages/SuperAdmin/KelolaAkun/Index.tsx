@@ -24,7 +24,6 @@ type IndexPageProps = PageProps<{
         super_admin: number;
         admin: number;
         staff: number;
-        karyawan: number;
         pelamar: number;
     };
     roleOptions: string[];
@@ -62,7 +61,6 @@ export default function Index(props: IndexPageProps) {
     const [detailOpen, setDetailOpen] = useState(false);
     const filterTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const firstRender = useRef(true);
-
     useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
@@ -83,20 +81,21 @@ export default function Index(props: IndexPageProps) {
         }
 
         filterTimeout.current = setTimeout(() => {
-            router.get(
-                route('super-admin.accounts.index'),
-                {
-                    search: search || undefined,
-                    role: roleFilter !== 'all' ? roleFilter : undefined,
-                    status: statusFilter !== 'all' ? statusFilter : undefined,
-                },
-                {
-                    preserveState: true,
-                    replace: true,
-                    preserveScroll: true,
-                },
-            );
-        }, 400);
+            const params = {
+                search: search || undefined,
+                role: roleFilter !== 'all' ? roleFilter : undefined,
+                status: statusFilter !== 'all' ? statusFilter : undefined,
+            };
+
+            router.visit(route('super-admin.accounts.index'), {
+                method: 'get',
+                data: params,
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['users', 'filters', 'stats'],
+            });
+        }, 250);
 
         return () => {
             if (filterTimeout.current) {
@@ -104,6 +103,12 @@ export default function Index(props: IndexPageProps) {
             }
         };
     }, [search, roleFilter, statusFilter]);
+
+    useEffect(() => {
+        setSearch(filters.search ?? '');
+        setRoleFilter(defaultFilterValue(filters.role));
+        setStatusFilter(defaultFilterValue(filters.status));
+    }, [filters.search, filters.role, filters.status]);
 
     const openDetail = (user: AccountRecord) => {
         setSelectedUser(user);

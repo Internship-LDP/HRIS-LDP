@@ -77,6 +77,33 @@ class LetterController extends Controller
             $divisionOptions = User::DIVISIONS;
         }
 
+        $letterOptions = [
+            'letterTypes' => [
+                'Permohonan',
+                'Undangan',
+                'Laporan',
+                'Pemberitahuan',
+                'Surat Tugas',
+                'Surat Cuti',
+                'Surat Peringatan',
+                'Surat Kerjasama',
+            ],
+            'categories' => [
+                'Internal',
+                'Eksternal',
+                'Keuangan',
+                'Operasional',
+            ],
+            'priorities' => [
+                'high' => 'Tinggi',
+                'medium' => 'Sedang',
+                'low' => 'Rendah',
+            ],
+            'divisions' => $divisionOptions,
+        ];
+
+        $nextLetterNumber = Surat::generateNomorSurat($this->divisionCode($user->division));
+
         return Inertia::render('AdminStaff/Letters', [
             'letters' => [
                 'inbox' => $this->transformLetters($inboxLetters),
@@ -85,7 +112,8 @@ class LetterController extends Controller
             ],
             'recruitments' => $recruitments,
             'stats' => $stats,
-            'divisionOptions' => $divisionOptions,
+            'options' => $letterOptions,
+            'nextLetterNumber' => $nextLetterNumber,
         ]);
     }
 
@@ -102,20 +130,20 @@ class LetterController extends Controller
             'departemen_id' => $departemen?->id,
             'nomor_surat' => Surat::generateNomorSurat($departemen?->kode),
             'tipe_surat' => 'keluar',
-            'jenis_surat' => $request->input('letter_type'),
+            'jenis_surat' => $request->input('jenis_surat'),
             'tanggal_surat' => now()->toDateString(),
-            'perihal' => $request->input('subject'),
-            'isi_surat' => $request->input('content'),
+            'perihal' => $request->input('perihal'),
+            'isi_surat' => $request->input('isi_surat'),
             'status_persetujuan' => 'Menunggu HR',
-            'kategori' => $request->input('category'),
-            'prioritas' => $request->input('priority'),
-            'penerima' => 'Admin HR',
+            'kategori' => $request->input('kategori'),
+            'prioritas' => $request->input('prioritas'),
+            'penerima' => $request->input('penerima') ?: 'Admin HR',
             'target_division' => $request->input('target_division'),
             'current_recipient' => 'hr',
         ];
 
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
+        if ($request->hasFile('lampiran')) {
+            $file = $request->file('lampiran');
             $path = $file->store('letters', 'public');
             $data['lampiran_path'] = $path;
             $data['lampiran_nama'] = $file->getClientOriginalName();
@@ -185,5 +213,20 @@ class LetterController extends Controller
 
         return $user->role === User::ROLES['admin']
             && ! $user->belongsToHumanCapitalDivision();
+    }
+
+    private function divisionCode(?string $division): ?string
+    {
+        if (! $division) {
+            return null;
+        }
+
+        $clean = preg_replace('/[^A-Za-z]/', '', $division) ?: '';
+
+        if ($clean === '') {
+            return null;
+        }
+
+        return strtoupper(substr($clean, 0, 3));
     }
 }

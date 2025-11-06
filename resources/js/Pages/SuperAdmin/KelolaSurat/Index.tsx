@@ -60,6 +60,19 @@ export default function KelolaSuratIndex() {
     const {
         props: { auth, stats, filters, letters, options, nextLetterNumber, pendingDisposition },
     } = usePage<PageProps<KelolaSuratPageProps>>();
+    const isHumanCapitalAdmin =
+        auth.user?.role === 'Admin' &&
+        typeof auth.user?.division === 'string' &&
+        /human\s+(capital|resources)/i.test(auth.user.division);
+    const breadcrumbs = isHumanCapitalAdmin
+        ? [
+              { label: 'Admin', href: route('admin-staff.dashboard') },
+              { label: 'Kelola Surat' },
+          ]
+        : [
+              { label: 'Super Admin', href: route('super-admin.dashboard') },
+              { label: 'Kelola Surat' },
+          ];
 
     const appliedFilters = {
         search: filters?.search ?? '',
@@ -167,10 +180,7 @@ export default function KelolaSuratIndex() {
         <SuperAdminLayout
             title="Kelola Surat"
             description="Kelola surat masuk, keluar, dan arsip digital"
-            breadcrumbs={[
-                { label: 'Super Admin', href: route('super-admin.dashboard') },
-                { label: 'Kelola Surat' },
-            ]}
+            breadcrumbs={breadcrumbs}
             actions={
                 <ComposeLetterDialog
                     open={isComposeOpen}

@@ -51,19 +51,19 @@ class DashboardController extends Controller
             'pelamar' => $countRegisteredInRange(User::ROLES['pelamar'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['pelamar'], $previousMonthStart, $previousMonthEnd),
         ];
 
-        $userDistribution = collect(User::ROLES)
-            ->values()
-            ->map(function ($role) use ($roleCounts) {
+        $distributionRoles = [
+            User::ROLES['super_admin'] => '#7c3aed',
+            User::ROLES['admin'] => '#3b82f6',
+            User::ROLES['staff'] => '#10b981',
+            User::ROLES['pelamar'] => '#f97316',
+        ];
+
+        $userDistribution = collect($distributionRoles)
+            ->map(function (string $color, string $role) use ($roleCounts) {
                 return [
                     'name' => $role,
                     'value' => $roleCounts[$role] ?? 0,
-                    'color' => match ($role) {
-                        User::ROLES['super_admin'] => '#7c3aed',
-                        User::ROLES['admin'] => '#3b82f6',
-                        User::ROLES['staff'] => '#10b981',
-                        User::ROLES['karyawan'] => '#f59e0b',
-                        default => '#ef4444',
-                    },
+                    'color' => $color,
                 ];
             })
             ->values();

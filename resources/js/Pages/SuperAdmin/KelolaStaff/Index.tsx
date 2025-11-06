@@ -12,8 +12,21 @@ import type { KelolaStaffPageProps } from '@/Pages/SuperAdmin/KelolaStaff/types'
 
 export default function KelolaStaffIndex() {
     const {
-        props: { stats, terminations, inactiveEmployees, checklistTemplate },
+        props: { auth, stats, terminations, inactiveEmployees, checklistTemplate },
     } = usePage<KelolaStaffPageProps>();
+    const isHumanCapitalAdmin =
+        auth.user?.role === 'Admin' &&
+        typeof auth.user?.division === 'string' &&
+        /human\s+(capital|resources)/i.test(auth.user.division ?? '');
+    const breadcrumbs = isHumanCapitalAdmin
+        ? [
+              { label: 'Admin', href: route('admin-staff.dashboard') },
+              { label: 'Kelola Staff' },
+          ]
+        : [
+              { label: 'Super Admin', href: route('super-admin.dashboard') },
+              { label: 'Kelola Staff' },
+          ];
 
     const archiveEmployees = terminations.archive.map((item) => ({
         name: item.employeeName,
@@ -30,10 +43,7 @@ export default function KelolaStaffIndex() {
         <SuperAdminLayout
             title='Termination & Offboarding'
             description='Kelola proses resign, PHK, dan offboarding karyawan'
-            breadcrumbs={[
-                { label: 'Super Admin', href: route('super-admin.dashboard') },
-                { label: 'Kelola Staff' },
-            ]}
+            breadcrumbs={breadcrumbs}
             actions={<TerminationDialog />}
         >
             <Head title='Kelola Staff' />
