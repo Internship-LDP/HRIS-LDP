@@ -19,6 +19,7 @@ export default function Login({
         password: '',
         remember: false as boolean,
     });
+    const credentialError = errors.credentials;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -35,6 +36,12 @@ export default function Login({
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
                     {status}
+                </div>
+            )}
+
+            {credentialError && (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {credentialError}
                 </div>
             )}
 

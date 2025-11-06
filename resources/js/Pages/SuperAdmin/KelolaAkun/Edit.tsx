@@ -20,7 +20,7 @@ interface EditProps {
 }
 
 const roleRequiresDivision = (role: string) =>
-    ['Admin', 'Staff', 'Karyawan'].includes(role);
+    ['Admin', 'Staff'].includes(role);
 
 export default function Edit({
     user,

@@ -122,6 +122,6 @@ class DashboardController extends Controller
 
     private function authorizeStaff(?User $user): void
     {
-        abort_unless($user && $user->role === User::ROLES['staff'], 403);
+        abort_unless($user && $user->hasRole(User::ROLES['staff']), 403);
     }
 }

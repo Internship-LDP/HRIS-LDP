@@ -14,7 +14,6 @@ class User extends Authenticatable
         'super_admin' => 'Super Admin',
         'admin' => 'Admin',
         'staff' => 'Staff',
-        'karyawan' => 'Karyawan',
         'pelamar' => 'Pelamar',
     ];
 
@@ -106,5 +105,10 @@ class User extends Authenticatable
     public function isHumanCapitalAdmin(): bool
     {
         return $this->role === self::ROLES['admin'] && $this->belongsToHumanCapitalDivision();
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return strcasecmp($this->role ?? '', $role) === 0;
     }
 }

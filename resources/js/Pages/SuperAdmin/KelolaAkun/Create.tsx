@@ -12,7 +12,7 @@ interface CreateProps {
 const today = new Date().toISOString().split('T')[0];
 
 const roleRequiresDivision = (role: string) =>
-    ['Admin', 'Staff', 'Karyawan'].includes(role);
+    ['Admin', 'Staff'].includes(role);
 
 export default function Create({
     roleOptions,

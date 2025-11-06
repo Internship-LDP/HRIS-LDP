@@ -35,16 +35,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $user = request()->user();
 
         if (! $user) {
-            return redirect()->route('login');
+            return redirect('/');
         }
 
         $routeName = $user->dashboardRouteName();
 
-        if ($routeName !== 'dashboard') {
-            return redirect()->route($routeName);
-        }
-
-        return Inertia::render('Dashboard');
+        return $routeName === 'dashboard'
+            ? redirect('/')
+            : redirect()->route($routeName);
     })->name('dashboard');
 
     Route::get('/admin/dashboard', function () {

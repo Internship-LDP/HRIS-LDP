@@ -99,11 +99,7 @@ class DashboardController extends Controller
             return false;
         }
 
-        if ($user->role === User::ROLES['staff']) {
-            return true;
-        }
-
-        return $user->role === User::ROLES['admin']
+        return $user->hasRole(User::ROLES['admin'])
             && ! $user->belongsToHumanCapitalDivision();
     }
 }

@@ -31,7 +31,6 @@ class UserFactory extends Factory
             [
                 User::ROLES['admin'],
                 User::ROLES['staff'],
-                User::ROLES['karyawan'],
             ],
             true,
         );
