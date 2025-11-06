@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Pelamar\ApplicationController as PelamarApplicationController;
+use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\RecruitmentController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -45,10 +48,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Staff/Dashboard');
     })->name('staff.dashboard');
 
-    Route::get('/pelamar/dashboard', function () {
-        abort_unless(request()->user()?->role === User::ROLES['pelamar'], 403);
-        return Inertia::render('Pelamar/Dashboard');
-    })->name('pelamar.dashboard');
+    Route::get('/pelamar/dashboard', PelamarDashboardController::class)->name('pelamar.dashboard');
+
+    Route::get('/pelamar/lamaran-saya', [PelamarApplicationController::class, 'index'])
+        ->name('pelamar.applications');
+    Route::post('/pelamar/lamaran-saya', [PelamarApplicationController::class, 'store'])
+        ->name('pelamar.applications.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -58,7 +63,10 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
-        Route::resource('accounts', AccountController::class)->except(['show']);
+        Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
+        Route::resource('accounts', AccountController::class)
+            ->parameters(['accounts' => 'user'])
+            ->except(['show']);
         Route::post('accounts/{user}/toggle-status', [AccountController::class, 'toggleStatus'])->name('accounts.toggle-status');
         Route::post('accounts/{user}/reset-password', [AccountController::class, 'resetPassword'])->name('accounts.reset-password');
     });
