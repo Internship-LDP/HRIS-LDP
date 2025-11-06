@@ -30,6 +30,11 @@ class Surat extends Model
         'kategori',
         'prioritas',
         'penerima',
+        'target_division',
+        'current_recipient',
+        'disposed_by',
+        'disposed_at',
+        'disposition_note',
         'alamat_pengirim',
         'lampiran_path',
         'lampiran_nama',
@@ -40,6 +45,7 @@ class Surat extends Model
     protected $casts = [
         'tanggal_surat' => 'date',
         'tanggal_persetujuan' => 'date',
+        'disposed_at' => 'datetime',
     ];
 
     /**

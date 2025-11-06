@@ -30,7 +30,7 @@ interface ComposeLetterDialogProps {
         jenis_surat: string;
         kategori: string;
         prioritas: string;
-        alamat_pengirim: string;
+        target_division: string;
         lampiran: File | null;
     };
     setData: (field: string, value: unknown) => void;
@@ -46,6 +46,7 @@ interface ComposeLetterDialogProps {
         letterTypes: string[];
         categories: string[];
         priorities: Record<string, string>;
+        divisions: string[];
     };
     letterNumberPreview: string;
 }
@@ -75,7 +76,7 @@ export default function ComposeLetterDialog({
                     {triggerLabel}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-y-auto">
+            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-white">
                 <DialogHeader>
                     <DialogTitle>Buat Surat Baru</DialogTitle>
                 </DialogHeader>
@@ -108,25 +109,6 @@ export default function ComposeLetterDialog({
                         </div>
                     </section>
 
-                    <div>
-                        <Label>
-                            Alamat Pengirim <span className="text-red-500">*</span>
-                        </Label>
-                        <Textarea
-                            rows={2}
-                            value={data.alamat_pengirim}
-                            onChange={(event) =>
-                                setData('alamat_pengirim', event.target.value)
-                            }
-                            placeholder="Contoh: Jl. Sudirman No. 123, Jakarta Pusat"
-                        />
-                        {errors.alamat_pengirim && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.alamat_pengirim}
-                            </p>
-                        )}
-                    </div>
-
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
                             <Label>
@@ -136,10 +118,10 @@ export default function ComposeLetterDialog({
                                 value={data.jenis_surat}
                                 onValueChange={(value) => setData('jenis_surat', value)}
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih jenis surat" />
-                                </SelectTrigger>
-                                <SelectContent>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Pilih jenis surat" />
+                            </SelectTrigger>
+                                        <SelectContent className="bg-white">
                                     {options.letterTypes.map((type) => (
                                         <SelectItem key={type} value={type}>
                                             {type}
@@ -167,18 +149,51 @@ export default function ComposeLetterDialog({
                         </div>
                     </div>
 
-                    <div>
-                        <Label>
-                            Kepada <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            value={data.penerima}
-                            onChange={(event) => setData('penerima', event.target.value)}
-                            placeholder="Nama penerima / divisi / instansi"
-                        />
-                        {errors.penerima && (
-                            <p className="mt-1 text-sm text-red-500">{errors.penerima}</p>
-                        )}
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <Label>
+                                Divisi Tujuan <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={data.target_division}
+                                onValueChange={(value) =>
+                                    setData('target_division', value)
+                                }
+                            >
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Pilih divisi tujuan" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    {options.divisions.map((division) => (
+                                        <SelectItem key={division} value={division}>
+                                            {division}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.target_division && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.target_division}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <Label>
+                                Kepada <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                value={data.penerima}
+                                onChange={(event) =>
+                                    setData('penerima', event.target.value)
+                                }
+                                placeholder="Nama penerima / divisi / instansi"
+                            />
+                            {errors.penerima && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.penerima}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     <div>
@@ -204,10 +219,10 @@ export default function ComposeLetterDialog({
                                 value={data.kategori}
                                 onValueChange={(value) => setData('kategori', value)}
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih kategori" />
-                                </SelectTrigger>
-                                <SelectContent>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Pilih kategori" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
                                     {options.categories.map((category) => (
                                         <SelectItem key={category} value={category}>
                                             {category}
@@ -229,10 +244,10 @@ export default function ComposeLetterDialog({
                                 value={data.prioritas}
                                 onValueChange={(value) => setData('prioritas', value)}
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih prioritas" />
-                                </SelectTrigger>
-                                <SelectContent>
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Pilih prioritas" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
                                     {priorityEntries.map(([value, label]) => (
                                         <SelectItem key={value} value={value}>
                                             {label}

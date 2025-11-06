@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminStaff\DashboardController as AdminStaffDashboardController;
+use App\Http\Controllers\AdminStaff\LetterController as AdminStaffLetterController;
+use App\Http\Controllers\AdminStaff\RecruitmentController as AdminStaffRecruitmentController;
 use App\Http\Controllers\Pelamar\ApplicationController as PelamarApplicationController;
 use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardController;
 use App\Http\Controllers\ProfileController;
@@ -43,13 +46,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
         abort_unless(request()->user()?->role === User::ROLES['admin'], 403);
-        return Inertia::render('Admin/Dashboard');
+        return Inertia::render('Dashboard');
     })->name('admin.dashboard');
 
-    Route::get('/staff/dashboard', function () {
-        abort_unless(request()->user()?->role === User::ROLES['staff'], 403);
-        return Inertia::render('Staff/Dashboard');
-    })->name('staff.dashboard');
+    Route::get('/staff/dashboard', AdminStaffDashboardController::class)->name('staff.dashboard');
 
     Route::get('/pelamar/dashboard', PelamarDashboardController::class)->name('pelamar.dashboard');
 
@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
+        Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
         Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
         Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
         Route::resource('accounts', AccountController::class)
@@ -77,6 +78,13 @@ Route::middleware('auth')->group(function () {
             ->except(['show']);
         Route::post('accounts/{user}/toggle-status', [AccountController::class, 'toggleStatus'])->name('accounts.toggle-status');
         Route::post('accounts/{user}/reset-password', [AccountController::class, 'resetPassword'])->name('accounts.reset-password');
+    });
+
+    Route::prefix('admin-staff')->name('admin-staff.')->group(function () {
+        Route::get('/dashboard', AdminStaffDashboardController::class)->name('dashboard');
+        Route::get('/kelola-surat', [AdminStaffLetterController::class, 'index'])->name('letters');
+        Route::post('/kelola-surat', [AdminStaffLetterController::class, 'store'])->name('letters.store');
+        Route::get('/recruitment', AdminStaffRecruitmentController::class)->name('recruitment');
     });
 });
 

@@ -62,15 +62,21 @@ const activityColors: Record<string, string> = {
 
 export default function AdminHrDashboard() {
     const {
-        props: { stats, recruitmentData, turnoverData, recentActivities, upcomingInterviews },
+        props: { auth, stats, recruitmentData, turnoverData, recentActivities, upcomingInterviews },
     } = usePage<PageProps<AdminHrDashboardProps>>();
+    const isHumanCapitalAdmin =
+        auth?.user?.role === 'Admin' &&
+        typeof auth.user.division === 'string' &&
+        /human\s+(capital|resources)/i.test(auth.user.division);
 
     return (
         <SuperAdminLayout
             title="Dashboard Admin HRD"
             description="Selamat datang di sistem manajemen SDM PT. Lintas Data Prima"
             breadcrumbs={[
-                { label: 'Super Admin', href: route('super-admin.dashboard') },
+                isHumanCapitalAdmin
+                    ? { label: 'Admin', href: route('admin-staff.dashboard') }
+                    : { label: 'Super Admin', href: route('super-admin.dashboard') },
                 { label: 'Admin HRD' },
             ]}
         >

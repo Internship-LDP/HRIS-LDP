@@ -7,6 +7,7 @@ use App\Http\Requests\SuperAdmin\StoreSuratRequest;
 use App\Models\Departemen;
 use App\Models\Surat;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -20,6 +21,8 @@ class LetterController extends Controller
      */
     public function index(Request $request): Response
     {
+        $this->authorizeAccess($request->user());
+
         $filters = [
             'search' => $request->string('search')->toString(),
             'category' => $request->string('category')->toString(),
@@ -54,6 +57,8 @@ class LetterController extends Controller
         $outbox = $letters->where('tipe_surat', 'keluar');
         $archive = $letters->where('status_persetujuan', 'Diarsipkan');
 
+        $pendingDisposition = $letters->where('current_recipient', 'hr');
+
         $stats = [
             'inbox' => $inbox->count(),
             'outbox' => $outbox->count(),
@@ -62,6 +67,17 @@ class LetterController extends Controller
         ];
 
         $divisionCode = $this->departmentCodeFromDivision($request->user()?->division);
+        $divisionOptions = User::query()
+            ->whereNotNull('division')
+            ->distinct()
+            ->pluck('division')
+            ->filter()
+            ->values()
+            ->all();
+
+        if (empty($divisionOptions)) {
+            $divisionOptions = User::DIVISIONS;
+        }
 
         return Inertia::render('SuperAdmin/KelolaSurat/Index', [
             'stats' => $stats,
@@ -71,6 +87,7 @@ class LetterController extends Controller
                 'outbox' => $this->transformLetters($outbox),
                 'archive' => $this->transformLetters($archive),
             ],
+            'pendingDisposition' => $this->transformLetters($pendingDisposition),
             'options' => [
                 'letterTypes' => [
                     'Permohonan',
@@ -94,6 +111,7 @@ class LetterController extends Controller
                     'medium' => 'Sedang',
                     'low' => 'Rendah',
                 ],
+                'divisions' => $divisionOptions,
             ],
             'nextLetterNumber' => Surat::generateNomorSurat($divisionCode),
         ]);
@@ -104,6 +122,8 @@ class LetterController extends Controller
      */
     public function store(StoreSuratRequest $request): Response
     {
+        $this->authorizeAccess($request->user());
+
         /** @var User $user */
         $user = $request->user();
 
@@ -133,6 +153,30 @@ class LetterController extends Controller
             ->with('success', 'Surat berhasil dikirim.');
     }
 
+    public function disposition(Request $request, Surat $surat): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        abort_unless($surat->current_recipient === 'hr', 400, 'Surat sudah didisposisi.');
+
+        $validated = $request->validate([
+            'disposition_note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $surat->forceFill([
+            'current_recipient' => 'division',
+            'penerima' => $surat->target_division ?? $surat->penerima,
+            'status_persetujuan' => 'Didisposisi',
+            'disposition_note' => $validated['disposition_note'] ?? null,
+            'disposed_by' => $request->user()->id,
+            'disposed_at' => now(),
+        ])->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Surat berhasil didisposisi ke divisi tujuan.');
+    }
+
     /**
      * Transform collection surat untuk frontend.
      */
@@ -154,6 +198,8 @@ class LetterController extends Controller
                 'status' => $surat->status_persetujuan,
                 'content' => $surat->isi_surat,
                 'type' => $surat->tipe_surat,
+                'targetDivision' => $surat->target_division,
+                'currentRecipient' => $surat->current_recipient,
                 'attachment' => $surat->lampiran_path
                     ? [
                         'name' => $surat->lampiran_nama,
@@ -202,5 +248,17 @@ class LetterController extends Controller
         }
 
         return Str::upper(Str::substr($clean, 0, 3));
+    }
+
+    private function authorizeAccess(?User $user): void
+    {
+        abort_unless(
+            $user
+            && (
+                $user->role === User::ROLES['super_admin']
+                || $user->isHumanCapitalAdmin()
+            ),
+            403
+        );
     }
 }

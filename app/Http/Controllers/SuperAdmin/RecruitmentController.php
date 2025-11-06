@@ -18,8 +18,7 @@ class RecruitmentController extends Controller
             $user
             && (
                 $user->role === User::ROLES['super_admin']
-                || ($user->role === User::ROLES['admin']
-                    && strcasecmp((string) $user->division, 'Human Resources') === 0)
+                || $user->isHumanCapitalAdmin()
             ),
             403
         );

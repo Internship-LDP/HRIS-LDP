@@ -30,7 +30,7 @@ class StoreSuratRequest extends FormRequest
             'jenis_surat' => ['required', 'string', 'max:100'],
             'kategori' => ['required', 'string', 'max:100'],
             'prioritas' => ['required', 'string', 'in:high,medium,low'],
-            'alamat_pengirim' => ['required', 'string'],
+            'target_division' => ['required', 'string', 'max:255'],
             'lampiran' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'tipe_surat' => ['nullable', 'string', 'in:masuk,keluar'],
         ];

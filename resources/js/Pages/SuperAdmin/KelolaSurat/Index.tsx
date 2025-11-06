@@ -1,4 +1,7 @@
 import { Card } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Label } from '@/Components/ui/label';
+import { Textarea } from '@/Components/ui/textarea';
 import {
     Tabs,
     TabsContent,
@@ -19,7 +22,14 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-interface KelolaSuratPageProps {
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
+
+interface KelolaSuratPageProps extends Record<string, unknown> {
     stats: {
         inbox: number;
         outbox: number;
@@ -36,23 +46,25 @@ interface KelolaSuratPageProps {
         outbox: LetterRecord[];
         archive: LetterRecord[];
     };
+    pendingDisposition: LetterRecord[];
     options: {
         letterTypes: string[];
         categories: string[];
         priorities: Record<string, string>;
+        divisions: string[];
     };
     nextLetterNumber: string;
 }
 
 export default function KelolaSuratIndex() {
     const {
-        props: { auth, stats, filters, letters, options, nextLetterNumber },
+        props: { auth, stats, filters, letters, options, nextLetterNumber, pendingDisposition },
     } = usePage<PageProps<KelolaSuratPageProps>>();
 
     const appliedFilters = {
         search: filters?.search ?? '',
         category: filters?.category ?? 'all',
-        tab: (['inbox', 'outbox', 'archive'].includes(filters?.tab)
+    tab: (['inbox', 'outbox', 'archive'].includes(filters?.tab ?? '')
             ? (filters?.tab as 'inbox' | 'outbox' | 'archive')
             : 'inbox') as 'inbox' | 'outbox' | 'archive',
     };
@@ -60,15 +72,17 @@ export default function KelolaSuratIndex() {
     const [activeTab, setActiveTab] = useState<'inbox' | 'outbox' | 'archive'>(
         appliedFilters.tab
     );
-    const [searchQuery, setSearchQuery] = useState(appliedFilters.search);
+    const [searchQuery, setSearchQuery] = useState(appliedFilters.search ?? '');
     const [categoryFilter, setCategoryFilter] = useState(
-        appliedFilters.category
+        appliedFilters.category ?? 'all'
     );
     const [isComposeOpen, setComposeOpen] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(
         null
     );
     const [detailOpen, setDetailOpen] = useState(false);
+    const [selectedPending, setSelectedPending] = useState<LetterRecord | null>(null);
+    const [dispositionOpen, setDispositionOpen] = useState(false);
 
     const form = useForm({
         penerima: '',
@@ -77,8 +91,11 @@ export default function KelolaSuratIndex() {
         jenis_surat: '',
         kategori: '',
         prioritas: '',
-        alamat_pengirim: '',
+        target_division: '',
         lampiran: null as File | null,
+    });
+    const dispositionForm = useForm({
+        disposition_note: '',
     });
 
     const filteredLetters = useMemo(() => {
@@ -109,6 +126,12 @@ export default function KelolaSuratIndex() {
         setDetailOpen(true);
     };
 
+    const openDispositionDialog = (letter: LetterRecord) => {
+        setSelectedPending(letter);
+        dispositionForm.reset();
+        setDispositionOpen(true);
+    };
+
     const handleSubmit = () => {
         form.post(route('super-admin.letters.store'), {
             forceFormData: true,
@@ -122,6 +145,22 @@ export default function KelolaSuratIndex() {
                 toast.error('Gagal menyimpan surat, periksa kembali data Anda');
             },
         });
+    };
+
+    const handleDispositionSubmit = () => {
+        if (!selectedPending) return;
+
+        dispositionForm.post(
+            route('super-admin.letters.disposition', selectedPending.id),
+            {
+                onSuccess: () => {
+                    toast.success('Surat didisposisi ke divisi tujuan.');
+                    setDispositionOpen(false);
+                },
+                onError: () =>
+                    toast.error('Gagal mendisposisi surat, coba lagi.'),
+            }
+        );
     };
 
     return (
@@ -154,6 +193,74 @@ export default function KelolaSuratIndex() {
             <Head title="Kelola Surat" />
 
             <StatsCards stats={stats} />
+
+            <Card className="p-6">
+                <div className="mb-4 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold text-blue-900">
+                            Menunggu Disposisi HR
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                            Surat dari staff yang harus diteruskan ke divisi tujuan.
+                        </p>
+                    </div>
+                    <BadgeCount count={pendingDisposition.length} />
+                </div>
+
+                {pendingDisposition.length === 0 ? (
+                    <p className="text-sm text-slate-500">
+                        Tidak ada surat yang menunggu disposisi.
+                    </p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="text-left text-slate-500">
+                                    <th className="pb-2">Nomor</th>
+                                    <th className="pb-2">Pengirim</th>
+                                    <th className="pb-2">Divisi Tujuan</th>
+                                    <th className="pb-2">Subjek</th>
+                                    <th className="pb-2">Tanggal</th>
+                                    <th className="pb-2 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {pendingDisposition.map((letter) => (
+                                    <tr
+                                        key={letter.id}
+                                        className="border-t border-slate-100"
+                                    >
+                                        <td className="py-2">{letter.letterNumber}</td>
+                                        <td className="py-2">
+                                            <div>
+                                                <p className="font-medium text-slate-900">
+                                                    {letter.senderName}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {letter.senderDivision}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td className="py-2">
+                                            {letter.targetDivision ?? '-'}
+                                        </td>
+                                        <td className="py-2">{letter.subject}</td>
+                                        <td className="py-2">{letter.date}</td>
+                                        <td className="py-2 text-right">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => openDispositionDialog(letter)}
+                                            >
+                                                Disposisi
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </Card>
 
             <Card className="p-6">
                 <div className="mb-6">
@@ -201,6 +308,65 @@ export default function KelolaSuratIndex() {
                 open={detailOpen}
                 onOpenChange={setDetailOpen}
             />
+
+            <Dialog open={dispositionOpen} onOpenChange={setDispositionOpen}>
+                <DialogContent className="bg-white sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Disposisi Surat</DialogTitle>
+                    </DialogHeader>
+                    {selectedPending && (
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-sm text-slate-500">Nomor Surat</p>
+                                <p className="font-medium text-slate-900">
+                                    {selectedPending.letterNumber}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Divisi Tujuan</p>
+                                <p className="font-medium text-slate-900">
+                                    {selectedPending.targetDivision ?? '-'}
+                                </p>
+                            </div>
+                            <div>
+                                <Label>Catatan (Opsional)</Label>
+                                <Textarea
+                                    rows={4}
+                                    value={dispositionForm.data.disposition_note}
+                                    onChange={(event) =>
+                                        dispositionForm.setData(
+                                            'disposition_note',
+                                            event.target.value
+                                        )
+                                    }
+                                />
+                                {dispositionForm.errors.disposition_note && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {dispositionForm.errors.disposition_note}
+                                    </p>
+                                )}
+                            </div>
+                            <Button
+                                onClick={handleDispositionSubmit}
+                                disabled={dispositionForm.processing}
+                                className="w-full bg-blue-900 hover:bg-blue-800"
+                            >
+                                {dispositionForm.processing
+                                    ? 'Memproses...'
+                                    : 'Disposisi ke Divisi'}
+                            </Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </SuperAdminLayout>
+    );
+}
+
+function BadgeCount({ count }: { count: number }) {
+    return (
+        <span className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">
+            {count} surat
+        </span>
     );
 }

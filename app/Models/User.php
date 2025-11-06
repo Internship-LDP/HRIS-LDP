@@ -19,11 +19,13 @@ class User extends Authenticatable
     ];
 
     public const DIVISIONS = [
-        'Human Resources',
         'Finance',
-        'IT & Technology',
-        'Marketing',
-        'Operations',
+        'Corporate',
+        'Government and Partner',
+        'Human Capital/HR',
+        'Infra and Backbone',
+        'IPrime',
+        'NOC',
     ];
 
     public const STATUSES = [
@@ -74,19 +76,35 @@ class User extends Authenticatable
      */
     public function dashboardRouteName(): string
     {
-        if (
-            $this->role === self::ROLES['admin']
-            && strcasecmp((string) $this->division, 'Human Resources') === 0
-        ) {
+        if ($this->isHumanCapitalAdmin()) {
             return 'super-admin.admin-hr.dashboard';
+        }
+
+        if ($this->role === self::ROLES['admin']) {
+            return 'admin-staff.dashboard';
         }
 
         return match ($this->role) {
             self::ROLES['super_admin'] => 'super-admin.dashboard',
-            self::ROLES['admin'] => 'admin.dashboard',
-            self::ROLES['staff'] => 'staff.dashboard',
+            self::ROLES['staff'] => 'admin-staff.dashboard',
             self::ROLES['pelamar'] => 'pelamar.dashboard',
             default => 'dashboard',
         };
+    }
+
+    public function belongsToHumanCapitalDivision(): bool
+    {
+        if (! $this->division) {
+            return false;
+        }
+
+        $division = strtolower($this->division);
+
+        return str_contains($division, 'human capital') || str_contains($division, 'human resources');
+    }
+
+    public function isHumanCapitalAdmin(): bool
+    {
+        return $this->role === self::ROLES['admin'] && $this->belongsToHumanCapitalDivision();
     }
 }

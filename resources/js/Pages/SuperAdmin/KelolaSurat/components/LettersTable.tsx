@@ -30,6 +30,8 @@ export interface LetterRecord {
         size?: string | null;
         url?: string | null;
     } | null;
+    targetDivision?: string | null;
+    currentRecipient?: string;
 }
 
 interface LettersTableProps {

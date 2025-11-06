@@ -2,7 +2,6 @@ import { PageProps } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
     Activity,
-    Briefcase,
     LayoutDashboard,
     Shield,
     Users,
@@ -15,6 +14,7 @@ interface NavItem {
     icon: ComponentType<SVGProps<SVGSVGElement>>;
     routeName: string;
     pattern: string | string[];
+    superAdminOnly?: boolean;
 }
 
 const defaultNavItems: NavItem[] = [
@@ -29,39 +29,7 @@ const defaultNavItems: NavItem[] = [
         icon: Users,
         routeName: 'super-admin.accounts.index',
         pattern: 'super-admin.accounts.*',
-    },
-    {
-        label: 'Kelola Rekrutmen',
-        icon: Shield,
-        routeName: 'super-admin.recruitment',
-        pattern: 'super-admin.recruitment',
-    },
-    {
-        label: 'Admin HR',
-        icon: Briefcase,
-        routeName: 'super-admin.admin-hr.dashboard',
-        pattern: 'super-admin.admin-hr.dashboard',
-    },
-    {
-        label: 'Kelola Surat',
-        icon: Activity,
-        routeName: 'super-admin.letters.index',
-        pattern: 'super-admin.letters.*',
-    },
-    {
-        label: 'Kelola Staff',
-        icon: UserMinus,
-        routeName: 'super-admin.staff.index',
-        pattern: 'super-admin.staff.*',
-    },
-];
-
-const hrAdminNavItems: NavItem[] = [
-    {
-        label: 'Dashboard HR',
-        icon: Briefcase,
-        routeName: 'super-admin.admin-hr.dashboard',
-        pattern: 'super-admin.admin-hr.dashboard',
+        superAdminOnly: true,
     },
     {
         label: 'Kelola Rekrutmen',
@@ -88,10 +56,23 @@ export default function Sidebar() {
         props: { auth },
     } = usePage<PageProps>();
     const user = auth?.user;
-    const isHrAdmin =
-        (user?.role === 'Admin' || user?.role === 'admin') &&
-        user?.division?.toLowerCase() === 'human resources';
-    const navItems = isHrAdmin ? hrAdminNavItems : defaultNavItems;
+    const isSuperAdmin = user?.role === 'Super Admin';
+    const isHumanCapitalAdmin =
+        user?.role === 'Admin' &&
+        typeof user?.division === 'string' &&
+        /human\s+(capital|resources)/i.test(user.division);
+    const navItems: NavItem[] = isHumanCapitalAdmin
+        ? [
+              {
+                  label: 'Dashboard',
+                  icon: LayoutDashboard,
+                  routeName: 'super-admin.admin-hr.dashboard',
+                  pattern: 'super-admin.admin-hr.dashboard',
+              },
+              ...defaultNavItems.filter((item) => item.routeName !== 'super-admin.dashboard'),
+          ]
+        : defaultNavItems;
+    const panelLabel = isHumanCapitalAdmin ? 'Admin HR' : 'Super Admin';
 
     return (
         <aside className="fixed inset-y-0 left-0 z-10 w-64 bg-blue-950 text-white shadow-lg">
@@ -100,7 +81,8 @@ export default function Sidebar() {
                     <p className="text-xs uppercase tracking-widest text-blue-200">
                         PT. Lintas Data Prima
                     </p>
-                    <p className="text-xl font-semibold">HRIS</p>
+                    <p className="text-xl font-semibold">{panelLabel}</p>
+                    <p className="text-xs text-blue-200">HRIS Portal</p>
                 </div>
             </div>
             <div className="px-6">
@@ -109,7 +91,9 @@ export default function Sidebar() {
                 </p>
             </div>
             <nav className="mt-4 flex flex-col gap-1 px-4">
-                {navItems.map((item) => {
+                {navItems
+                    .filter((item) => (item.superAdminOnly ? isSuperAdmin : true))
+                    .map((item) => {
                     const Icon = item.icon;
                     const isActive = Array.isArray(item.pattern)
                         ? item.pattern.some((pattern) => route().current(pattern))
