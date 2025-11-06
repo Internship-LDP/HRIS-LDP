@@ -14,7 +14,15 @@ class RecruitmentController extends Controller
     public function __invoke(Request $request): Response
     {
         $user = $request->user();
-        abort_unless($user && $user->role === User::ROLES['super_admin'], 403);
+        abort_unless(
+            $user
+            && (
+                $user->role === User::ROLES['super_admin']
+                || ($user->role === User::ROLES['admin']
+                    && strcasecmp((string) $user->division, 'Human Resources') === 0)
+            ),
+            403
+        );
 
         $applicationCollection = Application::latest('submitted_at')->get();
 

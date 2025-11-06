@@ -2,8 +2,8 @@ import { PageProps } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
     Activity,
+    Briefcase,
     LayoutDashboard,
-    Settings,
     Shield,
     Users,
     UserMinus,
@@ -17,7 +17,7 @@ interface NavItem {
     pattern: string | string[];
 }
 
-const navItems: NavItem[] = [
+const defaultNavItems: NavItem[] = [
     {
         label: 'Dashboard',
         icon: LayoutDashboard,
@@ -37,6 +37,12 @@ const navItems: NavItem[] = [
         pattern: 'super-admin.recruitment',
     },
     {
+        label: 'Admin HR',
+        icon: Briefcase,
+        routeName: 'super-admin.admin-hr.dashboard',
+        pattern: 'super-admin.admin-hr.dashboard',
+    },
+    {
         label: 'Kelola Surat',
         icon: Activity,
         routeName: 'super-admin.letters.index',
@@ -48,11 +54,32 @@ const navItems: NavItem[] = [
         routeName: 'super-admin.staff.index',
         pattern: 'super-admin.staff.*',
     },
+];
+
+const hrAdminNavItems: NavItem[] = [
+    {
+        label: 'Dashboard HR',
+        icon: Briefcase,
+        routeName: 'super-admin.admin-hr.dashboard',
+        pattern: 'super-admin.admin-hr.dashboard',
+    },
+    {
+        label: 'Kelola Rekrutmen',
+        icon: Shield,
+        routeName: 'super-admin.recruitment',
+        pattern: 'super-admin.recruitment',
+    },
+    {
+        label: 'Kelola Surat',
+        icon: Activity,
+        routeName: 'super-admin.letters.index',
+        pattern: 'super-admin.letters.*',
+    },
     {
         label: 'Kelola Staff',
-        icon: Settings,
-        routeName: 'super-admin.dashboard',
-        pattern: [],
+        icon: UserMinus,
+        routeName: 'super-admin.staff.index',
+        pattern: 'super-admin.staff.*',
     },
 ];
 
@@ -61,6 +88,10 @@ export default function Sidebar() {
         props: { auth },
     } = usePage<PageProps>();
     const user = auth?.user;
+    const isHrAdmin =
+        (user?.role === 'Admin' || user?.role === 'admin') &&
+        user?.division?.toLowerCase() === 'human resources';
+    const navItems = isHrAdmin ? hrAdminNavItems : defaultNavItems;
 
     return (
         <aside className="fixed inset-y-0 left-0 z-10 w-64 bg-blue-950 text-white shadow-lg">

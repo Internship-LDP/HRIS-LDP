@@ -74,6 +74,13 @@ class User extends Authenticatable
      */
     public function dashboardRouteName(): string
     {
+        if (
+            $this->role === self::ROLES['admin']
+            && strcasecmp((string) $this->division, 'Human Resources') === 0
+        ) {
+            return 'super-admin.admin-hr.dashboard';
+        }
+
         return match ($this->role) {
             self::ROLES['super_admin'] => 'super-admin.dashboard',
             self::ROLES['admin'] => 'admin.dashboard',

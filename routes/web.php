@@ -4,6 +4,7 @@ use App\Http\Controllers\Pelamar\ApplicationController as PelamarApplicationCont
 use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\AccountController;
+use App\Http\Controllers\SuperAdmin\AdminHrDashboardController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
+        Route::get('/admin-hr/dashboard', AdminHrDashboardController::class)->name('admin-hr.dashboard');
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
