@@ -33,7 +33,7 @@ class RecruitmentController extends Controller
                 ];
             });
 
-        return Inertia::render('SuperAdmin/Rekrutmen/Index', [
+        return Inertia::render('SuperAdmin/KelolaRekrutmen/Index', [
             'applications' => $applications,
             'statusOptions' => Application::STATUSES,
         ]);
