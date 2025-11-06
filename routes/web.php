@@ -5,6 +5,7 @@ use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardControll
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
@@ -64,6 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
+        Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
+        Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
         Route::resource('accounts', AccountController::class)
             ->parameters(['accounts' => 'user'])
             ->except(['show']);

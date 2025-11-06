@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,14 +22,33 @@ class DashboardController extends Controller
             ->pluck('total', 'role')
             ->all();
 
+        $now = now();
+        $currentMonthStart = $now->copy()->startOfMonth();
+        $previousMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $previousMonthEnd = $now->copy()->subMonth()->endOfMonth();
+        $registrationDate = DB::raw('COALESCE(registered_at, created_at)');
+
+        $countRegisteredInRange = function (?string $role, Carbon $start, Carbon $end) use ($registrationDate) {
+            return User::query()
+                ->when($role, fn ($query) => $query->where('role', $role))
+                ->whereBetween($registrationDate, [$start, $end])
+                ->count();
+        };
+
         $stats = [
             'totalUsers' => array_sum($roleCounts),
-            'admins' => $roleCounts[User::ROLES['admin']] ?? 0,
             'superAdmins' => $roleCounts[User::ROLES['super_admin']] ?? 0,
+            'admins' => $roleCounts[User::ROLES['admin']] ?? 0,
             'staff' => $roleCounts[User::ROLES['staff']] ?? 0,
-            'activeSessions' => max(1, (array_sum($roleCounts) * 3)),
-            'pendingIssues' => 3,
-            'systemModules' => 6,
+            'pelamar' => $roleCounts[User::ROLES['pelamar']] ?? 0,
+        ];
+
+        $statChanges = [
+            'totalUsers' => $countRegisteredInRange(null, $currentMonthStart, $now) - $countRegisteredInRange(null, $previousMonthStart, $previousMonthEnd),
+            'superAdmins' => $countRegisteredInRange(User::ROLES['super_admin'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['super_admin'], $previousMonthStart, $previousMonthEnd),
+            'admins' => $countRegisteredInRange(User::ROLES['admin'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['admin'], $previousMonthStart, $previousMonthEnd),
+            'staff' => $countRegisteredInRange(User::ROLES['staff'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['staff'], $previousMonthStart, $previousMonthEnd),
+            'pelamar' => $countRegisteredInRange(User::ROLES['pelamar'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['pelamar'], $previousMonthStart, $previousMonthEnd),
         ];
 
         $userDistribution = collect(User::ROLES)
@@ -47,40 +69,31 @@ class DashboardController extends Controller
             ->values();
 
         $activityData = collect(range(0, 5))
-            ->map(function ($index) use ($stats) {
-                $month = now()
-                    ->subMonths(5 - $index)
-                    ->format('M');
-                $base = max(200, $stats['totalUsers'] * 5);
+            ->map(function ($index) use ($registrationDate) {
+                $monthStart = now()->copy()->subMonths(5 - $index)->startOfMonth();
+                $monthEnd = $monthStart->copy()->endOfMonth();
+
+                $registrations = User::query()
+                    ->whereBetween($registrationDate, [$monthStart, $monthEnd])
+                    ->count();
+
+                $applications = Application::query()
+                    ->whereBetween(DB::raw('COALESCE(submitted_at, created_at)'), [$monthStart, $monthEnd])
+                    ->count();
 
                 return [
-                    'month' => $month,
-                    'logins' => $base + ($index * 45),
-                    'actions' => ($base * 2) + ($index * 65),
+                    'month' => $monthStart->format('M'),
+                    'registrations' => $registrations,
+                    'applications' => $applications,
                 ];
             })
             ->values();
 
-        $recentSystemActivities = [
-            ['title' => 'Account created', 'desc' => '5 akun baru ditambahkan oleh Admin', 'time' => '10:30 AM', 'type' => 'success'],
-            ['title' => 'System backup completed', 'desc' => 'Backup harian selesai dibuat', 'time' => '02:00 AM', 'type' => 'success'],
-            ['title' => 'Security alert', 'desc' => 'Percobaan login gagal terdeteksi', 'time' => 'Yesterday', 'type' => 'warning'],
-            ['title' => 'Module updated', 'desc' => 'Modul recruitment diperbarui ke v2.1', 'time' => '2 days ago', 'type' => 'info'],
-        ];
-
-        $systemHealth = [
-            ['name' => 'Server', 'status' => 'Excellent', 'value' => 98],
-            ['name' => 'Database', 'status' => 'Good', 'value' => 95],
-            ['name' => 'API', 'status' => 'Good', 'value' => 97],
-            ['name' => 'Storage', 'status' => 'Warning', 'value' => 78],
-        ];
-
         return Inertia::render('SuperAdmin/Dashboard', [
             'stats' => $stats,
+            'statChanges' => $statChanges,
             'userDistribution' => $userDistribution,
             'activityData' => $activityData,
-            'recentSystemActivities' => $recentSystemActivities,
-            'systemHealth' => $systemHealth,
         ]);
     }
 }

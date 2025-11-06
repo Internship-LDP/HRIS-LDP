@@ -1,0 +1,206 @@
+<?php
+
+namespace App\Http\Controllers\SuperAdmin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\SuperAdmin\StoreSuratRequest;
+use App\Models\Departemen;
+use App\Models\Surat;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class LetterController extends Controller
+{
+    /**
+     * Tampilkan dashboard kelola surat.
+     */
+    public function index(Request $request): Response
+    {
+        $filters = [
+            'search' => $request->string('search')->toString(),
+            'category' => $request->string('category')->toString(),
+            'tab' => $request->string('tab')->toString() ?: 'inbox',
+        ];
+
+        $lettersQuery = Surat::query()->with([
+            'user:id,name,division,role',
+            'departemen:id,nama,kode',
+        ]);
+
+        if ($filters['search']) {
+            $lettersQuery->where(function ($query) use ($filters) {
+                $search = '%'.$filters['search'].'%';
+                $query
+                    ->where('nomor_surat', 'like', $search)
+                    ->orWhere('perihal', 'like', $search)
+                    ->orWhere('penerima', 'like', $search);
+            });
+        }
+
+        if ($filters['category'] && $filters['category'] !== 'all') {
+            $lettersQuery->where('kategori', $filters['category']);
+        }
+
+        $letters = $lettersQuery
+            ->orderByDesc('tanggal_surat')
+            ->orderByDesc('surat_id')
+            ->get();
+
+        $inbox = $letters->where('tipe_surat', 'masuk');
+        $outbox = $letters->where('tipe_surat', 'keluar');
+        $archive = $letters->where('status_persetujuan', 'Diarsipkan');
+
+        $stats = [
+            'inbox' => $inbox->count(),
+            'outbox' => $outbox->count(),
+            'pending' => $letters->where('status_persetujuan', 'Diproses')->count(),
+            'archived' => $archive->count(),
+        ];
+
+        $divisionCode = $this->departmentCodeFromDivision($request->user()?->division);
+
+        return Inertia::render('SuperAdmin/KelolaSurat/Index', [
+            'stats' => $stats,
+            'filters' => $filters,
+            'letters' => [
+                'inbox' => $this->transformLetters($inbox),
+                'outbox' => $this->transformLetters($outbox),
+                'archive' => $this->transformLetters($archive),
+            ],
+            'options' => [
+                'letterTypes' => [
+                    'Permohonan',
+                    'Undangan',
+                    'Laporan',
+                    'Pemberitahuan',
+                    'Surat Tugas',
+                    'Surat Cuti',
+                    'Surat Peringatan',
+                    'Surat Kerjasama',
+                ],
+                'categories' => [
+                    'Internal',
+                    'Eksternal',
+                    'Kepegawaian',
+                    'Keuangan',
+                    'Operasional',
+                ],
+                'priorities' => [
+                    'high' => 'Tinggi',
+                    'medium' => 'Sedang',
+                    'low' => 'Rendah',
+                ],
+            ],
+            'nextLetterNumber' => Surat::generateNomorSurat($divisionCode),
+        ]);
+    }
+
+    /**
+     * Simpan surat keluar baru.
+     */
+    public function store(StoreSuratRequest $request): Response
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $departemen = $this->resolveDepartemen($user->division);
+
+        $data = $request->validated();
+        $data['user_id'] = $user->id;
+        $data['departemen_id'] = $departemen?->id;
+        $data['tipe_surat'] = $data['tipe_surat'] ?? 'keluar';
+        $data['tanggal_surat'] = now()->toDateString();
+        $data['status_persetujuan'] = 'Terkirim';
+        $data['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
+
+        if ($request->hasFile('lampiran')) {
+            $file = $request->file('lampiran');
+            $path = $file->store('letters', 'public');
+            $data['lampiran_path'] = $path;
+            $data['lampiran_nama'] = $file->getClientOriginalName();
+            $data['lampiran_mime'] = $file->getMimeType();
+            $data['lampiran_size'] = $file->getSize();
+        }
+
+        Surat::create($data);
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with('success', 'Surat berhasil dikirim.');
+    }
+
+    /**
+     * Transform collection surat untuk frontend.
+     */
+    private function transformLetters(Collection $letters): array
+    {
+        return $letters->map(function (Surat $surat) {
+            return [
+                'id' => $surat->surat_id,
+                'letterNumber' => $surat->nomor_surat,
+                'senderName' => $surat->user?->name,
+                'senderDivision' => $surat->departemen?->nama ?? $surat->user?->division,
+                'senderPosition' => $surat->user?->role,
+                'recipientName' => $surat->penerima,
+                'subject' => $surat->perihal,
+                'letterType' => $surat->jenis_surat,
+                'category' => $surat->kategori,
+                'priority' => $surat->prioritas,
+                'date' => optional($surat->tanggal_surat)->format('d M Y'),
+                'status' => $surat->status_persetujuan,
+                'content' => $surat->isi_surat,
+                'type' => $surat->tipe_surat,
+                'attachment' => $surat->lampiran_path
+                    ? [
+                        'name' => $surat->lampiran_nama,
+                        'size' => $this->formatSize($surat->lampiran_size),
+                        'url' => $surat->attachmentUrl(),
+                        'mime' => $surat->lampiran_mime,
+                    ]
+                    : null,
+            ];
+        })->values()->toArray();
+    }
+
+    private function formatSize(?int $bytes): string
+    {
+        if (! $bytes) {
+            return '0 KB';
+        }
+
+        return number_format($bytes / 1024, 2).' KB';
+    }
+
+    private function resolveDepartemen(?string $division): ?Departemen
+    {
+        if (! $division) {
+            return null;
+        }
+
+        $code = $this->departmentCodeFromDivision($division) ?? 'GEN';
+
+        return Departemen::firstOrCreate(
+            ['nama' => $division],
+            ['kode' => $code]
+        );
+    }
+
+    private function departmentCodeFromDivision(?string $division): ?string
+    {
+        if (! $division) {
+            return null;
+        }
+
+        $clean = preg_replace('/[^A-Za-z]/', '', $division) ?? '';
+
+        if ($clean === '') {
+            return null;
+        }
+
+        return Str::upper(Str::substr($clean, 0, 3));
+    }
+}

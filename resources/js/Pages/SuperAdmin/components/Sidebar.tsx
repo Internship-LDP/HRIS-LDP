@@ -38,8 +38,8 @@ const navItems: NavItem[] = [
     {
         label: 'Kelola Surat',
         icon: Activity,
-        routeName: 'super-admin.dashboard',
-        pattern: [],
+        routeName: 'super-admin.letters.index',
+        pattern: 'super-admin.letters.*',
     },
     {
         label: 'Pengaturan',

@@ -36,9 +36,15 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $defaultRole = User::ROLES['pelamar'];
+
         $user = User::create([
+            'employee_code' => User::generateEmployeeCode($defaultRole),
             'name' => $request->name,
             'email' => $request->email,
+            'role' => $defaultRole,
+            'status' => 'Active',
+            'registered_at' => now()->format('Y-m-d'),
             'password' => Hash::make($request->password),
         ]);
 

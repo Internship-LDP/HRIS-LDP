@@ -1,14 +1,12 @@
 import SuperAdminLayout from '@/Pages/SuperAdmin/Layout';
-import { Head, Link } from '@inertiajs/react';
-import { ReactNode } from 'react';
+import { Head } from '@inertiajs/react';
 import {
     Activity,
-    AlertCircle,
-    Database,
     Settings,
     Shield,
     TrendingDown,
     TrendingUp,
+    UserPlus,
     Users,
 } from 'lucide-react';
 import {
@@ -26,75 +24,65 @@ import {
 } from 'recharts';
 
 interface DashboardProps {
-    stats: {
-        totalUsers: number;
-        admins: number;
-        superAdmins: number;
-        staff: number;
-        activeSessions: number;
-        pendingIssues: number;
-        systemModules: number;
-    };
+    stats: Record<'totalUsers' | 'superAdmins' | 'admins' | 'staff' | 'pelamar', number>;
+    statChanges: Record<'totalUsers' | 'superAdmins' | 'admins' | 'staff' | 'pelamar', number>;
     userDistribution: { name: string; value: number; color: string }[];
-    activityData: { month: string; logins: number; actions: number }[];
-    recentSystemActivities: {
-        title: string;
-        desc: string;
-        time: string;
-        type: 'success' | 'warning' | 'info' | 'danger';
-    }[];
-    systemHealth: { name: string; status: string; value: number }[];
+    activityData: { month: string; registrations: number; applications: number }[];
 }
 
-export default function Dashboard({
-    stats,
-    userDistribution,
-    activityData,
-    recentSystemActivities,
-    systemHealth,
-}: DashboardProps) {
-    const statCards = [
+export default function Dashboard({ stats, statChanges, userDistribution, activityData }: DashboardProps) {
+    type StatKey = keyof DashboardProps['stats'];
+
+    const statConfig: Array<{
+        key: StatKey;
+        label: string;
+        icon: typeof Users;
+        color: string;
+    }> = [
         {
+            key: 'totalUsers',
             label: 'Total Users',
-            value: stats.totalUsers.toString(),
-            change: '+18',
             icon: Users,
             color: 'bg-blue-500',
-            trend: 'up',
         },
         {
-            label: 'Admin Accounts',
-            value: stats.admins.toString(),
-            change: '+2',
+            key: 'superAdmins',
+            label: 'Super Admin',
             icon: Shield,
             color: 'bg-purple-500',
-            trend: 'up',
         },
         {
-            label: 'System Modules',
-            value: stats.systemModules.toString(),
-            change: '0',
-            icon: Database,
-            color: 'bg-green-500',
-            trend: 'up',
+            key: 'admins',
+            label: 'Admin Accounts',
+            icon: Settings,
+            color: 'bg-indigo-500',
         },
         {
-            label: 'Active Sessions',
-            value: stats.activeSessions.toString(),
-            change: '+23',
+            key: 'staff',
+            label: 'Staff',
             icon: Activity,
-            color: 'bg-orange-500',
-            trend: 'up',
+            color: 'bg-emerald-500',
         },
         {
-            label: 'Pending Issues',
-            value: stats.pendingIssues.toString(),
-            change: '-5',
-            icon: AlertCircle,
-            color: 'bg-red-500',
-            trend: 'down',
+            key: 'pelamar',
+            label: 'Pelamar',
+            icon: UserPlus,
+            color: 'bg-orange-500',
         },
     ];
+
+    const statCards = statConfig.map((config) => {
+        const value = stats?.[config.key] ?? 0;
+        const changeValue = statChanges?.[config.key] ?? 0;
+        const trend = changeValue >= 0 ? 'up' : 'down';
+
+        return {
+            ...config,
+            value: value.toString(),
+            change: `${changeValue >= 0 ? '+' : ''}${changeValue}`,
+            trend,
+        };
+    });
 
     return (
         <SuperAdminLayout
@@ -171,7 +159,7 @@ export default function Dashboard({
 
                 <div className="rounded-2xl border bg-white p-6 shadow-sm">
                     <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                        Aktivitas Sistem
+                        Tren Registrasi & Lamaran
                     </h3>
                     <ResponsiveContainer width="100%" height={280}>
                         <LineChart data={activityData}>
@@ -182,156 +170,21 @@ export default function Dashboard({
                             <Legend />
                             <Line
                                 type="monotone"
-                                dataKey="logins"
-                                stroke="#3b82f6"
-                                name="Logins"
+                                dataKey="registrations"
+                                stroke="#0ea5e9"
+                                name="Registrasi"
                             />
                             <Line
                                 type="monotone"
-                                dataKey="actions"
-                                stroke="#1e3a8a"
-                                name="Actions"
+                                dataKey="applications"
+                                stroke="#6366f1"
+                                name="Lamaran"
                             />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                        System Health
-                    </h3>
-                    <div className="space-y-4">
-                        {systemHealth.map((item) => (
-                            <div key={item.name}>
-                                <div className="mb-2 flex items-center justify-between">
-                                    <span className="font-medium text-slate-700">
-                                        {item.name}
-                                    </span>
-                                    <span
-                                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                            item.status === 'Excellent'
-                                                ? 'border-green-500 text-green-600'
-                                                : item.status === 'Good'
-                                                  ? 'border-blue-500 text-blue-600'
-                                                  : 'border-orange-500 text-orange-500'
-                                        }`}
-                                    >
-                                        {item.status}
-                                    </span>
-                                </div>
-                                <div className="h-2 rounded-full bg-slate-200">
-                                    <div
-                                        className={`h-2 rounded-full ${
-                                            item.value >= 95
-                                                ? 'bg-green-500'
-                                                : item.value >= 85
-                                                  ? 'bg-blue-500'
-                                                  : 'bg-orange-500'
-                                        }`}
-                                        style={{ width: `${item.value}%` }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                        Aktivitas Sistem Terbaru
-                    </h3>
-                    <div className="space-y-4">
-                        {recentSystemActivities.map((activity) => (
-                            <div
-                                key={activity.title + activity.time}
-                                className="flex items-center gap-4 border-b pb-3 last:border-b-0"
-                            >
-                                <span
-                                    className={`h-2 w-2 rounded-full ${
-                                        activity.type === 'success'
-                                            ? 'bg-green-500'
-                                            : activity.type === 'warning'
-                                              ? 'bg-orange-500'
-                                              : activity.type === 'info'
-                                                ? 'bg-blue-500'
-                                                : 'bg-red-500'
-                                    }`}
-                                />
-                                <div className="flex-1">
-                                    <p className="font-medium text-slate-900">
-                                        {activity.title}
-                                    </p>
-                                    <p className="text-sm text-slate-500">
-                                        {activity.desc}
-                                    </p>
-                                </div>
-                                <span className="text-xs text-slate-400">
-                                    {activity.time}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                    Quick Actions
-                </h3>
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-6">
-                    <LinkButton
-                        href={route('super-admin.accounts.index')}
-                        className="bg-purple-600 text-white hover:bg-purple-700"
-                    >
-                        Manage Users
-                    </LinkButton>
-                    <ActionButton>Recruitment</ActionButton>
-                    <ActionButton>Organization</ActionButton>
-                    <ActionButton>Correspondence</ActionButton>
-                    <ActionButton>Industrial Rel.</ActionButton>
-                    <ActionButton className="bg-gray-600 hover:bg-gray-700">
-                        System Settings
-                    </ActionButton>
-                </div>
-            </div>
         </SuperAdminLayout>
-    );
-}
-
-function ActionButton({
-    children,
-    className = 'bg-blue-900 hover:bg-blue-800',
-}: {
-    children: ReactNode;
-    className?: string;
-}) {
-    return (
-        <button
-            type="button"
-            className={`h-12 w-full rounded-xl text-sm font-semibold text-white transition ${className}`}
-        >
-            {children}
-        </button>
-    );
-}
-
-function LinkButton({
-    href,
-    children,
-    className = 'bg-blue-900 hover:bg-blue-800',
-}: {
-    href: string;
-    children: ReactNode;
-    className?: string;
-}) {
-    return (
-        <Link
-            href={href}
-            className={`flex h-12 w-full items-center justify-center rounded-xl text-sm font-semibold transition ${className}`}
-        >
-            {children}
-        </Link>
     );
 }
