@@ -9,63 +9,9 @@ import OnboardingTab from './components/OnboardingTab';
 import {
     ApplicantRecord,
     ApplicantStatus,
-    InterviewSchedule,
-    OnboardingItem,
     RecruitmentPageProps,
     StatusSummary,
 } from './types';
-
-const interviewsSeed: InterviewSchedule[] = [
-    {
-        candidate: 'Ahmad Fauzi',
-        position: 'Software Engineer',
-        date: '23 Okt 2025',
-        time: '10:00',
-        mode: 'Online',
-        interviewer: 'Bapak Ahmad - Manager IT',
-    },
-    {
-        candidate: 'Siti Nurhaliza',
-        position: 'Marketing Manager',
-        date: '23 Okt 2025',
-        time: '13:00',
-        mode: 'Offline',
-        interviewer: 'Ibu Sarah - Manager Marketing',
-    },
-    {
-        candidate: 'Budi Santoso',
-        position: 'Accountant',
-        date: '24 Okt 2025',
-        time: '15:00',
-        mode: 'Online',
-        interviewer: 'Bapak Joko - Manager Finance',
-    },
-];
-
-const onboardingSeed: OnboardingItem[] = [
-    {
-        name: 'Rina Kartika',
-        position: 'HR Specialist',
-        startedAt: '20 Okt 2025',
-        status: 'Selesai',
-        steps: [
-            { label: 'Kontrak ditandatangani', complete: true },
-            { label: 'Serah terima inventaris', complete: true },
-            { label: 'Training & orientasi', complete: true },
-        ],
-    },
-    {
-        name: 'Ahmad Fauzi',
-        position: 'Software Engineer',
-        startedAt: '23 Okt 2025 (Terjadwal)',
-        status: 'In Progress',
-        steps: [
-            { label: 'Menunggu kontrak ditandatangani', complete: false },
-            { label: 'Serah terima inventaris', complete: false, pending: true },
-            { label: 'Training & orientasi', complete: false, pending: true },
-        ],
-    },
-];
 
 const statusOrder: ApplicantStatus[] = [
     'Applied',
@@ -78,6 +24,8 @@ const statusOrder: ApplicantStatus[] = [
 export default function KelolaRekrutmenIndex({
     applications,
     statusOptions,
+    interviews,
+    onboarding,
 }: RecruitmentPageProps) {
     const [activeTab, setActiveTab] = useState('applicants');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -142,11 +90,11 @@ export default function KelolaRekrutmenIndex({
                 </TabsContent>
 
                 <TabsContent value="interviews">
-                    <InterviewsTab interviews={interviewsSeed} />
+                    <InterviewsTab interviews={interviews} />
                 </TabsContent>
 
                 <TabsContent value="onboarding">
-                    <OnboardingTab items={onboardingSeed} />
+                    <OnboardingTab items={onboarding} />
                 </TabsContent>
             </Tabs>
 

@@ -44,6 +44,8 @@ export interface OnboardingItem {
 export type RecruitmentPageProps = PageProps<{
     applications: ApplicantRecord[];
     statusOptions: string[];
+    interviews: InterviewSchedule[];
+    onboarding: OnboardingItem[];
 }>;
 
 export type StatusSummary = Partial<Record<ApplicantStatus, number>>;

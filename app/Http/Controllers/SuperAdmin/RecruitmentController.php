@@ -16,8 +16,9 @@ class RecruitmentController extends Controller
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['super_admin'], 403);
 
-        $applications = Application::latest('submitted_at')
-            ->get()
+        $applicationCollection = Application::latest('submitted_at')->get();
+
+        $applications = $applicationCollection
             ->map(function (Application $application) {
                 return [
                     'id' => $application->id,
@@ -33,9 +34,42 @@ class RecruitmentController extends Controller
                 ];
             });
 
+        $interviews = $applicationCollection
+            ->where('status', 'Interview')
+            ->map(function (Application $application) {
+                return [
+                    'candidate' => $application->full_name,
+                    'position' => $application->position,
+                    'date' => optional($application->submitted_at)->format('d M Y') ?? '-',
+                    'time' => optional($application->submitted_at)->format('H:i') ?? '09:00',
+                    'mode' => 'Online',
+                    'interviewer' => 'Tim HR',
+                ];
+            })
+            ->values();
+
+        $onboarding = $applicationCollection
+            ->where('status', 'Hired')
+            ->map(function (Application $application) {
+                return [
+                    'name' => $application->full_name,
+                    'position' => $application->position ?? '-',
+                    'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
+                    'status' => 'In Progress',
+                    'steps' => [
+                        ['label' => 'Kontrak ditandatangani', 'complete' => false],
+                        ['label' => 'Serah terima inventaris', 'complete' => false, 'pending' => true],
+                        ['label' => 'Training & orientasi', 'complete' => false, 'pending' => true],
+                    ],
+                ];
+            })
+            ->values();
+
         return Inertia::render('SuperAdmin/KelolaRekrutmen/Index', [
             'applications' => $applications,
             'statusOptions' => Application::STATUSES,
+            'interviews' => $interviews,
+            'onboarding' => $onboarding,
         ]);
     }
 }
