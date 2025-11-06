@@ -25,7 +25,7 @@ type IndexPageProps = PageProps<{
         admin: number;
         staff: number;
         karyawan: number;
-        external: number;
+        pelamar: number;
     };
     roleOptions: string[];
     statusOptions: string[];

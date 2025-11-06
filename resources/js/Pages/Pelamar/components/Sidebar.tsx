@@ -1,51 +1,27 @@
 import { PageProps } from '@/types';
-import { Link, usePage, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
-    Activity,
+    FileText,
     LayoutDashboard,
-    Settings,
-    Shield,
-    Users,
+    LogOut,
 } from 'lucide-react';
-import type { ComponentType, SVGProps } from 'react';
 
-interface NavItem {
+interface SidebarNavItem {
     label: string;
-    icon: ComponentType<SVGProps<SVGSVGElement>>;
+    icon: typeof LayoutDashboard;
     routeName: string;
-    pattern: string | string[];
 }
 
-const navItems: NavItem[] = [
+const navItems: SidebarNavItem[] = [
     {
         label: 'Dashboard',
         icon: LayoutDashboard,
-        routeName: 'super-admin.dashboard',
-        pattern: 'super-admin.dashboard',
+        routeName: 'pelamar.dashboard',
     },
     {
-        label: 'Kelola Akun',
-        icon: Users,
-        routeName: 'super-admin.accounts.index',
-        pattern: 'super-admin.accounts.*',
-    },
-    {
-        label: 'Kelola Rekrutmen',
-        icon: Shield,
-        routeName: 'super-admin.recruitment',
-        pattern: 'super-admin.recruitment',
-    },
-    {
-        label: 'Kelola Surat',
-        icon: Activity,
-        routeName: 'super-admin.dashboard',
-        pattern: [],
-    },
-    {
-        label: 'Pengaturan',
-        icon: Settings,
-        routeName: 'super-admin.dashboard',
-        pattern: [],
+        label: 'Lamaran Saya',
+        icon: FileText,
+        routeName: 'pelamar.applications',
     },
 ];
 
@@ -56,32 +32,30 @@ export default function Sidebar() {
     const user = auth?.user;
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-10 w-64 bg-blue-950 text-white shadow-lg">
+        <aside className="fixed inset-y-0 left-0 z-20 w-64 bg-blue-950 text-white shadow-lg">
             <div className="flex h-20 items-center justify-between px-6">
                 <div>
                     <p className="text-xs uppercase tracking-widest text-blue-200">
                         PT. Lintas Data Prima
                     </p>
-                    <p className="text-xl font-semibold">HRIS</p>
+                    <p className="text-xl font-semibold">Portal Pelamar</p>
                 </div>
             </div>
+
             <div className="px-6">
                 <p className="text-xs uppercase tracking-wide text-blue-300">
                     Navigasi
                 </p>
             </div>
+
             <nav className="mt-4 flex flex-col gap-1 px-4">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = Array.isArray(item.pattern)
-                        ? item.pattern.some((pattern) => route().current(pattern))
-                        : item.pattern
-                          ? route().current(item.pattern)
-                          : false;
+                    const isActive = route().current(item.routeName);
 
                     return (
                         <Link
-                            key={item.label}
+                            key={item.routeName}
                             href={route(item.routeName)}
                             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                                 isActive
@@ -105,8 +79,9 @@ export default function Sidebar() {
                 <button
                     type="button"
                     onClick={() => router.post(route('logout'))}
-                    className="mt-4 w-full rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
                 >
+                    <LogOut className="h-4 w-4" />
                     Keluar
                 </button>
             </div>
