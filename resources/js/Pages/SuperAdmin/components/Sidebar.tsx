@@ -6,6 +6,7 @@ import {
     Settings,
     Shield,
     Users,
+    UserMinus,
 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -42,7 +43,13 @@ const navItems: NavItem[] = [
         pattern: 'super-admin.letters.*',
     },
     {
-        label: 'Pengaturan',
+        label: 'Kelola Staff',
+        icon: UserMinus,
+        routeName: 'super-admin.staff.index',
+        pattern: 'super-admin.staff.*',
+    },
+    {
+        label: 'Kelola Staff',
         icon: Settings,
         routeName: 'super-admin.dashboard',
         pattern: [],

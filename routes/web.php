@@ -7,6 +7,7 @@ use App\Http\Controllers\SuperAdmin\AccountController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
+use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
+        Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
+        Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
         Route::resource('accounts', AccountController::class)
             ->parameters(['accounts' => 'user'])
             ->except(['show']);
