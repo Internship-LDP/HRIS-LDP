@@ -4,12 +4,11 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\StoreComplaintRequest;
-use App\Models\Departemen;
+use App\Models\Complaint;
 use App\Models\Surat;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,23 +19,22 @@ class ComplaintController extends Controller
         $user = $request->user();
         $this->authorizeStaff($user);
 
-        $complaints = Surat::query()
-            ->with(['departemen', 'user'])
+        $complaints = Complaint::query()
             ->where('user_id', $user->id)
-            ->where('tipe_surat', 'keluar')
-            ->orderByDesc('tanggal_surat')
-            ->orderByDesc('surat_id')
+            ->with(['handler'])
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id')
             ->get();
 
         $stats = [
             'new' => $complaints
-                ->whereIn('status_persetujuan', ['Menunggu HR', 'Diajukan'])
+                ->where('status', Complaint::STATUS_NEW)
                 ->count(),
             'inProgress' => $complaints
-                ->whereIn('status_persetujuan', ['Proses', 'Diproses'])
+                ->where('status', Complaint::STATUS_IN_PROGRESS)
                 ->count(),
             'resolved' => $complaints
-                ->whereIn('status_persetujuan', ['Selesai', 'Diarsipkan'])
+                ->where('status', Complaint::STATUS_RESOLVED)
                 ->count(),
         ];
 
@@ -57,26 +55,34 @@ class ComplaintController extends Controller
 
         $stats['regulations'] = $regulationsQuery->count();
 
-        $categoryOptions = $this->deriveOptions($complaints->pluck('kategori'));
-        $statusOptions = $this->deriveOptions($complaints->pluck('status_persetujuan'));
-        $priorityOptions = $this->deriveOptions($complaints->pluck('prioritas'));
+        $categoryOptions = $complaints
+            ->pluck('category')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $statusOptions = collect(Complaint::STATUS_LABELS)->values()->all();
+        $priorityOptions = collect(Complaint::PRIORITY_LABELS)->values()->all();
 
         return Inertia::render('Staff/Complaints', [
             'stats' => $stats,
             'complaints' => $complaints
-                ->map(fn (Surat $surat) => [
-                    'id' => $surat->surat_id,
-                    'letterNumber' => $surat->nomor_surat,
-                    'from' => $surat->user?->name ?? '-',
-                    'category' => $surat->kategori ?? '-',
-                    'subject' => $surat->perihal ?? '-',
-                    'date' => optional($surat->tanggal_surat)->format('d M Y') ?? '-',
-                    'status' => $surat->status_persetujuan ?? '-',
-                    'priority' => $surat->prioritas ?? 'medium',
-                    'description' => $surat->isi_surat,
+                ->map(fn (Complaint $complaint) => [
+                    'id' => $complaint->id,
+                    'letterNumber' => $complaint->complaint_code,
+                    'from' => $complaint->is_anonymous
+                        ? 'Anonim'
+                        : ($complaint->reporter?->name ?? '-'),
+                    'category' => $complaint->category,
+                    'subject' => $complaint->subject,
+                    'date' => optional($complaint->submitted_at)->format('d M Y') ?? '-',
+                    'status' => $complaint->statusLabel(),
+                    'priority' => $complaint->priorityLabel(),
+                    'description' => $complaint->description,
                     'attachment' => [
-                        'name' => $surat->lampiran_nama,
-                        'url' => $surat->attachmentUrl(),
+                        'name' => $complaint->attachment_name,
+                        'url' => $complaint->attachmentUrl(),
                     ],
                 ])
                 ->values(),
@@ -111,35 +117,27 @@ class ComplaintController extends Controller
         $user = $request->user();
         $this->authorizeStaff($user);
 
-        $departemen = $this->resolveDepartemen($user->division);
-
-        $data = [
+        $complaint = new Complaint([
             'user_id' => $user->id,
-            'departemen_id' => $departemen?->id,
-            'nomor_surat' => Surat::generateNomorSurat($departemen?->kode),
-            'tipe_surat' => 'keluar',
-            'jenis_surat' => 'Pengaduan',
-            'tanggal_surat' => now()->toDateString(),
-            'perihal' => $request->input('subject'),
-            'isi_surat' => $request->input('description'),
-            'status_persetujuan' => 'Menunggu HR',
-            'kategori' => $request->input('category'),
-            'prioritas' => $request->input('priority'),
-            'penerima' => 'Admin HR',
-            'target_division' => 'Human Capital/HR',
-            'current_recipient' => 'hr',
-        ];
+            'category' => $request->input('category'),
+            'subject' => $request->input('subject'),
+            'description' => $request->input('description'),
+            'priority' => $request->input('priority'),
+            'is_anonymous' => $request->boolean('anonymous'),
+        ]);
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $path = $file->store('complaints', 'public');
-            $data['lampiran_path'] = $path;
-            $data['lampiran_nama'] = $file->getClientOriginalName();
-            $data['lampiran_mime'] = $file->getMimeType();
-            $data['lampiran_size'] = $file->getSize();
+            $complaint->fill([
+                'attachment_path' => $path,
+                'attachment_name' => $file->getClientOriginalName(),
+                'attachment_mime' => $file->getMimeType(),
+                'attachment_size' => $file->getSize(),
+            ]);
         }
 
-        Surat::create($data);
+        $complaint->save();
 
         return redirect()
             ->route('staff.complaints.index')
@@ -164,30 +162,6 @@ class ComplaintController extends Controller
                     ->where('kategori', 'Internal')
                     ->orWhere('jenis_surat', 'Pengumuman');
             });
-    }
-
-    private function deriveOptions(Collection $values): array
-    {
-        return $values
-            ->filter()
-            ->map(fn ($value) => (string) $value)
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    private function resolveDepartemen(?string $division): ?Departemen
-    {
-        if (! $division) {
-            return null;
-        }
-
-        $code = preg_replace('/[^A-Za-z]/', '', $division) ?: 'GEN';
-
-        return Departemen::firstOrCreate(
-            ['nama' => $division],
-            ['kode' => strtoupper(substr($code, 0, 3))]
-        );
     }
 
     private function authorizeStaff(?User $user): void

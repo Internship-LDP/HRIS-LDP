@@ -6,6 +6,7 @@ import {
     Shield,
     Users,
     UserMinus,
+    MessageSquare,
 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -48,6 +49,12 @@ const defaultNavItems: NavItem[] = [
         icon: UserMinus,
         routeName: 'super-admin.staff.index',
         pattern: 'super-admin.staff.*',
+    },
+    {
+        label: 'Kelola Pengaduan',
+        icon: MessageSquare,
+        routeName: 'super-admin.complaints.index',
+        pattern: 'super-admin.complaints.*',
     },
 ];
 

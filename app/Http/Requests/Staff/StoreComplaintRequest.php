@@ -22,6 +22,7 @@ class StoreComplaintRequest extends FormRequest
             'subject' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:5000'],
             'priority' => ['required', 'in:high,medium,low'],
+            'anonymous' => ['nullable', 'boolean'],
             'attachment' => ['nullable', 'file', 'max:5120'],
         ];
     }

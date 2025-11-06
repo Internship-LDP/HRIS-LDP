@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Complaint;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -27,5 +28,7 @@ class DatabaseSeeder extends Seeder
 
         // Optionally seed supporting accounts
         User::factory(5)->create();
+
+        Complaint::factory(15)->create();
     }
 }
