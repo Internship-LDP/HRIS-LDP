@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import type { ComplaintRecord, Option } from '../types';
+import { toast } from 'sonner';
 
 interface ComplaintDetailDialogProps {
     complaint: ComplaintRecord | null;
@@ -62,6 +63,10 @@ export default function ComplaintDetailDialog({
             preserveScroll: true,
             onSuccess: () => {
                 form.clearErrors();
+                toast.success('Data pengaduan diperbarui', {
+                    description: `Pengaduan ${complaint.code} telah disimpan.`,
+                });
+                onOpenChange(false);
             },
         });
     };
@@ -300,7 +305,7 @@ export default function ComplaintDetailDialog({
                             </Button>
                             <Button
                                 type="button"
-                                className="bg-blue-900 hover:bg-blue-800 sm:min-w-[160px]"
+                                className="bg-blue-900 hover:bg-blue-800 sm:min-w-[160px] text-white"
                                 disabled={form.processing}
                                 onClick={handleSubmit}
                             >
