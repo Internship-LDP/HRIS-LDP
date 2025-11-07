@@ -15,3 +15,13 @@ declare global {
 declare module '@inertiajs/core' {
     interface PageProps extends InertiaPageProps, AppPageProps {}
 }
+
+export interface FlashProps {
+  success?: string
+  error?: string
+  generated_password?: string
+}
+
+export interface PageProps extends InertiaPageProps {
+  flash: FlashProps
+}
