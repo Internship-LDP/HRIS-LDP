@@ -37,6 +37,7 @@ export default function Applications({
         education: '',
         experience: '',
         skills: '',
+        cv: null,
     });
 
     useEffect(() => {
@@ -58,8 +59,12 @@ export default function Applications({
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         form.post(route('pelamar.applications.store'), {
+            forceFormData: true,
             onSuccess: () => {
-                form.reset('education', 'experience', 'skills');
+                form.reset('education', 'experience', 'skills', 'cv');
+                toast.success('Lamaran berhasil dikirim', {
+                    description: 'Tim rekrutmen akan meninjau berkas Anda.',
+                });
             },
         });
     };

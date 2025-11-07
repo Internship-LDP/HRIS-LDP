@@ -21,6 +21,7 @@ export interface ApplicationFormData {
     education: string;
     experience: string;
     skills: string;
+    cv: File | null;
 }
 
 interface ApplicationFormProps {
@@ -43,6 +44,16 @@ export default function ApplicationForm({
     setData,
     onSubmit,
 }: ApplicationFormProps) {
+    const isFormComplete =
+        Boolean(data.full_name?.trim()) &&
+        Boolean(data.email?.trim()) &&
+        Boolean(data.phone?.trim()) &&
+        Boolean(data.position?.trim()) &&
+        Boolean(data.education?.trim()) &&
+        Boolean(data.experience?.trim()) &&
+        Boolean(data.skills?.trim()) &&
+        Boolean(data.cv);
+
     return (
         <Card className="p-6">
             <h3 className="mb-4 text-lg font-semibold text-blue-900">
@@ -53,6 +64,7 @@ export default function ApplicationForm({
                     <Label htmlFor="fullname">Nama Lengkap</Label>
                     <Input
                         id="fullname"
+                        required
                         value={data.full_name}
                         onChange={(event) => setData('full_name', event.target.value)}
                         placeholder="Masukkan nama lengkap"
@@ -66,6 +78,7 @@ export default function ApplicationForm({
                     <Input
                         id="email"
                         type="email"
+                        required
                         value={data.email}
                         onChange={(event) => setData('email', event.target.value)}
                         placeholder="email@example.com"
@@ -78,6 +91,7 @@ export default function ApplicationForm({
                     <Label htmlFor="phone">No. Telepon</Label>
                     <Input
                         id="phone"
+                        required
                         value={data.phone}
                         onChange={(event) => setData('phone', event.target.value)}
                         placeholder="081234567890"
@@ -111,6 +125,7 @@ export default function ApplicationForm({
                     <Label htmlFor="education">Pendidikan Terakhir</Label>
                     <Input
                         id="education"
+                        required
                         value={data.education}
                         onChange={(event) => setData('education', event.target.value)}
                         placeholder="S1 Informatika"
@@ -125,6 +140,7 @@ export default function ApplicationForm({
                     <Label htmlFor="experience">Pengalaman Kerja</Label>
                     <Input
                         id="experience"
+                        required
                         value={data.experience}
                         onChange={(event) => setData('experience', event.target.value)}
                         placeholder="3 tahun"
@@ -139,6 +155,7 @@ export default function ApplicationForm({
                     <Label htmlFor="skills">Keahlian</Label>
                     <Textarea
                         id="skills"
+                        required
                         value={data.skills}
                         onChange={(event) => setData('skills', event.target.value)}
                         placeholder="Sebutkan keahlian Anda (pisahkan dengan koma)"
@@ -148,23 +165,52 @@ export default function ApplicationForm({
                     )}
                 </div>
                 <div className="md:col-span-2">
-                    <Label htmlFor="cv">Upload CV (PDF)</Label>
-                    <div className="cursor-pointer rounded-lg border-2 border-dashed border-slate-300 p-6 text-center transition hover:border-blue-500">
-                        <Upload className="mx-auto mb-2 h-8 w-8 text-slate-400" />
+                    <Label htmlFor="cv-upload">Upload CV (PDF)</Label>
+                    <label
+                        htmlFor="cv-upload"
+                        className="block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 p-6 text-center transition hover:border-blue-500 focus-within:border-blue-500"
+                    >
+                        <Upload className="mx-auto mb-2 h-8 w-8 text-slate-400" aria-hidden />
                         <p className="text-sm text-slate-600">
                             Klik untuk upload atau drag & drop
                         </p>
-                        <p className="text-xs text-slate-400">PDF, maks 5MB</p>
-                    </div>
+                        <p className="text-xs text-slate-400">
+                            PDF, maks 5MB
+                        </p>
+                        {data.cv && (
+                            <p className="mt-3 text-xs font-medium text-blue-900">
+                                {data.cv.name}
+                            </p>
+                        )}
+                        <Input
+                            id="cv-upload"
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            className="sr-only"
+                            required
+                            onChange={(event) =>
+                                setData('cv', event.target.files?.[0] ?? null)
+                            }
+                            disabled={processing}
+                        />
+                    </label>
+                    {errors.cv && (
+                        <p className="mt-1 text-xs text-red-500">{errors.cv}</p>
+                    )}
                 </div>
                 <div className="md:col-span-2">
                     <Button
                         type="submit"
-                        className="bg-blue-900 hover:bg-blue-800"
-                        disabled={processing}
+                        className="bg-blue-900 hover:bg-blue-800 text-white"
+                        disabled={processing || !isFormComplete}
                     >
                         Submit Lamaran
                     </Button>
+                    {!isFormComplete && (
+                        <p className="mt-2 text-xs text-slate-500">
+                            Lengkapi seluruh data dan unggah CV sebelum mengirim lamaran.
+                        </p>
+                    )}
                 </div>
             </form>
         </Card>
