@@ -3,6 +3,7 @@ import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
@@ -22,20 +23,23 @@ export default function LetterDetailDialog({
 }: LetterDetailDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
+            <DialogContent className="max-w-3xl border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>
                         Detail Surat {letter ? `: ${letter.subject}` : ''}
                     </DialogTitle>
+                    <DialogDescription>
+                        Tinjau metadata, isi surat, dan lampiran sebelum menindaklanjuti.
+                    </DialogDescription>
                 </DialogHeader>
 
                 {!letter ? (
-                    <p className="py-6 text-center text-sm text-slate-500">
+                    <p className="px-6 py-10 text-center text-sm text-slate-500">
                         Pilih surat untuk melihat detail.
                     </p>
                 ) : (
-                    <div className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-5 px-6 pb-6 pt-4">
+                        <div className="grid gap-4 rounded-xl border border-slate-200 p-4 text-sm md:grid-cols-2">
                             <DetailItem label="Nomor Surat" value={letter.letterNumber} />
                             <DetailItem label="Tanggal" value={letter.date} />
                             <DetailItem label="Pengirim" value={letter.senderName} />
@@ -55,11 +59,11 @@ export default function LetterDetailDialog({
                             </div>
                         </div>
 
-                        <div>
+                        <div className="space-y-2 rounded-xl border border-dashed border-slate-200 p-4">
                             <p className="text-xs uppercase tracking-wide text-slate-500">
                                 Subjek
                             </p>
-                            <p className="mt-1 text-sm text-slate-900">{letter.subject}</p>
+                            <p className="text-sm font-semibold text-slate-900">{letter.subject}</p>
                         </div>
 
                         <div>

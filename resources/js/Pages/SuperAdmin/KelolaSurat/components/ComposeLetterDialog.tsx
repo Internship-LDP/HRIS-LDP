@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -72,17 +73,20 @@ export default function ComposeLetterDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button className="bg-blue-900 hover:bg-blue-800 text-white">
+                <Button className="bg-blue-900 text-white hover:bg-blue-800">
                     {triggerLabel}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-white">
-                <DialogHeader>
+            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-hidden border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>Buat Surat Baru</DialogTitle>
+                    <DialogDescription>
+                        Atur detail surat dinas dan kirimkan ke divisi tujuan secara terstruktur.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form
-                    className="space-y-5"
+                    className="max-h-[calc(90vh-5rem)] space-y-5 overflow-y-auto px-6 pb-6 pt-4"
                     onSubmit={(event) => {
                         event.preventDefault();
                         onSubmit();
@@ -325,7 +329,7 @@ export default function ComposeLetterDialog({
                     <div className="flex items-center gap-2 pt-2">
                         <Button
                             type="submit"
-                            className="bg-blue-900 hover:bg-blue-800"
+                            className="bg-blue-900 hover:bg-blue-800 text-white"
                             disabled={processing}
                         >
                             {processing ? 'Mengirim...' : 'Kirim Surat'}
