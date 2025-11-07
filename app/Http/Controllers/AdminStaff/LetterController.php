@@ -133,7 +133,7 @@ class LetterController extends Controller
             'jenis_surat' => $request->input('jenis_surat'),
             'tanggal_surat' => now()->toDateString(),
             'perihal' => $request->input('perihal'),
-            'isi_surat' => $request->input('isi_surat'),
+            'isi_surat' => $request->input('isi_surat') ?? '',
             'status_persetujuan' => 'Menunggu HR',
             'kategori' => $request->input('kategori'),
             'prioritas' => $request->input('prioritas'),
