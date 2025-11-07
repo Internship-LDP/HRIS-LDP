@@ -70,7 +70,7 @@ export default function AddApplicantDialog() {
                             <Textarea placeholder="Tambahkan catatan singkat" rows={4} />
                         </div>
                     </div>
-                    <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
+                    <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white">
                         Simpan
                     </Button>
                 </form>

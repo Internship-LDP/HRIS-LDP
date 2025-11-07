@@ -329,7 +329,7 @@ export default function ComposeLetterDialog({
                     <div className="flex items-center gap-2 pt-2">
                         <Button
                             type="submit"
-                            className="bg-blue-900 hover:bg-blue-800"
+                            className="bg-blue-900 hover:bg-blue-800 text-white"
                             disabled={processing}
                         >
                             {processing ? 'Mengirim...' : 'Kirim Surat'}
