@@ -52,7 +52,7 @@ export default function TerminationDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-blue-900 hover:bg-blue-800">
+                <Button className="bg-blue-900 hover:bg-blue-800 text-white">
                     <UserMinus className="mr-2 h-4 w-4" />
                     Input Termination
                 </Button>

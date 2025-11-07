@@ -146,7 +146,7 @@ export default function KelolaPengaduanIndex(props: ComplaintsPageProps) {
             actions={
                 <Button
                     type="button"
-                    className="hidden items-center gap-2 bg-blue-900 hover:bg-blue-800 md:flex"
+                    className="hidden items-center gap-2 bg-blue-900 hover:bg-blue-800 md:flex text-white"
                     onClick={() => setActiveTab('complaints')}
                 >
                     <MessageSquarePlus className="h-4 w-4" />

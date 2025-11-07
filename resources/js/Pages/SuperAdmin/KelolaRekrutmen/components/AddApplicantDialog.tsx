@@ -22,7 +22,7 @@ export default function AddApplicantDialog() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800">
+                <Button className="inline-flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white">
                     <UserPlus className="h-4 w-4" />
                     Tambah Pelamar
                 </Button>
