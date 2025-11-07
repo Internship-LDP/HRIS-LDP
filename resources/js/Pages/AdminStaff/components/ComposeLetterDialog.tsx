@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -76,13 +77,16 @@ export default function ComposeLetterDialog({
                     {triggerLabel}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-white">
-                <DialogHeader>
+            <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-hidden border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>Buat Surat Baru</DialogTitle>
+                    <DialogDescription>
+                        Lengkapi detail surat keluar sebelum mengirimkan ke divisi tujuan.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <form
-                    className="space-y-5"
+                    className="max-h-[calc(90vh-5rem)] space-y-5 overflow-y-auto px-6 pb-6 pt-4"
                     onSubmit={(event) => {
                         event.preventDefault();
                         onSubmit();
@@ -149,51 +153,28 @@ export default function ComposeLetterDialog({
                         </div>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <Label>
-                                Divisi Tujuan <span className="text-red-500">*</span>
-                            </Label>
-                            <Select
-                                value={data.target_division}
-                                onValueChange={(value) =>
-                                    setData('target_division', value)
-                                }
-                            >
-                                <SelectTrigger className="bg-white">
-                                    <SelectValue placeholder="Pilih divisi tujuan" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white">
-                                    {options.divisions.map((division) => (
-                                        <SelectItem key={division} value={division}>
-                                            {division}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.target_division && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {errors.target_division}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <Label>
-                                Kepada <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                value={data.penerima}
-                                onChange={(event) =>
-                                    setData('penerima', event.target.value)
-                                }
-                                placeholder="Nama penerima / divisi / instansi"
-                            />
-                            {errors.penerima && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {errors.penerima}
-                                </p>
-                            )}
-                        </div>
+                    <div>
+                        <Label>
+                            Divisi Tujuan <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                            value={data.target_division}
+                            onValueChange={(value) => setData('target_division', value)}
+                        >
+                            <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Pilih divisi tujuan" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                                {options.divisions.map((division) => (
+                                    <SelectItem key={division} value={division}>
+                                        {division}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.target_division && (
+                            <p className="mt-1 text-sm text-red-500">{errors.target_division}</p>
+                        )}
                     </div>
 
                     <div>
@@ -264,9 +245,7 @@ export default function ComposeLetterDialog({
                     </div>
 
                     <div>
-                        <Label>
-                            Isi Surat <span className="text-red-500">*</span>
-                        </Label>
+                        <Label>Isi Surat (Opsional)</Label>
                         <Textarea
                             rows={8}
                             placeholder="Tulis isi surat di sini..."
@@ -281,7 +260,9 @@ export default function ComposeLetterDialog({
                     </div>
 
                     <div>
-                        <Label>Lampiran (Opsional - PDF atau JPG, Max 5MB)</Label>
+                        <Label>
+                            Lampiran (Wajib - PDF atau JPG, Max 5MB) <span className="text-red-500">*</span>
+                        </Label>
                         <label
                             htmlFor="lampiran"
                             className="mt-2 block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 p-4 text-center text-sm text-slate-500 transition hover:border-blue-500 hover:text-blue-600"
@@ -294,6 +275,7 @@ export default function ComposeLetterDialog({
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png"
                             className="hidden"
+                            required
                             onChange={(event) =>
                                 setData('lampiran', event.target.files?.[0] ?? null)
                             }
@@ -325,7 +307,7 @@ export default function ComposeLetterDialog({
                     <div className="flex items-center gap-2 pt-2">
                         <Button
                             type="submit"
-                            className="bg-blue-900 hover:bg-blue-800"
+                            className="bg-blue-900 hover:bg-blue-800 text-white"
                             disabled={processing}
                         >
                             {processing ? 'Mengirim...' : 'Kirim Surat'}

@@ -367,7 +367,7 @@ export default function KelolaSuratIndex() {
                             <Button
                                 onClick={handleDispositionSubmit}
                                 disabled={dispositionForm.processing}
-                                className="w-full bg-blue-900 hover:bg-blue-800"
+                                className="w-full bg-blue-900 hover:bg-blue-800 text-white"
                             >
                                 {dispositionForm.processing
                                     ? 'Memproses...'

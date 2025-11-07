@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\Complaint;
 use App\Models\StaffTermination;
 use App\Models\Surat;
 use App\Models\User;
@@ -17,12 +18,11 @@ class DashboardController extends Controller
         $user = $request->user();
         $this->authorizeStaff($user);
 
-        $complaintsQuery = Surat::query()
-            ->where('user_id', $user->id)
-            ->where('tipe_surat', 'keluar');
+        $complaintsQuery = Complaint::query()
+            ->where('user_id', $user->id);
 
         $activeComplaints = (clone $complaintsQuery)
-            ->whereIn('status_persetujuan', ['Menunggu HR', 'Diajukan', 'Proses']);
+            ->whereIn('status', [Complaint::STATUS_NEW, Complaint::STATUS_IN_PROGRESS]);
 
         $regulationsQuery = Surat::query()
             ->where('tipe_surat', 'masuk')
@@ -59,16 +59,16 @@ class DashboardController extends Controller
         ];
 
         $recentComplaints = (clone $complaintsQuery)
-            ->orderByDesc('tanggal_surat')
-            ->orderByDesc('surat_id')
+            ->orderByDesc('submitted_at')
+            ->orderByDesc('id')
             ->take(5)
             ->get()
-            ->map(fn (Surat $surat) => [
-                'id' => $surat->surat_id,
-                'subject' => $surat->perihal ?? '-',
-                'status' => $surat->status_persetujuan ?? '-',
-                'priority' => $surat->prioritas ?? 'medium',
-                'date' => optional($surat->tanggal_surat)->format('d M Y') ?? '-',
+            ->map(fn (Complaint $complaint) => [
+                'id' => $complaint->id,
+                'subject' => $complaint->subject ?? '-',
+                'status' => $complaint->statusLabel(),
+                'priority' => $complaint->priorityLabel(),
+                'date' => optional($complaint->submitted_at)->format('d M Y') ?? '-',
             ])
             ->values();
 
