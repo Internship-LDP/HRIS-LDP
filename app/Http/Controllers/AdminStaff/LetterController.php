@@ -161,9 +161,11 @@ class LetterController extends Controller
     private function lettersForStaff(User $user)
     {
         return Surat::query()
-            ->where('tipe_surat', 'masuk')
             ->where('current_recipient', 'division')
-            ->where('target_division', $user->division);
+            ->where(function ($query) use ($user) {
+                $query->where('target_division', $user->division)
+                    ->orWhere('penerima', $user->division);
+            });
     }
 
     private function resolveDepartemen(?string $division): ?Departemen

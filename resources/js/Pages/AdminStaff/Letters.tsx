@@ -10,6 +10,7 @@ import { Badge } from '@/Components/ui/badge';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
@@ -284,45 +285,73 @@ export default function AdminStaffLetters() {
             </Card>
 
             <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-                <DialogContent className="max-w-2xl bg-white">
-                    <DialogHeader>
+                <DialogContent className="max-h-[85vh] max-w-3xl overflow-hidden border-0 bg-white p-0">
+                    <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                         <DialogTitle>Detail Surat</DialogTitle>
+                        <DialogDescription>
+                            Ringkasan informasi surat masuk/keluar beserta lampiran yang disertakan.
+                        </DialogDescription>
                     </DialogHeader>
+                    <div className="max-h-[calc(85vh-4.5rem)] overflow-y-auto">
+                        {selectedLetter ? (
+                            <div className="space-y-6 px-6 pb-6 pt-4">
+                                <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 text-sm md:grid-cols-3">
+                                    <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
+                                    <InfoTile label="Tanggal" value={selectedLetter.date} />
+                                    <InfoTile label="Pengirim" value={selectedLetter.sender} />
+                                    <InfoTile label="Divisi" value={selectedLetter.from} />
+                                    <InfoTile label="Kategori" value={selectedLetter.category} />
+                                    <InfoTile
+                                        label="Prioritas"
+                                        value={<Badge className="bg-slate-900 text-white">{selectedLetter.priority}</Badge>}
+                                    />
+                                    <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
+                                </section>
 
-                    {selectedLetter ? (
-                        <div className="space-y-4">
-                            <div className="grid gap-3 text-sm md:grid-cols-2">
-                                <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
-                                <InfoTile label="Tanggal" value={selectedLetter.date} />
-                                <InfoTile label="Pengirim" value={selectedLetter.sender} />
-                                <InfoTile label="Divisi" value={selectedLetter.from} />
-                                <InfoTile label="Kategori" value={selectedLetter.category} />
-                                <InfoTile label="Prioritas" value={selectedLetter.priority} />
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500">Subjek</p>
-                                <p className="text-sm font-medium text-slate-900">
-                                    {selectedLetter.subject}
-                                </p>
-                            </div>
-                            {selectedLetter.content && (
-                                <div>
-                                    <p className="text-xs text-slate-500">Isi Surat</p>
-                                    <div className="mt-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
-                                        {selectedLetter.content}
+                                <section className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/60 p-5">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-slate-500">Subjek</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                                            {selectedLetter.subject}
+                                        </p>
                                     </div>
-                                </div>
-                            )}
-                            {selectedLetter.hasAttachment && selectedLetter.attachmentUrl && (
-                                <Button asChild variant="outline">
-                                    <a href={selectedLetter.attachmentUrl} target="_blank" rel="noreferrer">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Unduh Lampiran
-                                    </a>
-                                </Button>
-                            )}
-                        </div>
-                    ) : null}
+                                    {selectedLetter.content && (
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wide text-slate-500">Isi Surat</p>
+                                            <div className="mt-2 rounded-lg bg-white p-4 text-sm text-slate-700">
+                                                {selectedLetter.content}
+                                            </div>
+                                        </div>
+                                    )}
+                                </section>
+
+                                {selectedLetter.hasAttachment && selectedLetter.attachmentUrl && (
+                                    <section className="rounded-xl border border-slate-200/80 bg-white p-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    Lampiran
+                                                </p>
+                                                <p className="mt-1 text-sm font-semibold text-slate-900">
+                                                    {selectedLetter.subject}
+                                                </p>
+                                            </div>
+                                            <Button asChild variant="outline">
+                                                <a href={selectedLetter.attachmentUrl} target="_blank" rel="noreferrer">
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Unduh Lampiran
+                                                </a>
+                                            </Button>
+                                        </div>
+                                    </section>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="px-6 py-12 text-center text-sm text-slate-500">
+                                Pilih surat untuk melihat detail.
+                            </div>
+                        )}
+                    </div>
                 </DialogContent>
             </Dialog>
         </AdminStaffLayout>
@@ -448,11 +477,17 @@ function EmptyState({ message }: { message: string }) {
     );
 }
 
-function InfoTile({ label, value }: { label: string; value?: string | null }) {
+function InfoTile({
+    label,
+    value,
+}: {
+    label: string;
+    value?: ReactNode | string | null;
+}) {
     return (
         <div>
             <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-            <p className="text-sm font-semibold text-slate-900">{value ?? '-'}</p>
+            <div className="text-sm font-semibold text-slate-900">{value ?? '-'}</div>
         </div>
     );
 }
