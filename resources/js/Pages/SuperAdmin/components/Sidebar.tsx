@@ -1,12 +1,12 @@
 import { PageProps } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
-    Activity,
     LayoutDashboard,
-    Shield,
     Users,
     UserMinus,
     MessageSquare,
+    UserPlus,
+    Mail,
 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -34,13 +34,13 @@ const defaultNavItems: NavItem[] = [
     },
     {
         label: 'Kelola Rekrutmen',
-        icon: Shield,
+        icon: UserPlus,
         routeName: 'super-admin.recruitment',
         pattern: 'super-admin.recruitment',
     },
     {
         label: 'Kelola Surat',
-        icon: Activity,
+        icon: Mail,
         routeName: 'super-admin.letters.index',
         pattern: 'super-admin.letters.*',
     },
