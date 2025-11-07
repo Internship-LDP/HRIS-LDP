@@ -69,7 +69,7 @@ export default function StaffComplaints() {
                 ]}
                 actions={
                     <Button
-                        className="bg-blue-900 hover:bg-blue-800"
+                        className="bg-blue-900 hover:bg-blue-800 text-white"
                         onClick={() => setComposerOpen(true)}
                     >
                         <MessageSquare className="mr-2 h-4 w-4" />

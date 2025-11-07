@@ -80,6 +80,8 @@ class ComplaintController extends Controller
                     'status' => $complaint->statusLabel(),
                     'priority' => $complaint->priorityLabel(),
                     'description' => $complaint->description,
+                    'handler' => $complaint->handler?->name,
+                    'resolutionNotes' => $complaint->resolution_notes,
                     'attachment' => [
                         'name' => $complaint->attachment_name,
                         'url' => $complaint->attachmentUrl(),

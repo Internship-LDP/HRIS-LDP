@@ -27,13 +27,14 @@ export default function ComplaintTable({ complaints, onSelect }: ComplaintTableP
                         <TableHead>Tanggal</TableHead>
                         <TableHead>Prioritas</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Catatan Penanganan</TableHead>
                         <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {complaints.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center text-sm text-slate-500">
+                            <TableCell colSpan={8} className="text-center text-sm text-slate-500">
                                 Belum ada data yang sesuai filter.
                             </TableCell>
                         </TableRow>
@@ -52,6 +53,13 @@ export default function ComplaintTable({ complaints, onSelect }: ComplaintTableP
                             </TableCell>
                             <TableCell>
                                 <StatusBadge status={complaint.status} />
+                            </TableCell>
+                            <TableCell className="max-w-xs text-sm text-slate-600">
+                                {complaint.resolutionNotes?.length
+                                    ? complaint.resolutionNotes
+                                    : complaint.handler
+                                    ? `Menunggu catatan dari ${complaint.handler}`
+                                    : 'Belum ada catatan penanganan'}
                             </TableCell>
                             <TableCell className="text-right">
                                 <Button variant="ghost" size="sm" onClick={() => onSelect(complaint)}>

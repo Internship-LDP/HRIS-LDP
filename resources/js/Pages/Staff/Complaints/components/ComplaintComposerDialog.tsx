@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useForm } from '@inertiajs/react';
+import type { FormDataType } from '@inertiajs/core';
 import { Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/Components/ui/button';
 import {
     Dialog,
@@ -29,14 +32,14 @@ interface ComplaintComposerDialogProps {
     onOpenChange: (open: boolean) => void;
 }
 
-interface ComplaintFormData {
+type ComplaintFormData = FormDataType<{
     category: string;
     priority: string;
     subject: string;
     description: string;
     anonymous: boolean;
     attachment: File | null;
-}
+}>;
 
 export default function ComplaintComposerDialog({
     open,
@@ -81,7 +84,7 @@ export default function ComplaintComposerDialog({
         setHasSubmitted(false);
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
         form.setData('attachment', file);
         if (file) {
@@ -97,7 +100,7 @@ export default function ComplaintComposerDialog({
         form.clearErrors('attachment');
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setHasSubmitted(true);
 
@@ -105,6 +108,9 @@ export default function ComplaintComposerDialog({
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
+                toast.success('Pengaduan berhasil dikirim', {
+                    description: 'Tim HR akan meninjau laporan Anda segera.',
+                });
                 handleClose();
             },
         });
@@ -112,49 +118,14 @@ export default function ComplaintComposerDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white p-0">
-                <div className="flex flex-col gap-6 bg-white px-6 py-6 lg:flex-row lg:items-start">
-                    <div className="w-full lg:max-w-sm">
-                        <DialogHeader className="gap-1">
-                            <DialogTitle className="text-2xl text-blue-900">
-                                Form Pengaduan &amp; Saran
-                            </DialogTitle>
-                            <DialogDescription className="text-sm text-slate-600">
-                                Ceritakan situasi yang Anda alami secara jelas untuk memudahkan tim HR dalam
-                                menindaklanjuti laporan. Lengkapi informasi berikut agar proses verifikasi lebih cepat.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <aside className="mt-6 hidden gap-4 rounded-xl border border-blue-100 bg-blue-50/80 p-5 text-sm text-slate-700 lg:flex lg:flex-col">
-                            <h3 className="text-base font-semibold text-blue-900">Tips Pengaduan Efektif</h3>
-                            <ul className="space-y-2">
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Sebutkan waktu kejadian serta lokasi atau divisi terkait.
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Jelaskan kondisi yang terjadi dan pihak yang terlibat.
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Lampirkan bukti pendukung (foto, dokumen, atau kronologi) bila tersedia.
-                                </li>
-                            </ul>
-                            <div className="rounded-lg border border-blue-200 bg-white px-4 py-3 text-xs text-blue-900">
-                                Pengaduan anonim tetap kami proses, namun semakin lengkap informasi yang diberikan akan
-                                mempercepat tindak lanjut.
-                            </div>
-                        </aside>
-                    </div>
-
-                    <div className="flex w-full flex-col gap-4">
-                        {hasErrors && hasSubmitted && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                                Periksa kembali data yang Anda masukkan. Beberapa field masih membutuhkan perhatian.
-                            </div>
-                        )}
-                        <form onSubmit={handleSubmit} className="w-full space-y-6">
+            <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white p-0">
+                <div className="flex max-h-[90vh] w-full flex-col gap-4 overflow-y-auto px-6 py-6">
+                    {hasErrors && hasSubmitted && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                            Periksa kembali data yang Anda masukkan. Beberapa field masih membutuhkan perhatian.
+                        </div>
+                    )}
+                    <form onSubmit={handleSubmit} className="w-full space-y-6">
                         <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
                             <Checkbox
                                 id="anonymous"
@@ -273,7 +244,7 @@ export default function ComplaintComposerDialog({
                             )}
                         </div>
 
-                            <DialogFooter className="flex gap-2 pt-2">
+                        <DialogFooter className="flex gap-2 pt-2">
                             <Button
                                 type="button"
                                 variant="outline"
@@ -285,31 +256,13 @@ export default function ComplaintComposerDialog({
                             </Button>
                             <Button
                                 type="submit"
-                                className="w-full bg-blue-900 hover:bg-blue-800 sm:w-auto"
+                                className="w-full bg-blue-900 hover:bg-blue-800 text-white sm:w-auto"
                                 disabled={form.processing}
                             >
                                 {form.processing ? 'Mengirim...' : 'Kirim Pengaduan/Saran'}
                             </Button>
-                            </DialogFooter>
-                        </form>
-                        <aside className="rounded-lg border border-blue-100 bg-blue-50/80 p-4 text-xs text-slate-700">
-                            <h3 className="text-sm font-semibold text-blue-900">Tips Pengaduan</h3>
-                            <ul className="mt-2 space-y-1.5">
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Sertakan waktu dan lokasi kejadian.
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Jelaskan pihak-pihak yang terlibat dan kondisi yang terjadi.
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-900" />
-                                    Lampirkan bukti pendukung bila tersedia.
-                                </li>
-                            </ul>
-                        </aside>
-                    </div>
+                        </DialogFooter>
+                    </form>
                 </div>
             </DialogContent>
         </Dialog>

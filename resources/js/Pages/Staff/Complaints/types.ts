@@ -8,6 +8,8 @@ export interface ComplaintRecord {
     status: string;
     priority: string;
     description?: string | null;
+    handler?: string | null;
+    resolutionNotes?: string | null;
     attachment?: {
         name?: string | null;
         url?: string | null;
