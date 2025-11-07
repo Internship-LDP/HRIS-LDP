@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
@@ -320,25 +321,32 @@ export default function KelolaSuratIndex() {
             />
 
             <Dialog open={dispositionOpen} onOpenChange={setDispositionOpen}>
-                <DialogContent className="bg-white sm:max-w-lg">
-                    <DialogHeader>
+                <DialogContent className="border-0 bg-white p-0 sm:max-w-lg">
+                    <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                         <DialogTitle>Disposisi Surat</DialogTitle>
+                        <DialogDescription>
+                            Tambahkan catatan singkat sebelum meneruskan surat ke divisi tujuan.
+                        </DialogDescription>
                     </DialogHeader>
                     {selectedPending && (
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-sm text-slate-500">Nomor Surat</p>
-                                <p className="font-medium text-slate-900">
-                                    {selectedPending.letterNumber}
-                                </p>
+                        <div className="space-y-4 px-6 pb-6 pt-4">
+                            <div className="rounded-lg border border-slate-200 p-4 text-sm">
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        <p className="text-xs text-slate-500">Nomor Surat</p>
+                                        <p className="font-semibold text-slate-900">
+                                            {selectedPending.letterNumber}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500">Divisi Tujuan</p>
+                                        <p className="font-semibold text-slate-900">
+                                            {selectedPending.targetDivision ?? '-'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-slate-500">Divisi Tujuan</p>
-                                <p className="font-medium text-slate-900">
-                                    {selectedPending.targetDivision ?? '-'}
-                                </p>
-                            </div>
-                            <div>
+                            <div className="space-y-2">
                                 <Label>Catatan (Opsional)</Label>
                                 <Textarea
                                     rows={4}
@@ -351,7 +359,7 @@ export default function KelolaSuratIndex() {
                                     }
                                 />
                                 {dispositionForm.errors.disposition_note && (
-                                    <p className="mt-1 text-xs text-red-500">
+                                    <p className="text-xs text-red-500">
                                         {dispositionForm.errors.disposition_note}
                                     </p>
                                 )}

@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -52,112 +53,123 @@ export default function TerminationDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-blue-900 hover:bg-blue-800 text-white">
+                <Button className="bg-blue-900 text-white hover:bg-blue-800">
                     <UserMinus className="mr-2 h-4 w-4" />
                     Input Termination
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
+            <DialogContent className="max-w-2xl border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>Input Termination Baru</DialogTitle>
+                    <DialogDescription>
+                        Pastikan data karyawan lengkap sebelum mengajukan proses offboarding.
+                    </DialogDescription>
                 </DialogHeader>
                 <form
-                    className="mt-4 space-y-4"
+                    className="space-y-5 px-6 pb-6 pt-4"
                     onSubmit={(event) => {
                         event.preventDefault();
                         handleSubmit();
                     }}
                 >
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <Label>ID Karyawan</Label>
-                            <Input
-                                placeholder="EMP-XXXX"
-                                value={form.data.employee_code}
-                                onChange={(event) =>
-                                    form.setData('employee_code', event.target.value.toUpperCase())
-                                }
-                            />
-                            {form.errors.employee_code && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {form.errors.employee_code}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <Label>Tipe</Label>
-                            <Select
-                                value={form.data.type}
-                                onValueChange={(value) =>
-                                    form.setData('type', value as 'Resign' | 'PHK' | 'Pensiun')
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih tipe" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {typeOptions.map((option) => (
-                                        <SelectItem key={option} value={option}>
-                                            {option}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {form.errors.type && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {form.errors.type}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <Label>Tanggal Efektif</Label>
-                            <Input
-                                type="date"
-                                value={form.data.effective_date}
-                                onChange={(event) =>
-                                    form.setData('effective_date', event.target.value)
-                                }
-                            />
-                            {form.errors.effective_date && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {form.errors.effective_date}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <Label>Alasan</Label>
-                            <Textarea
-                                rows={3}
-                                placeholder="Alasan resign/PHK"
-                                value={form.data.reason}
-                                onChange={(event) => form.setData('reason', event.target.value)}
-                            />
-                            {form.errors.reason && (
-                                <p className="mt-1 text-sm text-red-500">{form.errors.reason}</p>
-                            )}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>ID Karyawan</Label>
+                                <Input
+                                    placeholder="EMP-XXXX"
+                                    value={form.data.employee_code}
+                                    onChange={(event) =>
+                                        form.setData('employee_code', event.target.value.toUpperCase())
+                                    }
+                                />
+                                {form.errors.employee_code && (
+                                    <p className="text-xs text-red-500">
+                                        {form.errors.employee_code}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tipe</Label>
+                                <Select
+                                    value={form.data.type}
+                                    onValueChange={(value) =>
+                                        form.setData('type', value as 'Resign' | 'PHK' | 'Pensiun')
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih tipe" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {typeOptions.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {form.errors.type && (
+                                    <p className="text-xs text-red-500">{form.errors.type}</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tanggal Efektif</Label>
+                                <Input
+                                    type="date"
+                                    value={form.data.effective_date}
+                                    onChange={(event) =>
+                                        form.setData('effective_date', event.target.value)
+                                    }
+                                />
+                                {form.errors.effective_date && (
+                                    <p className="text-xs text-red-500">
+                                        {form.errors.effective_date}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Alasan</Label>
+                                <Textarea
+                                    rows={4}
+                                    placeholder="Alasan resign/PHK"
+                                    value={form.data.reason}
+                                    onChange={(event) => form.setData('reason', event.target.value)}
+                                />
+                                {form.errors.reason && (
+                                    <p className="text-xs text-red-500">{form.errors.reason}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div>
+                    <div className="space-y-2">
                         <Label>Saran (Opsional)</Label>
                         <Textarea
-                            rows={3}
+                            rows={4}
                             placeholder="Saran untuk perusahaan"
                             value={form.data.suggestion}
                             onChange={(event) => form.setData('suggestion', event.target.value)}
                         />
                         {form.errors.suggestion && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {form.errors.suggestion}
-                            </p>
+                            <p className="text-xs text-red-500">{form.errors.suggestion}</p>
                         )}
                     </div>
-                    <Button
-                        type="submit"
-                        className="w-full bg-blue-900 hover:bg-blue-800"
-                        disabled={form.processing}
-                    >
-                        {form.processing ? 'Menyimpan...' : 'Simpan'}
-                    </Button>
+                    <div className="flex flex-col gap-3 md:flex-row md:justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="md:min-w-[120px]"
+                            onClick={() => setOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="bg-blue-900 hover:bg-blue-800 md:min-w-[160px]"
+                            disabled={form.processing}
+                        >
+                            {form.processing ? 'Menyimpan...' : 'Simpan'}
+                        </Button>
+                    </div>
                 </form>
             </DialogContent>
         </Dialog>

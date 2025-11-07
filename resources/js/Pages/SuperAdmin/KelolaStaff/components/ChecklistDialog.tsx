@@ -3,6 +3,7 @@ import { Button } from '@/Components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -33,11 +34,14 @@ export default function ChecklistDialog({
     return (
         <Dialog>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
+            <DialogContent className="max-w-3xl border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>Checklist Offboarding: {termination.employeeName}</DialogTitle>
+                    <DialogDescription>
+                        Pantau progres serah terima dan lengkapi catatan exit interview.
+                    </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-5">
+                <div className="space-y-5 px-6 pb-6 pt-4">
                     <div className="grid grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
                         <DetailItem label="ID" value={termination.reference} />
                         <DetailItem label="Divisi" value={termination.division} />

@@ -68,8 +68,8 @@ export default function ComplaintDetailDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
+            <DialogContent className="max-w-3xl border-0 bg-white p-0">
+                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                     <DialogTitle>Detail Pengaduan</DialogTitle>
                     {complaint && (
                         <DialogDescription className="text-xs uppercase tracking-wide text-slate-500">
@@ -79,7 +79,7 @@ export default function ComplaintDetailDialog({
                 </DialogHeader>
 
                 {complaint && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 px-6 pb-6 pt-4">
                         <section className="grid gap-4 md:grid-cols-2">
                             <DetailItem label="Pelapor">
                                 <span className="font-semibold text-slate-900">
@@ -251,4 +251,3 @@ function DetailItem({
         </div>
     );
 }
-
