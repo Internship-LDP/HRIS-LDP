@@ -72,7 +72,7 @@ export default function ComposeLetterDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button className="bg-blue-900 hover:bg-blue-800">
+                <Button className="bg-blue-900 hover:bg-blue-800 text-white">
                     {triggerLabel}
                 </Button>
             </DialogTrigger>
