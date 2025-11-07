@@ -251,7 +251,7 @@ export default function AdminStaffLetters() {
                 </Tabs>
             </Card>
 
-            <Card className="p-6">
+            {/* <Card className="p-6">
                 <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-blue-900">Rekrutmen Baru</h3>
                     <Badge variant="outline">{recruitments.length} kandidat</Badge>
@@ -282,7 +282,7 @@ export default function AdminStaffLetters() {
                         ))}
                     </div>
                 )}
-            </Card>
+            </Card> */}
 
             <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
                 <DialogContent className="max-h-[85vh] max-w-3xl overflow-hidden border-0 bg-white p-0">

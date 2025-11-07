@@ -139,7 +139,7 @@ class LetterController extends Controller
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
-            $path = $file->store('letters', 'public');
+            $path = $file->store('letters', 'public'); //server/storage/letters
             $data['lampiran_path'] = $path;
             $data['lampiran_nama'] = $file->getClientOriginalName();
             $data['lampiran_mime'] = $file->getMimeType();
