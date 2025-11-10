@@ -5,7 +5,16 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler, useEffect } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
 
 export default function Login({
     status,
@@ -21,10 +30,11 @@ export default function Login({
     });
     const credentialError = errors.credentials;
     const inactiveMessage = errors.account_status;
+    const [showInactiveDialog, setShowInactiveDialog] = useState(false);
 
     useEffect(() => {
         if (inactiveMessage) {
-            window.alert(inactiveMessage);
+            setShowInactiveDialog(true);
         }
     }, [inactiveMessage]);
 
@@ -119,6 +129,27 @@ export default function Login({
                     </PrimaryButton>
                 </div>
             </form>
+
+            {inactiveMessage && (
+                <AlertDialog
+                    open={showInactiveDialog}
+                    onOpenChange={setShowInactiveDialog}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Akun Dinonaktifkan</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {inactiveMessage}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogAction autoFocus>
+                                Mengerti
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
         </GuestLayout>
     );
 }
