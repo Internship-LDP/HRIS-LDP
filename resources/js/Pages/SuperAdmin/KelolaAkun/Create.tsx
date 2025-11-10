@@ -30,6 +30,7 @@ export default function Create({
         division: '',
         status: statusOptions[0] ?? 'Active',
         registered_at: today,
+        inactive_at: '',
         password: '',
         password_confirmation: '',
     });

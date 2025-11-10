@@ -8,6 +8,7 @@ interface AccountFormState {
     division?: string | null;
     status: string;
     registered_at?: string | null;
+    inactive_at?: string | null;
     password?: string;
     password_confirmation?: string;
 }
@@ -43,6 +44,20 @@ export default function AccountForm({
     submitLabel,
     secondaryAction,
 }: AccountFormProps) {
+    const handleStatusChange = (nextStatus: string) => {
+        setData('status', nextStatus);
+
+        if (nextStatus === 'Inactive') {
+            const value = data.inactive_at && data.inactive_at.length > 0
+                ? data.inactive_at
+                : new Date().toISOString().split('T')[0];
+            setData('inactive_at', value);
+            return;
+        }
+
+        setData('inactive_at', '');
+    };
+
     return (
         <form
             onSubmit={onSubmit}
@@ -92,7 +107,9 @@ export default function AccountForm({
                         id="email"
                         type="email"
                         value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) =>
+                            setData('email', e.target.value.toLowerCase())
+                        }
                         className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                     {errors.email && (
@@ -170,7 +187,7 @@ export default function AccountForm({
                         id="status"
                         value={data.status}
                         onChange={(event) =>
-                            setData('status', event.target.value)
+                            handleStatusChange(event.target.value)
                         }
                         className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     >
@@ -183,6 +200,39 @@ export default function AccountForm({
                     {errors.status && (
                         <p className="mt-1 text-xs text-red-500">
                             {errors.status}
+                        </p>
+                    )}
+                </div>
+                <div>
+                    <label
+                        className="text-sm font-medium text-slate-600"
+                        htmlFor="inactive_at"
+                    >
+                        Tanggal Nonaktif
+                    </label>
+                    <input
+                        id="inactive_at"
+                        type="date"
+                        value={data.inactive_at ?? ''}
+                        onChange={(event) =>
+                            setData('inactive_at', event.target.value)
+                        }
+                        disabled={data.status !== 'Inactive'}
+                        className={`mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${
+                            data.status !== 'Inactive'
+                                ? 'bg-slate-50 text-slate-400'
+                                : ''
+                        }`}
+                    />
+                    {data.status !== 'Inactive' && (
+                        <p className="mt-1 text-xs text-slate-500">
+                            Tanggal nonaktif akan otomatis diisi saat status
+                            menjadi Inactive
+                        </p>
+                    )}
+                    {errors.inactive_at && (
+                        <p className="mt-1 text-xs text-red-500">
+                            {errors.inactive_at}
                         </p>
                     )}
                 </div>

@@ -61,6 +61,7 @@ class AccountController extends Controller
                 'division' => $user->division,
                 'status' => $user->status,
                 'registered_at' => optional($user->registered_at)->format('Y-m-d'),
+                'inactive_at' => optional($user->inactive_at)->format('Y-m-d'),
                 'last_login_at' => optional($user->last_login_at)?->toDateTimeString(),
                 'created_at' => $user->created_at?->toDateTimeString(),
             ]);
@@ -108,6 +109,7 @@ class AccountController extends Controller
             'division' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
+            'inactive_at' => ['nullable', 'date'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -117,6 +119,10 @@ class AccountController extends Controller
 
         $validated['employee_code'] = User::generateEmployeeCode($validated['role']);
         $validated['registered_at'] = $validated['registered_at'] ?? now()->format('Y-m-d');
+        $validated['inactive_at'] =
+            $validated['status'] === 'Inactive'
+                ? ($validated['inactive_at'] ?? now()->format('Y-m-d'))
+                : null;
         $validated['password'] = Hash::make($validated['password']);
 
         User::create($validated);
@@ -141,6 +147,7 @@ class AccountController extends Controller
                 'division' => $user->division,
                 'status' => $user->status,
                 'registered_at' => optional($user->registered_at)->format('Y-m-d'),
+                'inactive_at' => optional($user->inactive_at)->format('Y-m-d'),
             ],
             'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
@@ -165,6 +172,7 @@ class AccountController extends Controller
             'division' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
+            'inactive_at' => ['nullable', 'date'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -177,6 +185,11 @@ class AccountController extends Controller
         } else {
             unset($validated['password']);
         }
+
+        $validated['inactive_at'] =
+            $validated['status'] === 'Inactive'
+                ? ($validated['inactive_at'] ?? now()->format('Y-m-d'))
+                : null;
 
         $user->update($validated);
 
@@ -203,6 +216,7 @@ class AccountController extends Controller
     public function toggleStatus(User $user): RedirectResponse
     {
         $user->status = $user->status === 'Active' ? 'Inactive' : 'Active';
+        $user->inactive_at = $user->status === 'Inactive' ? now()->toDateString() : null;
         $user->save();
 
         return redirect()

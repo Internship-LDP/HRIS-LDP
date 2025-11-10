@@ -33,6 +33,7 @@ export default function AccountTable({
                         <th className="px-4 py-3">Role</th>
                         <th className="px-4 py-3">Divisi</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Nonaktif Pada</th>
                         <th className="px-4 py-3">Login Terakhir</th>
                         <th className="px-4 py-3 text-right">Aksi</th>
                     </tr>
@@ -41,7 +42,7 @@ export default function AccountTable({
                     {users.length === 0 && (
                         <tr>
                             <td
-                                colSpan={8}
+                                colSpan={9}
                                 className="px-4 py-10 text-center text-slate-500"
                             >
                                 Tidak ada data pengguna.
@@ -71,6 +72,9 @@ export default function AccountTable({
                                 >
                                     {user.status}
                                 </span>
+                            </td>
+                            <td className="px-4 py-3">
+                                {user.inactive_at ?? '-'}
                             </td>
                             <td className="px-4 py-3">
                                 {user.last_login_at ?? '-'}

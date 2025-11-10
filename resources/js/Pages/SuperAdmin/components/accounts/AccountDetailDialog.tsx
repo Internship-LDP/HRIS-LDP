@@ -73,6 +73,10 @@ export default function AccountDetailDialog({
                         }
                     />
                     <InfoRow
+                        label="Tanggal Nonaktif"
+                        value={user.inactive_at ?? '-'}
+                    />
+                    <InfoRow
                         label="Terdaftar"
                         value={user.registered_at ?? '-'}
                     />

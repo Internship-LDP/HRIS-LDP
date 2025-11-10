@@ -40,6 +40,7 @@ class User extends Authenticatable
         'division',
         'status',
         'registered_at',
+        'inactive_at',
         'last_login_at',
         'password',
     ];
@@ -51,6 +52,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'registered_at' => 'date',
+            'inactive_at' => 'date',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];

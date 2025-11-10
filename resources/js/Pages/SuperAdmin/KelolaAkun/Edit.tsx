@@ -13,6 +13,7 @@ interface EditProps {
         division?: string | null;
         status: string;
         registered_at?: string | null;
+        inactive_at?: string | null;
     };
     roleOptions: string[];
     statusOptions: string[];
@@ -36,6 +37,7 @@ export default function Edit({
         division: user.division ?? '',
         status: user.status,
         registered_at: user.registered_at ?? '',
+        inactive_at: user.inactive_at ?? '',
         password: '',
         password_confirmation: '',
     });
