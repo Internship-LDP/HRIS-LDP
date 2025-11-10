@@ -35,7 +35,7 @@ class StoreLetterRequest extends FormRequest
             'jenis_surat' => ['required', 'string', 'max:100'],
             'kategori' => ['required', 'string', 'max:100'],
             'prioritas' => ['required', 'string', 'in:high,medium,low'],
-            'lampiran' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'lampiran' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
         ];
     }
 }

@@ -286,9 +286,24 @@ export default function KelolaSuratIndex() {
 
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
                     <TabsList className="mb-5">
-                        <TabsTrigger value="inbox">Inbox</TabsTrigger>
-                        <TabsTrigger value="outbox">Outbox</TabsTrigger>
-                        <TabsTrigger value="archive">Arsip</TabsTrigger>
+                        <TabsTrigger
+                            value="inbox"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Inbox
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="outbox"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Outbox
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="archive"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Arsip
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="inbox">

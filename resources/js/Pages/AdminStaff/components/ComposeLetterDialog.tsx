@@ -17,8 +17,9 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { useMemo } from 'react';
+import { ChangeEvent, useMemo } from 'react';
 import { Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ComposeLetterDialogProps {
     open: boolean;
@@ -69,6 +70,34 @@ export default function ComposeLetterDialog({
         () => Object.entries(options.priorities),
         [options.priorities],
     );
+
+    const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        if (file && !isAllowedAttachment(file)) {
+            event.target.value = '';
+            setData('lampiran', null);
+            toast.error('File ini tidak bisa, hanya PDF atau Word yang diperbolehkan');
+            return;
+        }
+
+        setData('lampiran', file);
+    };
+
+    const isAllowedAttachment = (file: File) => {
+        const allowedMimeTypes = new Set([
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ]);
+        const allowedExtensions = new Set(['pdf', 'doc', 'docx']);
+
+        if (allowedMimeTypes.has(file.type.toLowerCase())) {
+            return true;
+        }
+
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        return extension ? allowedExtensions.has(extension) : false;
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -261,7 +290,7 @@ export default function ComposeLetterDialog({
 
                     <div>
                         <Label>
-                            Lampiran (Wajib - PDF atau JPG, Max 5MB) <span className="text-red-500">*</span>
+                            Lampiran (Wajib - PDF atau Word, max 5MB) <span className="text-red-500">*</span>
                         </Label>
                         <label
                             htmlFor="lampiran"
@@ -273,12 +302,10 @@ export default function ComposeLetterDialog({
                         <input
                             id="lampiran"
                             type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                             className="hidden"
                             required
-                            onChange={(event) =>
-                                setData('lampiran', event.target.files?.[0] ?? null)
-                            }
+                            onChange={handleAttachmentChange}
                         />
                         {data.lampiran && (
                             <div className="mt-3 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3 text-sm">

@@ -39,6 +39,7 @@ import {
 import {
     Archive,
     Download,
+    Eye,
     FileText,
     Filter,
     Inbox,
@@ -234,9 +235,24 @@ export default function AdminStaffLetters() {
 
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
                     <TabsList className="mb-5">
-                        <TabsTrigger value="inbox">Inbox</TabsTrigger>
-                        <TabsTrigger value="outbox">Outbox</TabsTrigger>
-                        <TabsTrigger value="archive">Arsip</TabsTrigger>
+                        <TabsTrigger
+                            value="inbox"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Inbox
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="outbox"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Outbox
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="archive"
+                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        >
+                            Arsip
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="inbox">
@@ -336,12 +352,29 @@ export default function AdminStaffLetters() {
                                                     {selectedLetter.subject}
                                                 </p>
                                             </div>
-                                            <Button asChild variant="outline">
-                                                <a href={selectedLetter.attachmentUrl} target="_blank" rel="noreferrer">
-                                                    <Download className="mr-2 h-4 w-4" />
-                                                    Unduh Lampiran
-                                                </a>
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Button asChild variant="secondary">
+                                                    <a
+                                                        href={selectedLetter.attachmentUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" />
+                                                        Lihat Lampiran
+                                                    </a>
+                                                </Button>
+                                                <Button asChild variant="outline">
+                                                    <a
+                                                        href={selectedLetter.attachmentUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        download
+                                                    >
+                                                        <Download className="mr-2 h-4 w-4" />
+                                                        Unduh Lampiran
+                                                    </a>
+                                                </Button>
+                                            </div>
                                         </div>
                                     </section>
                                 )}
