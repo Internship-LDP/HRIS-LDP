@@ -202,7 +202,7 @@ export default function ComplaintComposerDialog({
                         />
 
                         <div>
-                            <Label>Lampiran (Opsional)</Label>
+                            <Label>Lampiran (Opsional - PDF atau JPG, JPEG, PNG Max 5MB)</Label>
                             <div className="space-y-2">
                                 <input
                                     ref={fileInputRef}

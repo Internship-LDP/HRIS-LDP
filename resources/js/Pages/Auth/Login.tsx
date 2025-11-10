@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useEffect } from 'react';
 
 export default function Login({
     status,
@@ -20,6 +20,13 @@ export default function Login({
         remember: false as boolean,
     });
     const credentialError = errors.credentials;
+    const inactiveMessage = errors.account_status;
+
+    useEffect(() => {
+        if (inactiveMessage) {
+            window.alert(inactiveMessage);
+        }
+    }, [inactiveMessage]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();

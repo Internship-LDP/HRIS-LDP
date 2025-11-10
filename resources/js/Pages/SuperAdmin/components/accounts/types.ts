@@ -7,6 +7,7 @@ export interface AccountRecord {
     division?: string | null;
     status: string;
     registered_at?: string | null;
+    inactive_at?: string | null;
     last_login_at?: string | null;
     created_at?: string | null;
 }

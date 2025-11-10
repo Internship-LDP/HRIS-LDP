@@ -285,7 +285,7 @@ export default function ComposeLetterDialog({
                     </div>
 
                     <div>
-                        <Label>Lampiran (Opsional - PDF atau JPG, Max 5MB)</Label>
+                        <Label>Lampiran (Opsional - PDF atau JPG, JPEG, PNG Max 5MB)</Label>
                         <label
                             htmlFor="lampiran"
                             className="mt-2 block cursor-pointer rounded-lg border-2 border-dashed border-slate-300 p-4 text-center text-sm text-slate-500 transition hover:border-blue-500 hover:text-blue-600"
