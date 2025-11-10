@@ -7,6 +7,7 @@ import {
     MessageSquare,
     UserPlus,
     Mail,
+    Building2,
 } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
 
@@ -37,6 +38,12 @@ const defaultNavItems: NavItem[] = [
         icon: UserPlus,
         routeName: 'super-admin.recruitment',
         pattern: 'super-admin.recruitment',
+    },
+    {
+        label: 'Kelola Divisi',
+        icon: Building2,
+        routeName: 'super-admin.divisions.index',
+        pattern: 'super-admin.divisions.*',
     },
     {
         label: 'Kelola Surat',

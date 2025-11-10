@@ -4,6 +4,7 @@ import { Badge } from '@/Components/ui/badge';
 export interface ApplicationHistoryItem {
     id: number;
     position: string;
+    division?: string | null;
     status: string;
     submitted_at: string | null;
     notes?: string | null;
@@ -35,6 +36,11 @@ export default function ApplicationHistory({ items }: ApplicationHistoryProps) {
                                 {item.status}
                             </Badge>
                         </div>
+                        {item.division && (
+                            <p className="text-xs text-slate-500">
+                                Divisi: {item.division}
+                            </p>
+                        )}
                         <p className="text-sm text-slate-600">
                             Diajukan:{' '}
                             {item.submitted_at ? item.submitted_at : '-'}

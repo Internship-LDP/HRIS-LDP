@@ -23,7 +23,7 @@ class Complaint extends Model
 
     public const STATUS_LABELS = [
         self::STATUS_NEW => 'Baru',
-        self::STATUS_IN_PROGRESS => 'Ditangani',
+        self::STATUS_IN_PROGRESS => 'OnProgress',
         self::STATUS_RESOLVED => 'Selesai',
         self::STATUS_ARCHIVED => 'Diarsipkan',
     ];

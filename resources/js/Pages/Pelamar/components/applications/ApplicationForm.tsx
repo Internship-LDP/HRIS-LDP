@@ -1,19 +1,14 @@
-import { FormEvent } from 'react';
+import { ChangeEvent, FormEvent } from 'react';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
-import { Upload } from 'lucide-react';
+import { CheckCircle2, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface ApplicationFormData {
+    division_id: number | null;
     full_name: string;
     email: string;
     phone: string;
@@ -24,8 +19,16 @@ export interface ApplicationFormData {
     cv: File | null;
 }
 
+interface SelectedDivisionSummary {
+    id: number;
+    name: string;
+    job_title: string | null;
+    job_description: string | null;
+    job_requirements: string[];
+}
+
 interface ApplicationFormProps {
-    positions: string[];
+    selectedDivision: SelectedDivisionSummary | null;
     data: ApplicationFormData;
     errors: Record<string, string>;
     processing: boolean;
@@ -37,7 +40,7 @@ interface ApplicationFormProps {
 }
 
 export default function ApplicationForm({
-    positions,
+    selectedDivision,
     data,
     errors,
     processing,
@@ -45,21 +48,74 @@ export default function ApplicationForm({
     onSubmit,
 }: ApplicationFormProps) {
     const isFormComplete =
+        Boolean(data.division_id) &&
         Boolean(data.full_name?.trim()) &&
         Boolean(data.email?.trim()) &&
         Boolean(data.phone?.trim()) &&
-        Boolean(data.position?.trim()) &&
         Boolean(data.education?.trim()) &&
         Boolean(data.experience?.trim()) &&
         Boolean(data.skills?.trim()) &&
         Boolean(data.cv);
+
+    const handleCvChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+
+        if (!file) {
+            setData('cv', null);
+            return;
+        }
+
+        const isPdf =
+            file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+        if (!isPdf) {
+            event.target.value = '';
+            setData('cv', null);
+            toast.error('File tidak didukung', {
+                description: 'Silakan unggah CV dalam format PDF.',
+            });
+            return;
+        }
+
+        setData('cv', file);
+    };
 
     return (
         <Card className="p-6">
             <h3 className="mb-4 text-lg font-semibold text-blue-900">
                 Form Lamaran
             </h3>
+            {!selectedDivision ? (
+                <div className="mb-6 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                    Pilih divisi yang membuka lowongan untuk mulai mengisi formulir.
+                </div>
+            ) : (
+                <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4">
+                    <p className="text-sm font-semibold text-blue-900">
+                        {selectedDivision.job_title ?? 'Posisi belum ditentukan'}
+                    </p>
+                    <p className="text-xs text-slate-600">
+                        Divisi {selectedDivision.name}
+                    </p>
+                    {selectedDivision.job_description && (
+                        <p className="mt-2 text-sm text-slate-700">
+                            {selectedDivision.job_description}
+                        </p>
+                    )}
+                    {selectedDivision.job_requirements.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-xs text-slate-600">
+                            {selectedDivision.job_requirements.map((req, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircle2 className="mt-0.5 h-3 w-3 text-blue-700" />
+                                    <span>{req}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
             <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <input type="hidden" value={data.division_id ?? ''} />
                 <div>
                     <Label htmlFor="fullname">Nama Lengkap</Label>
                     <Input
@@ -102,24 +158,12 @@ export default function ApplicationForm({
                 </div>
                 <div>
                     <Label>Posisi yang Dilamar</Label>
-                    <Select
-                        value={data.position || undefined}
-                        onValueChange={(value) => setData('position', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Pilih posisi" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {positions.map((position) => (
-                                <SelectItem key={position} value={position}>
-                                    {position}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.position && (
-                        <p className="mt-1 text-xs text-red-500">{errors.position}</p>
-                    )}
+                    <Input
+                        readOnly
+                        value={selectedDivision?.job_title ?? ''}
+                        placeholder="Pilih divisi terlebih dahulu"
+                        className="bg-slate-50"
+                    />
                 </div>
                 <div>
                     <Label htmlFor="education">Pendidikan Terakhir</Label>
@@ -188,9 +232,7 @@ export default function ApplicationForm({
                             accept=".pdf,application/pdf"
                             className="sr-only"
                             required
-                            onChange={(event) =>
-                                setData('cv', event.target.files?.[0] ?? null)
-                            }
+                            onChange={handleCvChange}
                             disabled={processing}
                         />
                     </label>
@@ -208,7 +250,8 @@ export default function ApplicationForm({
                     </Button>
                     {!isFormComplete && (
                         <p className="mt-2 text-xs text-slate-500">
-                            Lengkapi seluruh data dan unggah CV sebelum mengirim lamaran.
+                            Pilih divisi yang membuka lowongan dan lengkapi seluruh data sebelum
+                            mengirim lamaran.
                         </p>
                     )}
                 </div>

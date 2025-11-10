@@ -24,6 +24,7 @@ class Application extends Model
         'email',
         'phone',
         'position',
+        'division',
         'education',
         'experience',
         'skills',
