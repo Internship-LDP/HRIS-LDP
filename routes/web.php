@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
         Route::get('/admin-hr/dashboard', AdminHrDashboardController::class)->name('admin-hr.dashboard');
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
+        Route::delete('/recruitment/{application}', [RecruitmentController::class, 'destroy'])
+            ->name('recruitment.destroy');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');

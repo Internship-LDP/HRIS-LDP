@@ -12,6 +12,7 @@ import {
     RecruitmentPageProps,
     StatusSummary,
 } from './types';
+import { router } from '@inertiajs/react';
 
 const statusOrder: ApplicantStatus[] = [
     'Applied',
@@ -59,6 +60,26 @@ export default function KelolaRekrutmenIndex({
         setDetailOpen(true);
     };
 
+    const handleDelete = (application: ApplicantRecord) => {
+        const confirmed = window.confirm(
+            `Hapus lamaran ${application.name} untuk posisi ${application.position}?`,
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        router.delete(route('super-admin.recruitment.destroy', application.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (selectedApplicant?.id === application.id) {
+                    setDetailOpen(false);
+                    setSelectedApplicant(null);
+                }
+            },
+        });
+    };
+
     const isHumanCapitalAdmin =
         auth.user?.role === 'Admin' &&
         typeof auth.user?.division === 'string' &&
@@ -98,6 +119,7 @@ export default function KelolaRekrutmenIndex({
                         statusSummary={statusSummary}
                         visibleApplications={visibleApplications}
                         onViewDetail={handleViewDetail}
+                        onDelete={handleDelete}
                     />
                 </TabsContent>
 

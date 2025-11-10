@@ -31,6 +31,7 @@ interface ApplicantsTabProps {
     statusSummary: StatusSummary;
     visibleApplications: ApplicantRecord[];
     onViewDetail: (application: ApplicantRecord) => void;
+    onDelete: (application: ApplicantRecord) => void;
 }
 
 const statusBadge = (status: ApplicantStatus) => {
@@ -80,6 +81,7 @@ export default function ApplicantsTab({
     statusSummary,
     visibleApplications,
     onViewDetail,
+    onDelete,
 }: ApplicantsTabProps) {
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         onSearchTermChange(event.target.value);
@@ -163,7 +165,11 @@ export default function ApplicantsTab({
                                         <Button variant="ghost" size="icon">
                                             <FileText className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => onDelete(application)}
+                                        >
                                             <XCircle className="h-4 w-4 text-red-500" />
                                         </Button>
                                     </div>

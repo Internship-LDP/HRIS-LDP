@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,15 +14,7 @@ class RecruitmentController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $user = $request->user();
-        abort_unless(
-            $user
-            && (
-                $user->role === User::ROLES['super_admin']
-                || $user->isHumanCapitalAdmin()
-            ),
-            403
-        );
+        $this->ensureAuthorized($request->user());
 
         $applicationCollection = Application::latest('submitted_at')->get();
 
@@ -78,5 +71,28 @@ class RecruitmentController extends Controller
             'interviews' => $interviews,
             'onboarding' => $onboarding,
         ]);
+    }
+
+    public function destroy(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        $application->delete();
+
+        return redirect()
+            ->route('super-admin.recruitment')
+            ->with('success', 'Lamaran berhasil dihapus.');
+    }
+
+    private function ensureAuthorized(?User $user): void
+    {
+        abort_unless(
+            $user
+            && (
+                $user->role === User::ROLES['super_admin']
+                || $user->isHumanCapitalAdmin()
+            ),
+            403
+        );
     }
 }
