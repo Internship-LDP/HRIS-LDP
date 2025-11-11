@@ -17,6 +17,7 @@ use Inertia\Response;
 
 class LetterController extends Controller
 {
+    private const ALL_DIVISIONS_VALUE = '__all_divisions__';
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -65,17 +66,7 @@ class LetterController extends Controller
                 'education' => $application->education,
             ]);
 
-        $divisionOptions = User::query()
-            ->whereNotNull('division')
-            ->distinct()
-            ->pluck('division')
-            ->filter()
-            ->values()
-            ->all();
-
-        if (empty($divisionOptions)) {
-            $divisionOptions = User::DIVISIONS;
-        }
+        $divisionOptions = $this->divisionOptions()->all();
 
         $letterOptions = [
             'letterTypes' => [
@@ -128,7 +119,6 @@ class LetterController extends Controller
         $data = [
             'user_id' => $user->id,
             'departemen_id' => $departemen?->id,
-            'nomor_surat' => Surat::generateNomorSurat($departemen?->kode),
             'tipe_surat' => 'keluar',
             'jenis_surat' => $request->input('jenis_surat'),
             'tanggal_surat' => now()->toDateString(),
@@ -151,11 +141,31 @@ class LetterController extends Controller
             $data['lampiran_size'] = $file->getSize();
         }
 
-        Surat::create($data);
+        $targetDivisions = $data['target_division'] === self::ALL_DIVISIONS_VALUE
+            ? $this->divisionOptions()
+            : collect([$data['target_division']])->filter();
+
+        if ($targetDivisions->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Divisi tujuan tidak tersedia.');
+        }
+
+        foreach ($targetDivisions as $divisionName) {
+            $payload = $data;
+            $payload['target_division'] = $divisionName;
+            $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
+            Surat::create($payload);
+        }
 
         return redirect()
             ->route('admin-staff.letters')
-            ->with('success', 'Surat berhasil dikirim dan menunggu disposisi HR.');
+            ->with(
+                'success',
+                $targetDivisions->count() > 1
+                    ? 'Surat berhasil dikirim ke seluruh divisi dan menunggu disposisi HR.'
+                    : 'Surat berhasil dikirim dan menunggu disposisi HR.'
+            );
     }
 
     private function lettersForStaff(User $user)
@@ -227,5 +237,21 @@ class LetterController extends Controller
         }
 
         return strtoupper(substr($clean, 0, 3));
+    }
+
+    private function divisionOptions(): Collection
+    {
+        $divisions = User::query()
+            ->whereNotNull('division')
+            ->distinct()
+            ->pluck('division')
+            ->filter()
+            ->values();
+
+        if ($divisions->isEmpty()) {
+            $divisions = collect(User::DIVISIONS);
+        }
+
+        return $divisions;
     }
 }

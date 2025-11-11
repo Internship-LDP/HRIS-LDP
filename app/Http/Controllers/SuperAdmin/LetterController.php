@@ -16,6 +16,8 @@ use Inertia\Response;
 
 class LetterController extends Controller
 {
+    private const ALL_DIVISIONS_VALUE = '__all_divisions__';
+
     /**
      * Tampilkan dashboard kelola surat.
      */
@@ -67,17 +69,7 @@ class LetterController extends Controller
         ];
 
         $divisionCode = $this->departmentCodeFromDivision($request->user()?->division);
-        $divisionOptions = User::query()
-            ->whereNotNull('division')
-            ->distinct()
-            ->pluck('division')
-            ->filter()
-            ->values()
-            ->all();
-
-        if (empty($divisionOptions)) {
-            $divisionOptions = User::DIVISIONS;
-        }
+        $divisionOptions = $this->divisionOptions()->all();
 
         return Inertia::render('SuperAdmin/KelolaSurat/Index', [
             'stats' => $stats,
@@ -135,7 +127,6 @@ class LetterController extends Controller
         $data['tipe_surat'] = $data['tipe_surat'] ?? 'keluar';
         $data['tanggal_surat'] = now()->toDateString();
         $data['status_persetujuan'] = 'Terkirim';
-        $data['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
@@ -146,11 +137,31 @@ class LetterController extends Controller
             $data['lampiran_size'] = $file->getSize();
         }
 
-        Surat::create($data);
+        $targetDivisions = $data['target_division'] === self::ALL_DIVISIONS_VALUE
+            ? $this->divisionOptions()
+            : collect([$data['target_division']]);
+
+        if ($targetDivisions->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Divisi tujuan tidak tersedia.');
+        }
+
+        foreach ($targetDivisions as $divisionName) {
+            $payload = $data;
+            $payload['target_division'] = $divisionName;
+            $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
+            Surat::create($payload);
+        }
 
         return redirect()
             ->route('super-admin.letters.index')
-            ->with('success', 'Surat berhasil dikirim.');
+            ->with(
+                'success',
+                $targetDivisions->count() > 1
+                    ? 'Surat berhasil dikirim ke '.$targetDivisions->count().' divisi.'
+                    : 'Surat berhasil dikirim.'
+            );
     }
 
     public function disposition(Request $request, Surat $surat): RedirectResponse
@@ -364,5 +375,21 @@ class LetterController extends Controller
             ),
             403
         );
+    }
+
+    private function divisionOptions(): Collection
+    {
+        $divisions = User::query()
+            ->whereNotNull('division')
+            ->distinct()
+            ->pluck('division')
+            ->filter()
+            ->values();
+
+        if ($divisions->isEmpty()) {
+            $divisions = collect(User::DIVISIONS);
+        }
+
+        return $divisions;
     }
 }

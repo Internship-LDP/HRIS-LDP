@@ -21,6 +21,8 @@ import { ChangeEvent, useMemo } from 'react';
 import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+const ALL_DIVISIONS_VALUE = '__all_divisions__';
+
 interface ComposeLetterDialogProps {
     open: boolean;
     onOpenChange: (value: boolean) => void;
@@ -196,7 +198,10 @@ export default function ComposeLetterDialog({
                                 <SelectTrigger className="bg-white">
                                     <SelectValue placeholder="Pilih divisi tujuan" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-white">
+                            <SelectContent className="bg-white">
+                                <SelectItem value={ALL_DIVISIONS_VALUE}>
+                                    Semua Divisi
+                                </SelectItem>
                                     {options.divisions.map((division) => (
                                         <SelectItem key={division} value={division}>
                                             {division}
@@ -204,6 +209,9 @@ export default function ComposeLetterDialog({
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <p className="mt-1 text-xs text-slate-500">
+                                Pilih &quot;Semua Divisi&quot; untuk mendistribusikan surat ke seluruh unit sekaligus.
+                            </p>
                             {errors.target_division && (
                                 <p className="mt-1 text-sm text-red-500">
                                     {errors.target_division}
