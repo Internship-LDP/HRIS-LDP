@@ -177,6 +177,55 @@ class LetterController extends Controller
             ->with('success', 'Surat berhasil didisposisi ke divisi tujuan.');
     }
 
+    public function bulkDisposition(Request $request): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        $validated = $request->validate([
+            'letter_ids' => ['required', 'array', 'min:1'],
+            'letter_ids.*' => ['integer', 'exists:surat,surat_id'],
+            'disposition_note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $letters = Surat::whereIn('surat_id', $validated['letter_ids'])->get();
+
+        if ($letters->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Surat tidak ditemukan atau sudah diproses.');
+        }
+
+        $invalidLetters = $letters->filter(
+            fn (Surat $surat) => $surat->current_recipient !== 'hr'
+        );
+
+        if ($invalidLetters->isNotEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Sebagian surat sudah diproses, segarkan data Anda.');
+        }
+
+        $userId = $request->user()?->id;
+
+        foreach ($letters as $surat) {
+            $surat->forceFill([
+                'current_recipient' => 'division',
+                'penerima' => $surat->target_division ?? $surat->penerima,
+                'status_persetujuan' => 'Didisposisi',
+                'disposition_note' => $validated['disposition_note'] ?? null,
+                'disposed_by' => $userId,
+                'disposed_at' => now(),
+            ])->save();
+        }
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with(
+                'success',
+                $letters->count().' surat berhasil didisposisi ke divisi tujuan.'
+            );
+    }
+
     /**
      * Transform collection surat untuk frontend.
      */
