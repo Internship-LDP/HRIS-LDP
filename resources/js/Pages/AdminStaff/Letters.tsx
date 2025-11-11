@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import AdminStaffLayout from '@/Pages/AdminStaff/Layout';
@@ -15,6 +15,7 @@ import {
     DialogTitle,
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -62,6 +63,10 @@ interface LetterRecord {
     attachmentUrl?: string | null;
     content?: string | null;
     dispositionNote?: string | null;
+    replyNote?: string | null;
+    replyBy?: string | null;
+    replyAt?: string | null;
+    canReply?: boolean;
 }
 
 interface LettersPageProps extends Record<string, unknown> {
@@ -105,6 +110,7 @@ export default function AdminStaffLetters() {
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [replyOpen, setReplyOpen] = useState(false);
 
     const form = useForm({
         penerima: 'Admin HR',
@@ -116,6 +122,23 @@ export default function AdminStaffLetters() {
         target_division: '',
         lampiran: null as File | null,
     });
+    const replyForm = useForm({
+        reply_note: '',
+    });
+
+    useEffect(() => {
+        replyForm.reset();
+        replyForm.clearErrors();
+        setReplyOpen(false);
+    }, [selectedLetter]);
+
+    useEffect(() => {
+        if (!detailOpen) {
+            setReplyOpen(false);
+            replyForm.reset();
+            replyForm.clearErrors();
+        }
+    }, [detailOpen]);
 
     const filteredLetters = useMemo(() => {
         const filterList = (items: LetterRecord[]) => {
@@ -157,6 +180,56 @@ export default function AdminStaffLetters() {
         setSelectedLetter(letter);
         setDetailOpen(true);
     };
+
+    const openReplyDialog = () => {
+        if (!selectedLetter?.canReply) {
+            return;
+        }
+        replyForm.reset();
+        replyForm.clearErrors();
+        setReplyOpen(true);
+    };
+
+    const handleReplyDialogChange = (open: boolean) => {
+        if (!open) {
+            setReplyOpen(false);
+            replyForm.reset();
+            replyForm.clearErrors();
+            return;
+        }
+
+        if (selectedLetter?.canReply) {
+            setReplyOpen(true);
+        }
+    };
+
+    const handleReplySubmit = () => {
+        if (!selectedLetter) {
+            return;
+        }
+
+        const ziggyHasReplyRoute =
+            typeof window !== 'undefined' &&
+            typeof window.route === 'function' &&
+            window?.Ziggy?.routes?.['admin-staff.letters.reply'];
+
+        const replyEndpoint = ziggyHasReplyRoute
+            ? route('admin-staff.letters.reply', selectedLetter.id)
+            : `/admin-staff/kelola-surat/${selectedLetter.id}/reply`;
+
+        replyForm.post(replyEndpoint, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Balasan surat dikirim ke HR.');
+                replyForm.reset();
+                setReplyOpen(false);
+            },
+            onError: () => toast.error('Gagal mengirim balasan, periksa catatan Anda.'),
+        });
+    };
+
+    const selectedLetterStatus = selectedLetter?.status?.toLowerCase() ?? '';
+    const isSelectedLetterRejected = selectedLetterStatus.includes('tolak');
 
     const categoryOptions = [
         'all',
@@ -312,6 +385,26 @@ export default function AdminStaffLetters() {
                     <div className="max-h-[calc(85vh-4.5rem)] overflow-y-auto">
                         {selectedLetter ? (
                             <div className="space-y-6 px-6 pb-6 pt-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-900">
+                                            {selectedLetter.subject}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            Diterima pada {selectedLetter.date}
+                                        </p>
+                                    </div>
+                                    {selectedLetter.canReply && (
+                                        <Button
+                                            size="sm"
+                                            className="bg-blue-900 text-white hover:bg-blue-800"
+                                            onClick={openReplyDialog}
+                                        >
+                                            Balas Surat
+                                        </Button>
+                                    )}
+                                </div>
+
                                 <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 text-sm md:grid-cols-3">
                                     <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
                                     <InfoTile label="Tanggal" value={selectedLetter.date} />
@@ -381,12 +474,45 @@ export default function AdminStaffLetters() {
                                 )}
 
                                 {selectedLetter.dispositionNote && (
-                                    <section className="rounded-xl border border-rose-200/70 bg-rose-50/80 p-4">
-                                        <p className="text-xs uppercase tracking-wide text-rose-500">
-                                            Catatan Penolakan HR
+                                    <section
+                                        className={
+                                            isSelectedLetterRejected
+                                                ? 'rounded-xl border border-rose-200/70 bg-rose-50/80 p-4'
+                                                : 'rounded-xl border border-slate-200/80 bg-white p-4'
+                                        }
+                                    >
+                                        <p
+                                            className={
+                                                isSelectedLetterRejected
+                                                    ? 'text-xs uppercase tracking-wide text-rose-500'
+                                                    : 'text-xs uppercase tracking-wide text-slate-500'
+                                            }
+                                        >
+                                            {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
                                         </p>
-                                        <p className="mt-2 text-sm text-rose-700 whitespace-pre-line">
+                                        <p
+                                            className={
+                                                isSelectedLetterRejected
+                                                    ? 'mt-2 text-sm text-rose-700 whitespace-pre-line'
+                                                    : 'mt-2 text-sm text-slate-700 whitespace-pre-line'
+                                            }
+                                        >
                                             {selectedLetter.dispositionNote}
+                                        </p>
+                                    </section>
+                                )}
+
+                                {selectedLetter.replyNote && (
+                                    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                                        <p className="text-xs uppercase tracking-wide text-emerald-600">
+                                            Catatan Balasan
+                                        </p>
+                                        <p className="mt-2 text-sm text-emerald-900 whitespace-pre-line">
+                                            {selectedLetter.replyNote}
+                                        </p>
+                                        <p className="mt-3 text-xs text-emerald-700">
+                                            {selectedLetter.replyBy ? `Dibalas oleh ${selectedLetter.replyBy}` : 'Balasan'}
+                                            {selectedLetter.replyAt ? ` pada ${selectedLetter.replyAt}` : ''}
                                         </p>
                                     </section>
                                 )}
@@ -397,6 +523,56 @@ export default function AdminStaffLetters() {
                             </div>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={replyOpen} onOpenChange={handleReplyDialogChange}>
+                <DialogContent className="max-w-lg border-0 bg-white">
+                    <DialogHeader>
+                        <DialogTitle>Balas Surat</DialogTitle>
+                        <DialogDescription>
+                            Kirim catatan balasan untuk surat{' '}
+                            <span className="font-semibold text-slate-900">
+                                {selectedLetter?.subject ?? ''}
+                            </span>
+                            .
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="space-y-4"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            handleReplySubmit();
+                        }}
+                    >
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-900">
+                                Catatan Balasan
+                            </label>
+                            <Textarea
+                                rows={5}
+                                placeholder="Tulis tanggapan untuk pengirim atau HR..."
+                                value={replyForm.data.reply_note}
+                                onChange={(event) => replyForm.setData('reply_note', event.target.value)}
+                            />
+                            {replyForm.errors.reply_note && (
+                                <p className="text-xs text-rose-600">{replyForm.errors.reply_note}</p>
+                            )}
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => handleReplyDialogChange(false)}
+                                disabled={replyForm.processing}
+                            >
+                                Batal
+                            </Button>
+                            <Button type="submit" disabled={replyForm.processing}>
+                                {replyForm.processing ? 'Mengirim...' : 'Kirim Balasan'}
+                            </Button>
+                        </div>
+                    </form>
                 </DialogContent>
             </Dialog>
         </AdminStaffLayout>
@@ -455,9 +631,14 @@ function LettersTable({
                         <TableCell>{letter.date}</TableCell>
                         <TableCell>
                             <StatusBadge status={letter.status} />
-                            {letter.dispositionNote && (
+                            {/* {letter.dispositionNote && (
                                 <p className="mt-1 text-[11px] font-medium text-rose-600">
                                     Catatan HR tersedia
+                                </p>
+                            )} */}
+                            {letter.replyNote && (
+                                <p className="mt-1 text-[11px] font-medium text-emerald-600">
+                                    Balasan dikirim
                                 </p>
                             )}
                         </TableCell>

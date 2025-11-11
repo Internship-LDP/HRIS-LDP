@@ -32,6 +32,9 @@ export interface LetterRecord {
     } | null;
     targetDivision?: string | null;
     currentRecipient?: string;
+    replyNote?: string | null;
+    replyBy?: string | null;
+    replyAt?: string | null;
 }
 
 interface LettersTableProps {
@@ -159,7 +162,14 @@ export default function LettersTable({
                         </TableCell>
                         <TableCell>{getPriorityBadge(letter.priority)}</TableCell>
                         <TableCell>{letter.date}</TableCell>
-                        <TableCell>{getStatusBadge(letter.status)}</TableCell>
+                        <TableCell>
+                            {getStatusBadge(letter.status)}
+                            {letter.replyNote && (
+                                <p className="mt-1 text-xs font-medium text-emerald-700">
+                                    Balasan tersedia
+                                </p>
+                            )}
+                        </TableCell>
                         <TableCell className="text-right">
                             <Button
                                 variant="ghost"

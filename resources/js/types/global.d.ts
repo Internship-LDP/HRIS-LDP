@@ -6,6 +6,10 @@ import { PageProps as AppPageProps } from './';
 declare global {
     interface Window {
         axios: AxiosInstance;
+        Ziggy?: {
+            routes?: Record<string, unknown>;
+            [key: string]: unknown;
+        };
     }
 
     /* eslint-disable no-var */

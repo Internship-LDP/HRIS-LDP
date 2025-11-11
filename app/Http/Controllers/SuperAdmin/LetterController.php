@@ -34,6 +34,7 @@ class LetterController extends Controller
         $lettersQuery = Surat::query()->with([
             'user:id,name,division,role',
             'departemen:id,nama,kode',
+            'replyAuthor:id,name',
         ]);
 
         if ($filters['search']) {
@@ -55,16 +56,27 @@ class LetterController extends Controller
             ->orderByDesc('surat_id')
             ->get();
 
-        $inbox = $letters->where('tipe_surat', 'masuk');
-        $outbox = $letters->where('tipe_surat', 'keluar');
         $archive = $letters->where('status_persetujuan', 'Diarsipkan');
+        $activeLetters = $letters->reject(
+            static fn (Surat $surat) => $surat->status_persetujuan === 'Diarsipkan'
+        );
 
-        $pendingDisposition = $letters->where('current_recipient', 'hr');
+        $inbox = $activeLetters->filter(
+            static fn (Surat $surat) => $surat->current_recipient === 'hr'
+        );
+        $outbox = $activeLetters->filter(
+            static fn (Surat $surat) => $surat->current_recipient === 'division'
+        );
+
+        $pendingStatuses = ['Menunggu HR', 'Diajukan', 'Diproses'];
+        $pendingDisposition = $inbox->filter(
+            static fn (Surat $surat) => in_array($surat->status_persetujuan, $pendingStatuses, true)
+        );
 
         $stats = [
             'inbox' => $inbox->count(),
             'outbox' => $outbox->count(),
-            'pending' => $letters->where('status_persetujuan', 'Diproses')->count(),
+            'pending' => $pendingDisposition->count(),
             'archived' => $archive->count(),
         ];
 
@@ -315,6 +327,9 @@ class LetterController extends Controller
                 'targetDivision' => $surat->target_division,
                 'currentRecipient' => $surat->current_recipient,
                 'dispositionNote' => $surat->disposition_note,
+                'replyNote' => $surat->reply_note,
+                'replyBy' => $surat->replyAuthor?->name,
+                'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
                 'attachment' => $surat->lampiran_path
                     ? [
                         'name' => $surat->lampiran_nama,

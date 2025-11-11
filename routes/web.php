@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', AdminStaffDashboardController::class)->name('dashboard');
         Route::get('/kelola-surat', [AdminStaffLetterController::class, 'index'])->name('letters');
         Route::post('/kelola-surat', [AdminStaffLetterController::class, 'store'])->name('letters.store');
+        Route::post('/kelola-surat/{surat}/reply', [AdminStaffLetterController::class, 'reply'])->name('letters.reply');
         Route::get('/recruitment', AdminStaffRecruitmentController::class)->name('recruitment');
     });
 });

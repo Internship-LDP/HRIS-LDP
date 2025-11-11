@@ -36,6 +36,9 @@ class Surat extends Model
         'disposed_at',
         'disposition_note',
         'alamat_pengirim',
+        'reply_note',
+        'reply_by',
+        'reply_at',
         'lampiran_path',
         'lampiran_nama',
         'lampiran_mime',
@@ -46,6 +49,7 @@ class Surat extends Model
         'tanggal_surat' => 'date',
         'tanggal_persetujuan' => 'date',
         'disposed_at' => 'datetime',
+        'reply_at' => 'datetime',
     ];
 
     /**
@@ -62,6 +66,11 @@ class Surat extends Model
     public function departemen(): BelongsTo
     {
         return $this->belongsTo(Departemen::class, 'departemen_id');
+    }
+
+    public function replyAuthor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reply_by');
     }
 
     /**

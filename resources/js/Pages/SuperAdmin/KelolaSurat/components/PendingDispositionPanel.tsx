@@ -157,7 +157,14 @@ export default function PendingDispositionPanel({
                                             <Badge variant="outline">{letter.targetDivision ?? '-'}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="max-w-[240px] truncate">{letter.subject}</div>
+                                            <div className="max-w-[240px]">
+                                                <p className="truncate">{letter.subject}</p>
+                                                {letter.replyNote && (
+                                                    <p className="mt-1 line-clamp-2 text-[11px] text-emerald-700">
+                                                        Balasan: {letter.replyNote}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             {letter.attachment?.url ? (

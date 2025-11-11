@@ -32,13 +32,18 @@ class LetterController extends Controller
             ->get();
 
         $outboxLetters = Surat::query()
+            ->with($this->letterRelations())
             ->where('user_id', $user->id)
             ->orderByDesc('tanggal_surat')
             ->orderByDesc('surat_id')
             ->get();
 
         $archiveLetters = Surat::query()
-            ->where('target_division', $user->division)
+            ->with($this->letterRelations())
+            ->where(function ($query) use ($user) {
+                $query->where('target_division', $user->division)
+                    ->orWhere('penerima', $user->division);
+            })
             ->where('status_persetujuan', 'Diarsipkan')
             ->orderByDesc('tanggal_surat')
             ->orderByDesc('surat_id')
@@ -168,9 +173,51 @@ class LetterController extends Controller
             );
     }
 
+    public function reply(Request $request, Surat $surat): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        abort_unless($this->authorized($user), 403);
+
+        abort_unless(
+            $surat->current_recipient === 'division'
+                && (
+                    $surat->target_division === $user->division
+                    || $surat->penerima === $user->division
+                ),
+            403
+        );
+
+        abort_if($surat->status_persetujuan === 'Diarsipkan', 403);
+
+        $validated = $request->validate([
+            'reply_note' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $originDivision = $surat->departemen?->nama
+            ?? $surat->user?->division
+            ?? $surat->penerima
+            ?? 'Admin HR';
+
+        $surat->forceFill([
+            'reply_note' => $validated['reply_note'],
+            'reply_by' => $user->id,
+            'reply_at' => now(),
+            'current_recipient' => 'hr',
+            'penerima' => 'Admin HR',
+            'target_division' => $originDivision,
+            'status_persetujuan' => 'Menunggu HR',
+        ])->save();
+
+        return redirect()
+            ->route('admin-staff.letters')
+            ->with('success', 'Balasan surat dikirim ke HR untuk diteruskan.');
+    }
+
     private function lettersForStaff(User $user)
     {
         return Surat::query()
+            ->with($this->letterRelations())
             ->where('current_recipient', 'division')
             ->where(function ($query) use ($user) {
                 $query->where('target_division', $user->division)
@@ -209,6 +256,10 @@ class LetterController extends Controller
                 'attachmentUrl' => $surat->attachmentUrl(),
                 'content' => $surat->isi_surat,
                 'dispositionNote' => $surat->disposition_note,
+                'replyNote' => $surat->reply_note,
+                'replyBy' => $surat->replyAuthor?->name,
+                'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
+                'canReply' => $this->canReply($surat),
             ])
             ->values()
             ->toArray();
@@ -222,6 +273,12 @@ class LetterController extends Controller
 
         return $user->hasRole(User::ROLES['admin'])
             && ! $user->belongsToHumanCapitalDivision();
+    }
+
+    private function canReply(Surat $surat): bool
+    {
+        return $surat->current_recipient === 'division'
+            && $surat->status_persetujuan !== 'Diarsipkan';
     }
 
     private function divisionCode(?string $division): ?string
@@ -253,5 +310,14 @@ class LetterController extends Controller
         }
 
         return $divisions;
+    }
+
+    private function letterRelations(): array
+    {
+        return [
+            'departemen:id,nama',
+            'user:id,name,division',
+            'replyAuthor:id,name',
+        ];
     }
 }

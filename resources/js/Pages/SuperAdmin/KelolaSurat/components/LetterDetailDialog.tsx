@@ -104,6 +104,21 @@ export default function LetterDetailDialog({
                                 </div>
                             </div>
                         )}
+
+                        {letter.replyNote && (
+                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                                <p className="text-xs uppercase tracking-wide text-emerald-600">
+                                    Catatan Balasan Divisi
+                                </p>
+                                <p className="mt-2 whitespace-pre-line text-sm text-emerald-900">
+                                    {letter.replyNote}
+                                </p>
+                                <p className="mt-3 text-xs text-emerald-700">
+                                    {letter.replyBy ? `Dibalas oleh ${letter.replyBy}` : 'Balasan'}
+                                    {letter.replyAt ? ` pada ${letter.replyAt}` : ''}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
             </DialogContent>
