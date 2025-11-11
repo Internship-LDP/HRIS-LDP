@@ -61,6 +61,7 @@ interface LetterRecord {
     hasAttachment: boolean;
     attachmentUrl?: string | null;
     content?: string | null;
+    dispositionNote?: string | null;
 }
 
 interface LettersPageProps extends Record<string, unknown> {
@@ -360,7 +361,7 @@ export default function AdminStaffLetters() {
                                                         rel="noreferrer"
                                                     >
                                                         <Eye className="mr-2 h-4 w-4" />
-                                                        Lihat Lampiran
+                                                        Lihat
                                                     </a>
                                                 </Button>
                                                 <Button asChild variant="outline">
@@ -371,11 +372,22 @@ export default function AdminStaffLetters() {
                                                         download
                                                     >
                                                         <Download className="mr-2 h-4 w-4" />
-                                                        Unduh Lampiran
+                                                        Unduh
                                                     </a>
                                                 </Button>
                                             </div>
                                         </div>
+                                    </section>
+                                )}
+
+                                {selectedLetter.dispositionNote && (
+                                    <section className="rounded-xl border border-rose-200/70 bg-rose-50/80 p-4">
+                                        <p className="text-xs uppercase tracking-wide text-rose-500">
+                                            Catatan Penolakan HR
+                                        </p>
+                                        <p className="mt-2 text-sm text-rose-700 whitespace-pre-line">
+                                            {selectedLetter.dispositionNote}
+                                        </p>
                                     </section>
                                 )}
                             </div>
@@ -443,6 +455,11 @@ function LettersTable({
                         <TableCell>{letter.date}</TableCell>
                         <TableCell>
                             <StatusBadge status={letter.status} />
+                            {letter.dispositionNote && (
+                                <p className="mt-1 text-[11px] font-medium text-rose-600">
+                                    Catatan HR tersedia
+                                </p>
+                            )}
                         </TableCell>
                         <TableCell className="text-right">
                             <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
@@ -482,6 +499,14 @@ function StatCard({
 
 function StatusBadge({ status }: { status: string }) {
     const normalized = status.toLowerCase();
+
+    if (normalized.includes('tolak')) {
+        return (
+            <Badge variant="outline" className="border-rose-500 text-rose-600">
+                {status}
+            </Badge>
+        );
+    }
 
     if (normalized.includes('selesai')) {
         return (

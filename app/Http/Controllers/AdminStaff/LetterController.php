@@ -198,6 +198,7 @@ class LetterController extends Controller
                 'hasAttachment' => (bool) $surat->lampiran_path,
                 'attachmentUrl' => $surat->attachmentUrl(),
                 'content' => $surat->isi_surat,
+                'dispositionNote' => $surat->disposition_note,
             ])
             ->values()
             ->toArray();

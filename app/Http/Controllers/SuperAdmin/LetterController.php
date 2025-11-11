@@ -226,6 +226,60 @@ class LetterController extends Controller
             );
     }
 
+    public function rejectDisposition(Request $request): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        $validated = $request->validate([
+            'letter_ids' => ['required', 'array', 'min:1'],
+            'letter_ids.*' => ['integer', 'exists:surat,surat_id'],
+            'disposition_note' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $letters = Surat::whereIn('surat_id', $validated['letter_ids'])->get();
+
+        if ($letters->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Surat tidak ditemukan atau sudah diproses.');
+        }
+
+        $invalidLetters = $letters->filter(
+            fn (Surat $surat) => $surat->current_recipient !== 'hr'
+        );
+
+        if ($invalidLetters->isNotEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Sebagian surat sudah diproses, segarkan data Anda.');
+        }
+
+        $userId = $request->user()?->id;
+
+        foreach ($letters as $surat) {
+            $originDivision = $surat->departemen?->nama
+                ?? $surat->user?->division
+                ?? $surat->penerima;
+
+            $surat->forceFill([
+                'current_recipient' => 'division',
+                'penerima' => $originDivision,
+                'target_division' => $originDivision,
+                'status_persetujuan' => 'Ditolak HR',
+                'disposition_note' => $validated['disposition_note'],
+                'disposed_by' => $userId,
+                'disposed_at' => now(),
+            ])->save();
+        }
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with(
+                'success',
+                $letters->count().' surat ditolak dan dikembalikan ke divisi pengirim.'
+            );
+    }
+
     /**
      * Transform collection surat untuk frontend.
      */
@@ -249,6 +303,7 @@ class LetterController extends Controller
                 'type' => $surat->tipe_surat,
                 'targetDivision' => $surat->target_division,
                 'currentRecipient' => $surat->current_recipient,
+                'dispositionNote' => $surat->disposition_note,
                 'attachment' => $surat->lampiran_path
                     ? [
                         'name' => $surat->lampiran_nama,

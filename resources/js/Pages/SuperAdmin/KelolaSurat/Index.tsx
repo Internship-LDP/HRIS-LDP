@@ -39,7 +39,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/Components/ui/tooltip';
-import { Info, MailCheck, SendHorizontal } from 'lucide-react';
+import { Download, Eye, FileText, Info, MailCheck, SendHorizontal } from 'lucide-react';
 
 import {
     Dialog,
@@ -249,7 +249,7 @@ export default function KelolaSuratIndex() {
         });
     };
 
-    const handleDispositionSubmit = () => {
+    const handleDispositionSubmit = (mode: 'forward' | 'reject') => {
         const letterIds = dispositionTargets.map((letter) => letter.id);
 
         if (letterIds.length === 0) {
@@ -257,16 +257,31 @@ export default function KelolaSuratIndex() {
             return;
         }
 
+        if (
+            mode === 'reject' &&
+            !(dispositionForm.data.disposition_note || '').trim()
+        ) {
+            toast.error('Tambahkan catatan penolakan sebelum menolak surat.');
+            return;
+        }
+
+        const routeName =
+            mode === 'reject'
+                ? 'super-admin.letters.disposition.reject'
+                : 'super-admin.letters.disposition.bulk';
+
         dispositionForm.transform((data) => ({
             ...data,
             letter_ids: letterIds,
         }));
 
-        dispositionForm.post(route('super-admin.letters.disposition.bulk'), {
+        dispositionForm.post(route(routeName), {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success(
-                    `${letterIds.length} surat didisposisi ke divisi tujuan.`
+                    mode === 'reject'
+                        ? `${letterIds.length} surat ditolak dan dikembalikan ke pengirim.`
+                        : `${letterIds.length} surat didisposisi ke divisi tujuan.`
                 );
                 setDispositionOpen(false);
                 setDispositionTargets([]);
@@ -387,6 +402,7 @@ export default function KelolaSuratIndex() {
                                         <TableHead>Pengirim</TableHead>
                                         <TableHead>Divisi Tujuan</TableHead>
                                         <TableHead>Subjek</TableHead>
+                                        <TableHead>Lampiran</TableHead>
                                         <TableHead>Tanggal</TableHead>
                                         <TableHead className="text-right">
                                             Aksi
@@ -442,17 +458,70 @@ export default function KelolaSuratIndex() {
                                                         {letter.subject}
                                                     </div>
                                                 </TableCell>
+                                                <TableCell>
+                                                    {letter.attachment?.url ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <FileText className="h-4 w-4 text-blue-500" />
+                                                            <span className="max-w-[150px] truncate text-xs font-semibold text-slate-600">
+                                                                {letter.attachment?.name ?? 'Lampiran'}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">-</span>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell>{letter.date}</TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button
-                                                        size="sm"
-                                                        className="bg-blue-500 text-white hover:bg-blue-600"
-                                                        onClick={() =>
-                                                            openDispositionDialog(letter)
-                                                        }
-                                                    >
-                                                        Disposisi
-                                                    </Button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {letter.attachment?.url && (
+                                                            <>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="text-slate-500"
+                                                                    asChild
+                                                                >
+                                                                    <a
+                                                                        href={letter.attachment.url}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                    >
+                                                                        <Eye className="h-4 w-4" />
+                                                                        <span className="sr-only">
+                                                                            Lihat lampiran
+                                                                        </span>
+                                                                    </a>
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="text-slate-500"
+                                                                    asChild
+                                                                >
+                                                                    <a
+                                                                        href={letter.attachment.url}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        download={letter.attachment.name ?? undefined}
+                                                                    >
+                                                                        <Download className="h-4 w-4" />
+                                                                        <span className="sr-only">
+                                                                            Unduh lampiran
+                                                                        </span>
+                                                                    </a>
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                        <Button
+                                                            size="sm"
+                                                            className="bg-blue-500 text-white hover:bg-blue-600"
+                                                            onClick={() =>
+                                                                openDispositionDialog(letter)
+                                                            }
+                                                        >
+                                                            Disposisi
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         );
@@ -604,6 +673,45 @@ export default function KelolaSuratIndex() {
                                                 <p className="mt-1 text-xs text-slate-500">
                                                     {letter.senderName} - {letter.date}
                                                 </p>
+                                                {letter.attachment?.url && (
+                                                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-1 text-xs text-slate-600">
+                                                        <FileText className="h-3.5 w-3.5 text-blue-500" />
+                                                        <span className="flex-1 truncate">
+                                                            {letter.attachment?.name ?? 'Lampiran'}
+                                                        </span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-slate-500"
+                                                            asChild
+                                                        >
+                                                            <a
+                                                                href={letter.attachment.url}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                            >
+                                                                <Eye className="h-3.5 w-3.5" />
+                                                                <span className="sr-only">Lihat lampiran</span>
+                                                            </a>
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-slate-500"
+                                                            asChild
+                                                        >
+                                                            <a
+                                                                href={letter.attachment.url}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                download={letter.attachment.name ?? undefined}
+                                                            >
+                                                                <Download className="h-3.5 w-3.5" />
+                                                                <span className="sr-only">Unduh lampiran</span>
+                                                            </a>
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -629,23 +737,41 @@ export default function KelolaSuratIndex() {
                                     </p>
                                 )}
                             </div>
-                            <Button
-                                onClick={handleDispositionSubmit}
-                                disabled={
-                                    dispositionForm.processing ||
-                                    dispositionTargets.length === 0
-                                }
-                                className="w-full gap-2 bg-blue-600 text-white hover:bg-blue-700"
-                            >
-                                {dispositionForm.processing ? (
-                                    'Memproses...'
-                                ) : (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <SendHorizontal className="h-4 w-4" />
-                                        Disposisi ke Divisi
-                                    </span>
-                                )}
-                            </Button>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full border-rose-200 text-rose-600 hover:bg-rose-50"
+                                    disabled={
+                                        dispositionForm.processing ||
+                                        dispositionTargets.length === 0
+                                    }
+                                    onClick={() => handleDispositionSubmit('reject')}
+                                >
+                                    {dispositionForm.processing ? (
+                                        'Memproses...'
+                                    ) : (
+                                        'Tolak Surat'
+                                    )}
+                                </Button>
+                                <Button
+                                    onClick={() => handleDispositionSubmit('forward')}
+                                    disabled={
+                                        dispositionForm.processing ||
+                                        dispositionTargets.length === 0
+                                    }
+                                    className="w-full gap-2 bg-blue-600 text-white hover:bg-blue-700"
+                                >
+                                    {dispositionForm.processing ? (
+                                        'Memproses...'
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <SendHorizontal className="h-4 w-4" />
+                                            Disposisi ke Divisi
+                                        </span>
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         <div className="px-6 py-10 text-center text-sm text-slate-500">

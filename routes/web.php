@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
         Route::post('/kelola-surat/disposition/bulk', [LetterController::class, 'bulkDisposition'])->name('letters.disposition.bulk');
+        Route::post('/kelola-surat/disposition/reject', [LetterController::class, 'rejectDisposition'])->name('letters.disposition.reject');
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
         Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
         Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
