@@ -184,7 +184,7 @@ export default function Dashboard({ stats, statChanges, userDistribution, activi
                     </ResponsiveContainer>
                 </div>
             </div>
-
+            
         </SuperAdminLayout>
     );
 }

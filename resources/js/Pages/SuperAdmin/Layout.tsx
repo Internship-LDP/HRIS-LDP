@@ -4,6 +4,7 @@ import Breadcrumbs, {
 } from '@/Pages/SuperAdmin/components/Breadcrumbs';
 import Sidebar from '@/Pages/SuperAdmin/components/Sidebar';
 import { Toaster } from 'sonner';
+import QuickActions from '@/Pages/SuperAdmin/components/QuickActions';
 
 interface SuperAdminLayoutProps {
     title: string;
@@ -45,6 +46,11 @@ export default function SuperAdminLayout({
 
                 <div className="space-y-6">{children}</div>
             </div>
+
+             <div className="fixed bottom-0 left-64 right-0 z-50 bg-white border-t border-slate-200 shadow-md">
+                <QuickActions />
+            </div>
+
             <Toaster richColors position="top-right" />
         </div>
     );
