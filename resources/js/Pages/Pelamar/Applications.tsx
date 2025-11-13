@@ -150,11 +150,14 @@ export default function Applications({
     const handleCloseForm = () => {
         setFormOpen(false);
         setFormDivision(null);
-        form.reset('education', 'experience', 'skills', 'cv');
         form.setData((previous) => ({
             ...previous,
             division_id: null,
             position: '',
+            education: '',
+            experience: '',
+            skills: '',
+            cv: null,
         }));
     };
 
