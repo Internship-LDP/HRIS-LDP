@@ -54,16 +54,26 @@ class HandleInertiaRequests extends Middleware
      */
     private function sidebarNotifications(?User $user): array
     {
-        if (! $user || (! $user->hasRole(User::ROLES['super_admin']) && ! $user->isHumanCapitalAdmin())) {
+        if (! $user) {
             return [];
         }
 
-        return [
-            'super-admin.letters.index' => $this->pendingLettersCount(),
-            'super-admin.recruitment' => $this->pendingApplicationsCount(),
-            'super-admin.staff.index' => $this->activeTerminationCount(),
-            'super-admin.complaints.index' => $this->newComplaintsCount(),
-        ];
+        if ($user->hasRole(User::ROLES['super_admin']) || $user->isHumanCapitalAdmin()) {
+            return [
+                'super-admin.letters.index' => $this->pendingLettersCount(),
+                'super-admin.recruitment' => $this->pendingApplicationsCount(),
+                'super-admin.staff.index' => $this->activeTerminationCount(),
+                'super-admin.complaints.index' => $this->newComplaintsCount(),
+            ];
+        }
+
+        if ($user->hasRole(User::ROLES['admin']) && ! $user->isHumanCapitalAdmin()) {
+            return [
+                'admin-staff.letters' => $this->pendingDivisionLettersCount($user),
+            ];
+        }
+
+        return [];
     }
 
     private function pendingLettersCount(): int
@@ -94,6 +104,23 @@ class HandleInertiaRequests extends Middleware
     {
         return Complaint::query()
             ->where('status', Complaint::STATUS_NEW)
+            ->count();
+    }
+
+    private function pendingDivisionLettersCount(User $user): int
+    {
+        if (! $user->division) {
+            return 0;
+        }
+
+        return Surat::query()
+            ->where('current_recipient', 'division')
+            ->where('status_persetujuan', 'Didisposisi')
+            ->where(function ($query) use ($user) {
+                $query->where('target_division', $user->division)
+                    ->orWhere('penerima', $user->division)
+                    ->orWhere('user_id', $user->id);
+            })
             ->count();
     }
 }

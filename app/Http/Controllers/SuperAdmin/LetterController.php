@@ -35,6 +35,9 @@ class LetterController extends Controller
             'user:id,name,division,role',
             'departemen:id,nama,kode',
             'replyAuthor:id,name',
+            'replyHistories' => function ($query) {
+                $query->with('author:id,name,division')->orderBy('replied_at');
+            },
         ]);
 
         if ($filters['search']) {
@@ -139,6 +142,7 @@ class LetterController extends Controller
         $data['tipe_surat'] = $data['tipe_surat'] ?? 'keluar';
         $data['tanggal_surat'] = now()->toDateString();
         $data['status_persetujuan'] = 'Terkirim';
+        $data['previous_division'] = $user->division ?? $departemen?->nama;
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
@@ -376,6 +380,7 @@ class LetterController extends Controller
                 'replyNote' => $surat->reply_note,
                 'replyBy' => $surat->replyAuthor?->name,
                 'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
+                'replyHistory' => $this->replyHistoryPayload($surat),
                 'attachment' => $surat->lampiran_path
                     ? [
                         'name' => $surat->lampiran_nama,
@@ -386,6 +391,35 @@ class LetterController extends Controller
                     : null,
             ];
         })->values()->toArray();
+    }
+
+    private function replyHistoryPayload(Surat $surat): array
+    {
+        $histories = $surat->replyHistories
+            ? $surat->replyHistories->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'note' => $history->note,
+                    'author' => $history->author?->name,
+                    'division' => $history->from_division,
+                    'toDivision' => $history->to_division,
+                    'timestamp' => optional($history->replied_at)->format('d M Y H:i'),
+                ];
+            })->values()->toArray()
+            : [];
+
+        if (empty($histories) && $surat->reply_note) {
+            $histories[] = [
+                'id' => null,
+                'note' => $surat->reply_note,
+                'author' => $surat->replyAuthor?->name,
+                'division' => $surat->previous_division,
+                'toDivision' => $surat->target_division,
+                'timestamp' => optional($surat->reply_at)->format('d M Y H:i'),
+            ];
+        }
+
+        return $histories;
     }
 
     private function formatSize(?int $bytes): string

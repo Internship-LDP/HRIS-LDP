@@ -50,17 +50,30 @@ import {
 } from '@/Components/ui/table';
 import {
     Archive,
+    CheckCircle,
+    Circle,
+    Clock,
     Download,
     Eye,
     FileText,
     Filter,
     Inbox,
     Loader2,
+    MapPin,
     RotateCcw,
     Search,
     Send,
     Users,
 } from 'lucide-react';
+
+type ReplyHistoryEntry = {
+    id: number | null;
+    note: string;
+    author?: string | null;
+    division?: string | null;
+    toDivision?: string | null;
+    timestamp?: string | null;
+};
 
 interface LetterRecord {
     id: number;
@@ -80,6 +93,15 @@ interface LetterRecord {
     replyBy?: string | null;
     replyAt?: string | null;
     canReply?: boolean;
+    replyHistory?: ReplyHistoryEntry[];
+    targetDivision?: string | null;
+    recipient?: string | null;
+    currentRecipient?: string | null;
+    disposedBy?: string | null;
+    disposedAt?: string | null;
+    approvalDate?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
 }
 
 interface LettersPageProps extends Record<string, unknown> {
@@ -123,6 +145,7 @@ export default function AdminStaffLetters() {
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [detailTab, setDetailTab] = useState<'detail' | 'tracking'>('detail');
     const [replyOpen, setReplyOpen] = useState(false);
     const [archivingLetterId, setArchivingLetterId] = useState<number | null>(null);
     const [unarchivingLetterId, setUnarchivingLetterId] = useState<number | null>(null);
@@ -143,19 +166,21 @@ export default function AdminStaffLetters() {
     const archiveForm = useForm({});
     const unarchiveForm = useForm({});
 
-    useEffect(() => {
+useEffect(() => {
+    replyForm.reset();
+    replyForm.clearErrors();
+    setReplyOpen(false);
+    setDetailTab('detail');
+}, [selectedLetter]);
+
+useEffect(() => {
+    if (!detailOpen) {
+        setReplyOpen(false);
         replyForm.reset();
         replyForm.clearErrors();
-        setReplyOpen(false);
-    }, [selectedLetter]);
-
-    useEffect(() => {
-        if (!detailOpen) {
-            setReplyOpen(false);
-            replyForm.reset();
-            replyForm.clearErrors();
-        }
-    }, [detailOpen]);
+        setDetailTab('detail');
+    }
+}, [detailOpen]);
 
     const filteredLetters = useMemo(() => {
         const filterList = (items: LetterRecord[]) => {
@@ -193,10 +218,11 @@ export default function AdminStaffLetters() {
         });
     };
 
-    const openDetail = (letter: LetterRecord) => {
-        setSelectedLetter(letter);
-        setDetailOpen(true);
-    };
+const openDetail = (letter: LetterRecord) => {
+    setSelectedLetter(letter);
+    setDetailOpen(true);
+    setDetailTab('detail');
+};
 
     const handleArchive = (letter: LetterRecord) => {
         if (!letter || archiveForm.processing) {
@@ -473,14 +499,11 @@ export default function AdminStaffLetters() {
                     </DialogHeader>
                     <div className="max-h-[calc(85vh-4.5rem)] overflow-y-auto">
                         {selectedLetter ? (
-                            <div className="space-y-6 px-6 pb-6 pt-4">
+                            <div className="px-6 pb-6 pt-4">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900">
                                             {selectedLetter.subject}
-                                        </p>
-                                        <p className="text-xs text-slate-500">
-                                            Diterima pada {selectedLetter.date}
                                         </p>
                                     </div>
                                     {selectedLetter.canReply && (
@@ -493,124 +516,205 @@ export default function AdminStaffLetters() {
                                         </Button>
                                     )}
                                 </div>
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Diterima pada {selectedLetter.date}
+                                </p>
 
-                                <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 text-sm md:grid-cols-3">
-                                    <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
-                                    <InfoTile label="Tanggal" value={selectedLetter.date} />
-                                    <InfoTile label="Pengirim" value={selectedLetter.sender} />
-                                    <InfoTile label="Divisi" value={selectedLetter.from} />
-                                    <InfoTile label="Kategori" value={selectedLetter.category} />
-                                    <InfoTile
-                                        label="Prioritas"
-                                        value={<PriorityBadge priority={selectedLetter.priority} />}
-                                    />
-                                    <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
-                                </section>
-
-                                <section className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/60 p-5">
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-slate-500">Subjek</p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-900">
-                                            {selectedLetter.subject}
-                                        </p>
-                                    </div>
-                                    {selectedLetter.content && (
-                                        <div>
-                                            <p className="text-xs uppercase tracking-wide text-slate-500">Isi Surat</p>
-                                            <div className="mt-2 rounded-lg bg-white p-4 text-sm text-slate-700">
-                                                {selectedLetter.content}
-                                            </div>
-                                        </div>
-                                    )}
-                                </section>
-
-                                {selectedLetter.hasAttachment && selectedLetter.attachmentUrl && (
-                                    <section className="rounded-xl border border-slate-200/80 bg-white p-4">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div>
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    Lampiran
-                                                </p>
-                                                <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                    {selectedLetter.subject}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Button asChild variant="secondary">
-                                                    <a
-                                                        href={selectedLetter.attachmentUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                    >
-                                                        <Eye className="mr-2 h-4 w-4" />
-                                                        Lihat
-                                                    </a>
-                                                </Button>
-                                                <Button asChild variant="outline">
-                                                    <a
-                                                        href={selectedLetter.attachmentUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        download
-                                                    >
-                                                        <Download className="mr-2 h-4 w-4" />
-                                                        Unduh
-                                                    </a>
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </section>
-                                )}
-
-                                {selectedLetter.dispositionNote && (
-                                    <section
-                                        className={
-                                            isSelectedLetterRejected
-                                                ? 'rounded-xl border border-rose-200/70 bg-rose-50/80 p-4'
-                                                : 'rounded-xl border border-slate-200/80 bg-white p-4'
-                                        }
-                                    >
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <p
-                                                className={
-                                                    isSelectedLetterRejected
-                                                        ? 'text-xs uppercase tracking-wide text-rose-500'
-                                                        : 'text-xs uppercase tracking-wide text-slate-500'
-                                                }
-                                            >
-                                                {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
-                                            </p>
-                                            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                                <span>Prioritas</span>
-                                                <PriorityBadge priority={selectedLetter.priority} />
-                                            </div>
-                                        </div>
-                                        <p
-                                            className={
-                                                isSelectedLetterRejected
-                                                    ? 'mt-2 text-sm text-rose-700 whitespace-pre-line'
-                                                    : 'mt-2 text-sm text-slate-700 whitespace-pre-line'
-                                            }
+                                <Tabs
+                                    value={detailTab}
+                                    onValueChange={(value) => setDetailTab(value as 'detail' | 'tracking')}
+                                    className="mt-5 space-y-4"
+                                >
+                                    <TabsList className="grid w-full grid-cols-2 gap-2 rounded-xl bg-slate-100/80 p-1">
+                                        <TabsTrigger
+                                            value="detail"
+                                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-900"
                                         >
-                                            {selectedLetter.dispositionNote}
-                                        </p>
-                                    </section>
-                                )}
+                                            Detail Surat
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="tracking"
+                                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-900"
+                                        >
+                                            Tracking Surat
+                                        </TabsTrigger>
+                                    </TabsList>
 
-                                {selectedLetter.replyNote && (
-                                    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                                        <p className="text-xs uppercase tracking-wide text-emerald-600">
-                                            Catatan Balasan
-                                        </p>
-                                        <p className="mt-2 text-sm text-emerald-900 whitespace-pre-line">
-                                            {selectedLetter.replyNote}
-                                        </p>
-                                        <p className="mt-3 text-xs text-emerald-700">
-                                            {selectedLetter.replyBy ? `Dibalas oleh ${selectedLetter.replyBy}` : 'Balasan'}
-                                            {selectedLetter.replyAt ? ` pada ${selectedLetter.replyAt}` : ''}
-                                        </p>
-                                    </section>
-                                )}
+                                    <TabsContent value="detail" className="mt-4">
+                                        <div className="space-y-6">
+                                            <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 text-sm md:grid-cols-3">
+                                                <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
+                                                <InfoTile label="Tanggal" value={selectedLetter.date} />
+                                                <InfoTile label="Pengirim" value={selectedLetter.sender} />
+                                                <InfoTile label="Divisi" value={selectedLetter.from} />
+                                                <InfoTile label="Divisi Tujuan" value={selectedLetter.targetDivision ?? selectedLetter.recipient ?? '-'} />
+                                                <InfoTile label="Kategori" value={selectedLetter.category} />
+                                                <InfoTile
+                                                    label="Prioritas"
+                                                    value={<PriorityBadge priority={selectedLetter.priority} />}
+                                                />
+                                                <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
+                                            </section>
+
+                                            <section className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/60 p-5">
+                                                <div>
+                                                    <p className="text-xs uppercase tracking-wide text-slate-500">Subjek</p>
+                                                    <p className="mt-1 text-sm font-semibold text-slate-900">
+                                                        {selectedLetter.subject}
+                                                    </p>
+                                                </div>
+                                                {selectedLetter.content && (
+                                                    <div>
+                                                        <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                            Isi Surat
+                                                        </p>
+                                                        <div className="mt-2 rounded-lg bg-white p-4 text-sm text-slate-700">
+                                                            {selectedLetter.content}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </section>
+
+                                            {selectedLetter.hasAttachment && selectedLetter.attachmentUrl && (
+                                                <section className="rounded-xl border border-slate-200/80 bg-white p-4">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                                Lampiran
+                                                            </p>
+                                                            <p className="mt-1 text-sm font-semibold text-slate-900">
+                                                                {selectedLetter.subject}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button asChild variant="secondary">
+                                                                <a
+                                                                    href={selectedLetter.attachmentUrl}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                >
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    Lihat
+                                                                </a>
+                                                            </Button>
+                                                            <Button asChild variant="outline">
+                                                                <a
+                                                                    href={selectedLetter.attachmentUrl}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    download
+                                                                >
+                                                                    <Download className="mr-2 h-4 w-4" />
+                                                                    Unduh
+                                                                </a>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </section>
+                                            )}
+
+                                            {selectedLetter.dispositionNote && (
+                                                <section
+                                                    className={
+                                                        isSelectedLetterRejected
+                                                            ? 'rounded-xl border border-rose-200/70 bg-rose-50/80 p-4'
+                                                            : 'rounded-xl border border-slate-200/80 bg-white p-4'
+                                                    }
+                                                >
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <p
+                                                            className={
+                                                                isSelectedLetterRejected
+                                                                    ? 'text-xs uppercase tracking-wide text-rose-500'
+                                                                    : 'text-xs uppercase tracking-wide text-slate-500'
+                                                            }
+                                                        >
+                                                            {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
+                                                        </p>
+                                                        <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                            <span>Prioritas</span>
+                                                            <PriorityBadge priority={selectedLetter.priority} />
+                                                        </div>
+                                                    </div>
+                                                    <p
+                                                        className={
+                                                            isSelectedLetterRejected
+                                                                ? 'mt-2 whitespace-pre-line text-sm text-rose-700'
+                                                                : 'mt-2 whitespace-pre-line text-sm text-slate-700'
+                                                        }
+                                                    >
+                                                        {selectedLetter.dispositionNote}
+                                                    </p>
+                                                </section>
+                                            )}
+
+                                            {(() => {
+                                                const history =
+                                                    selectedLetter.replyHistory && selectedLetter.replyHistory.length > 0
+                                                        ? selectedLetter.replyHistory
+                                                        : selectedLetter.replyNote
+                                                          ? [
+                                                                {
+                                                                    id: null,
+                                                                    note: selectedLetter.replyNote,
+                                                                    author: selectedLetter.replyBy,
+                                                                    division:
+                                                                        selectedLetter.targetDivision ?? selectedLetter.from,
+                                                                    toDivision: selectedLetter.recipient ?? undefined,
+                                                                    timestamp: selectedLetter.replyAt,
+                                                                },
+                                                            ]
+                                                          : [];
+                                                if (history.length === 0) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                                                        <p className="text-xs uppercase tracking-wide text-emerald-600">
+                                                            Riwayat Balasan
+                                                        </p>
+                                                        <div className="mt-3 space-y-3">
+                                                            {history.map((entry, index) => (
+                                                                <div
+                                                                    key={entry.id ?? index}
+                                                                    className="rounded-lg border border-emerald-100 bg-white/60 p-3 text-sm text-slate-800"
+                                                                >
+                                                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                                                        <div>
+                                                                            <p className="font-semibold text-emerald-800">
+                                                                                {entry.author ?? entry.division ?? 'Divisi'}
+                                                                            </p>
+                                                                            <p className="text-xs text-slate-500">
+                                                                                {entry.division ?? '-'}
+                                                                                {entry.toDivision
+                                                                                    ? ` → ${entry.toDivision}`
+                                                                                    : ''}
+                                                                            </p>
+                                                                        </div>
+                                                                        {entry.timestamp && (
+                                                                            <p className="text-xs text-slate-500">
+                                                                                {entry.timestamp}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                    <p className="mt-2 whitespace-pre-line text-sm text-slate-700">
+                                                                        {entry.note}
+                                                                    </p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </section>
+                                                );
+                                            })()}
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="tracking" className="mt-4">
+                                        <LetterTrackingView letter={selectedLetter} />
+                                    </TabsContent>
+                                </Tabs>
+
                             </div>
                         ) : (
                             <div className="px-6 py-12 text-center text-sm text-slate-500">
@@ -674,6 +778,232 @@ export default function AdminStaffLetters() {
     );
 }
 
+type TrackingStep = {
+    id: string;
+    status: string;
+    description: string;
+    location?: string | null;
+    timestamp?: string | null;
+    person?: string | null;
+    completed: boolean;
+};
+
+function LetterTrackingView({ letter }: { letter: LetterRecord }) {
+    const steps = useMemo(() => buildTrackingSteps(letter), [letter]);
+
+    if (!steps.length) {
+        return (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white/60 p-6 text-center text-sm text-slate-500">
+                Riwayat tracking belum tersedia untuk surat ini.
+            </div>
+        );
+    }
+
+    const firstIncomplete = steps.findIndex((step) => !step.completed);
+    const currentStepIndex = firstIncomplete === -1 ? Math.max(0, steps.length - 1) : firstIncomplete;
+    const currentStatus = steps[currentStepIndex]?.status ?? 'Status Tidak Diketahui';
+    const totalSteps = steps.length;
+
+    return (
+        <div className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p className="text-sm font-semibold text-blue-900">Tracking Surat</p>
+                    <p className="text-xs text-slate-500">
+                        ID {letter.letterNumber ?? letter.id} • Tujuan{' '}
+                        {letter.targetDivision ?? letter.recipient ?? 'Tidak ditentukan'}
+                    </p>
+                </div>
+                <Badge className="bg-blue-900 text-white">{currentStatus}</Badge>
+            </div>
+
+            <div className="relative space-y-8">
+                {steps.map((step, index) => {
+                    const isLast = index === steps.length - 1;
+                    const isCurrent = index === currentStepIndex && !step.completed;
+                    return (
+                        <div key={step.id} className="relative flex gap-4">
+                            {!isLast && (
+                                <div
+                                    className={`absolute left-4 top-8 h-full w-0.5 ${
+                                        step.completed ? 'bg-blue-900' : 'bg-slate-300'
+                                    }`}
+                                />
+                            )}
+                            <div className="relative z-10 flex-shrink-0">
+                                <div
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                                        step.completed
+                                            ? 'bg-blue-900 text-white'
+                                            : isCurrent
+                                                ? 'animate-pulse bg-amber-500 text-white'
+                                                : 'bg-slate-200 text-slate-400'
+                                    }`}
+                                >
+                                    {step.completed ? (
+                                        <CheckCircle className="h-5 w-5" />
+                                    ) : isCurrent ? (
+                                        <Clock className="h-5 w-5" />
+                                    ) : (
+                                        <Circle className="h-5 w-5" />
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex-1 pb-8">
+                                <div
+                                    className={`rounded-xl border-2 p-4 ${
+                                        step.completed
+                                            ? 'border-blue-200 bg-blue-50'
+                                            : isCurrent
+                                                ? 'border-amber-200 bg-amber-50'
+                                                : 'border-slate-200 bg-white'
+                                    }`}
+                                >
+                                    <div className="flex flex-wrap items-start justify-between gap-3">
+                                        <div>
+                                            <p
+                                                className={`text-sm font-semibold ${
+                                                    step.completed || isCurrent ? 'text-blue-900' : 'text-slate-600'
+                                                }`}
+                                            >
+                                                {step.status}
+                                            </p>
+                                            {step.person && (
+                                                <p className="text-xs text-slate-500">oleh {step.person}</p>
+                                            )}
+                                        </div>
+                                        {step.timestamp && (
+                                            <p className="text-xs text-slate-500">{step.timestamp}</p>
+                                        )}
+                                    </div>
+                                    {step.description && (
+                                        <p className="mt-3 text-sm text-slate-700">{step.description}</p>
+                                    )}
+                                    {step.location && (
+                                        <div className="mt-3 inline-flex items-center gap-1 text-xs text-slate-600">
+                                            <MapPin className="h-3.5 w-3.5" />
+                                            <span>{step.location}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Total Langkah</p>
+                <p className="text-lg font-semibold text-blue-900">{totalSteps}</p>
+            </div>
+        </div>
+    );
+}
+
+function buildTrackingSteps(letter: LetterRecord): TrackingStep[] {
+    const normalizedStatus = (letter.status ?? '').toLowerCase();
+    const isArchived = normalizedStatus.includes('arsip');
+    const isRejected = normalizedStatus.includes('tolak');
+    const isCompletedStatus = normalizedStatus.includes('selesai');
+    const isClosed = normalizedStatus.includes('tutup');
+    const hrPendingKeywords = ['menunggu hr', 'diajukan', 'diproses', 'terkirim'];
+    const waitingHr = hrPendingKeywords.some((keyword) => normalizedStatus.includes(keyword));
+
+    const replyHistory =
+        letter.replyHistory && letter.replyHistory.length > 0
+            ? letter.replyHistory
+            : letter.replyNote
+              ? [
+                    {
+                        id: null,
+                        note: letter.replyNote,
+                        author: letter.replyBy,
+                        division: letter.targetDivision ?? letter.recipient ?? letter.from,
+                        toDivision: letter.recipient ?? letter.targetDivision,
+                        timestamp: letter.replyAt,
+                    },
+                ]
+              : [];
+    const lastReply = replyHistory[replyHistory.length - 1];
+    const replyCompleted = replyHistory.length > 0;
+
+    const creationTimestamp = letter.createdAt ?? letter.date ?? null;
+    const steps: TrackingStep[] = [
+        {
+            id: 'created',
+            status: 'Dibuat',
+            description: `Surat dibuat oleh ${letter.sender ?? 'pengirim tidak diketahui'}.`,
+            location: letter.from ?? 'Internal',
+            timestamp: creationTimestamp,
+            person: letter.sender,
+            completed: Boolean(creationTimestamp),
+        },
+        {
+            id: 'hr',
+            status: 'Ditinjau HR',
+            description: letter.dispositionNote
+                ? 'HR telah memberikan disposisi dan catatan.'
+                : 'Surat menunggu peninjauan HR.',
+            location: 'Human Capital',
+            timestamp: letter.disposedAt ?? letter.approvalDate,
+            person: letter.disposedBy,
+            completed:
+                !waitingHr ||
+                Boolean(letter.disposedAt || letter.dispositionNote) ||
+                isArchived ||
+                isRejected ||
+                isCompletedStatus,
+        },
+        {
+            id: 'division',
+            status: 'Dikirim ke Divisi',
+            description: letter.targetDivision
+                ? `Surat diteruskan ke divisi ${letter.targetDivision}.`
+                : 'Divisi tujuan belum ditentukan.',
+            location: letter.targetDivision ?? letter.recipient ?? 'Divisi terkait',
+            timestamp: letter.disposedAt,
+            person: letter.disposedBy,
+            completed:
+                letter.currentRecipient === 'division' ||
+                letter.currentRecipient === 'archive' ||
+                replyCompleted ||
+                isArchived ||
+                isCompletedStatus ||
+                isRejected,
+        },
+        {
+            id: 'follow-up',
+            status: 'Tindak Lanjut Divisi',
+            description: replyCompleted
+                ? `Balasan terbaru: ${lastReply?.note ?? 'Divisi telah memberikan catatan.'}`
+                : 'Menunggu tindak lanjut dari divisi.',
+            location: letter.targetDivision ?? letter.recipient ?? 'Divisi terkait',
+            timestamp: lastReply?.timestamp ?? letter.replyAt,
+            person: lastReply?.author ?? letter.replyBy,
+            completed: replyCompleted,
+        },
+        {
+            id: 'final',
+            status: letter.status ?? 'Status Berjalan',
+            description: `Status saat ini: ${letter.status ?? 'Tidak diketahui'}.`,
+            location:
+                letter.currentRecipient === 'hr'
+                    ? 'Human Capital'
+                    : letter.currentRecipient === 'division'
+                      ? letter.targetDivision ?? letter.recipient ?? 'Divisi terkait'
+                      : letter.currentRecipient === 'archive'
+                        ? 'Arsip Sistem'
+                        : letter.targetDivision ?? letter.recipient ?? '-',
+            timestamp: letter.updatedAt ?? lastReply?.timestamp ?? letter.replyAt ?? letter.disposedAt ?? creationTimestamp,
+            person: lastReply?.author ?? letter.replyBy ?? letter.disposedBy ?? letter.sender,
+            completed:
+                isArchived || isRejected || isCompletedStatus || isClosed || letter.currentRecipient === 'archive',
+        },
+    ];
+
+    return steps;
+}
+
 function LettersTable({
     letters,
     variant = 'inbox',
@@ -714,7 +1044,14 @@ function LettersTable({
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {letters.map((letter) => (
+                {letters.map((letter) => {
+                    const latestReply =
+                        letter.replyHistory && letter.replyHistory.length > 0
+                            ? letter.replyHistory[letter.replyHistory.length - 1]
+                            : undefined;
+                    const hasReply = Boolean(latestReply || letter.replyNote);
+
+                    return (
                     <TableRow key={letter.id}>
                         <TableCell>{letter.letterNumber}</TableCell>
                         <TableCell>
@@ -747,7 +1084,7 @@ function LettersTable({
                                     Catatan HR tersedia
                                 </p>
                             )} */}
-                            {letter.replyNote && (
+                            {hasReply && (
                                 <p className="mt-1 text-[11px] font-medium text-emerald-600">
                                     Balasan dikirim
                                 </p>
@@ -777,7 +1114,8 @@ function LettersTable({
                             </div>
                         </TableCell>
                     </TableRow>
-                ))}
+                    );
+                })}
             </TableBody>
         </Table>
     );

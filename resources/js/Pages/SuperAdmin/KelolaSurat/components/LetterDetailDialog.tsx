@@ -108,20 +108,60 @@ export default function LetterDetailDialog({
                             </div>
                         )}
 
-                        {letter.replyNote && (
-                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                                <p className="text-xs uppercase tracking-wide text-emerald-600">
-                                    Catatan Balasan Divisi
-                                </p>
-                                <p className="mt-2 whitespace-pre-line text-sm text-emerald-900">
-                                    {letter.replyNote}
-                                </p>
-                                <p className="mt-3 text-xs text-emerald-700">
-                                    {letter.replyBy ? `Dibalas oleh ${letter.replyBy}` : 'Balasan'}
-                                    {letter.replyAt ? ` pada ${letter.replyAt}` : ''}
-                                </p>
-                            </div>
-                        )}
+                        {(() => {
+                            const history =
+                                letter.replyHistory && letter.replyHistory.length > 0
+                                    ? letter.replyHistory
+                                    : letter.replyNote
+                                      ? [
+                                            {
+                                                id: null,
+                                                note: letter.replyNote,
+                                                author: letter.replyBy,
+                                                division: letter.targetDivision ?? letter.senderDivision,
+                                                toDivision: letter.recipientName,
+                                                timestamp: letter.replyAt,
+                                            },
+                                        ]
+                                      : [];
+                            if (history.length === 0) {
+                                return null;
+                            }
+
+                            return (
+                                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                                    <p className="text-xs uppercase tracking-wide text-emerald-600">
+                                        Riwayat Balasan Divisi
+                                    </p>
+                                    <div className="mt-3 space-y-3">
+                                        {history.map((entry, index) => (
+                                            <div
+                                                key={entry.id ?? index}
+                                                className="rounded-lg border border-emerald-100 bg-white/70 p-3 text-sm text-slate-800"
+                                            >
+                                                <div className="flex flex-wrap items-start justify-between gap-2">
+                                                    <div>
+                                                        <p className="font-semibold text-emerald-800">
+                                                            {entry.author ?? entry.division ?? 'Divisi'}
+                                                        </p>
+                                                        <p className="text-xs text-slate-500">
+                                                            {entry.division ?? '-'}
+                                                            {entry.toDivision ? ` → ${entry.toDivision}` : ''}
+                                                        </p>
+                                                    </div>
+                                                    {entry.timestamp && (
+                                                        <p className="text-xs text-slate-500">{entry.timestamp}</p>
+                                                    )}
+                                                </div>
+                                                <p className="mt-2 whitespace-pre-line text-sm text-slate-700">
+                                                    {entry.note}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
             </DialogContent>

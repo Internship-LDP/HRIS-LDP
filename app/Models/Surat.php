@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -31,6 +32,7 @@ class Surat extends Model
         'prioritas',
         'penerima',
         'target_division',
+        'previous_division',
         'current_recipient',
         'disposed_by',
         'disposed_at',
@@ -71,6 +73,17 @@ class Surat extends Model
     public function replyAuthor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reply_by');
+    }
+
+    public function replyHistories(): HasMany
+    {
+        return $this->hasMany(SuratReplyHistory::class, 'surat_id', 'surat_id')
+            ->orderBy('replied_at');
+    }
+
+    public function disposer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'disposed_by');
     }
 
     /**

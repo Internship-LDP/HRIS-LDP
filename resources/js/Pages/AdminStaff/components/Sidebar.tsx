@@ -1,8 +1,16 @@
 import { Link, usePage, router } from '@inertiajs/react';
-import { Mail, LayoutDashboard, Users } from 'lucide-react';
+import { Mail, LayoutDashboard } from 'lucide-react';
 import type { PageProps } from '@/types';
 
-const nav = [
+type NavItem = {
+    label: string;
+    icon: typeof LayoutDashboard;
+    route: string;
+    pattern: string;
+    notificationKey?: string;
+};
+
+const nav: NavItem[] = [
     {
         label: 'Dashboard',
         icon: LayoutDashboard,
@@ -14,6 +22,7 @@ const nav = [
         icon: Mail,
         route: 'admin-staff.letters',
         pattern: 'admin-staff.letters',
+        notificationKey: 'admin-staff.letters',
     },
     // {
     //     label: 'Rekrutmen Baru',
@@ -25,7 +34,7 @@ const nav = [
 
 export default function Sidebar() {
     const {
-        props: { auth },
+        props: { auth, sidebarNotifications = {} },
     } = usePage<PageProps>();
     const user = auth.user;
 
@@ -42,6 +51,10 @@ export default function Sidebar() {
                 {nav.map((item) => {
                     const Icon = item.icon;
                     const active = route().current(item.pattern);
+                    const notificationCount =
+                        (sidebarNotifications?.[item.notificationKey ?? item.route] ?? 0) || 0;
+                    const badgeLabel =
+                        notificationCount > 99 ? '99+' : notificationCount.toString();
 
                     return (
                         <Link
@@ -52,7 +65,12 @@ export default function Sidebar() {
                             }`}
                         >
                             <Icon className="h-4 w-4" />
-                            {item.label}
+                            <span className="flex-1">{item.label}</span>
+                            {notificationCount > 0 && (
+                                <span className="ml-auto inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                                    {badgeLabel}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

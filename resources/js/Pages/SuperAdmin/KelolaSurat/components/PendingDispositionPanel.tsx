@@ -124,8 +124,13 @@ export default function PendingDispositionPanel({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {pendingDisposition.map((letter) => {
+                {pendingDisposition.map((letter) => {
                                 const isSelected = selectedIds.includes(letter.id);
+                                const latestReply =
+                                    letter.replyHistory && letter.replyHistory.length > 0
+                                        ? letter.replyHistory[letter.replyHistory.length - 1]
+                                        : undefined;
+                                const replyPreview = latestReply?.note ?? letter.replyNote ?? null;
 
                                 return (
                                     <TableRow
@@ -164,9 +169,9 @@ export default function PendingDispositionPanel({
                                         <TableCell>
                                             <div className="max-w-[240px]">
                                                 <p className="truncate">{letter.subject}</p>
-                                                {letter.replyNote && (
+                                                {replyPreview && (
                                                     <p className="mt-1 line-clamp-2 text-[11px] text-emerald-700">
-                                                        Balasan: {letter.replyNote}
+                                                        Balasan: {replyPreview}
                                                     </p>
                                                 )}
                                             </div>

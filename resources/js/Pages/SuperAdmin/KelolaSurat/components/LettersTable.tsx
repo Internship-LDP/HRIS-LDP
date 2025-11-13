@@ -23,6 +23,15 @@ import {
 import { Archive, FileText, Loader2 } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 
+type ReplyHistoryEntry = {
+    id: number | null;
+    note: string;
+    author?: string | null;
+    division?: string | null;
+    toDivision?: string | null;
+    timestamp?: string | null;
+};
+
 export interface LetterRecord {
     id: number;
     letterNumber: string;
@@ -48,6 +57,7 @@ export interface LetterRecord {
     replyNote?: string | null;
     replyBy?: string | null;
     replyAt?: string | null;
+    replyHistory?: ReplyHistoryEntry[];
 }
 
 interface LettersTableProps {
@@ -128,7 +138,14 @@ export default function LettersTable({
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {letters.map((letter) => (
+                {letters.map((letter) => {
+                    const latestReply =
+                        letter.replyHistory && letter.replyHistory.length > 0
+                            ? letter.replyHistory[letter.replyHistory.length - 1]
+                            : undefined;
+                    const hasReply = Boolean(latestReply || letter.replyNote);
+
+                    return (
                     <TableRow key={letter.id}>
                         <TableCell>
                             {isInbox ? letter.id : letter.letterNumber}
@@ -172,7 +189,7 @@ export default function LettersTable({
                         <TableCell>{letter.date}</TableCell>
                         <TableCell>
                             {getStatusBadge(letter.status)}
-                            {letter.replyNote && (
+                            {hasReply && (
                                 <p className="mt-1 text-xs font-medium text-emerald-700">
                                     Balasan tersedia
                                 </p>
@@ -199,7 +216,8 @@ export default function LettersTable({
                             </div>
                         </TableCell>
                     </TableRow>
-                ))}
+                    );
+                })}
             </TableBody>
         </Table>
     );

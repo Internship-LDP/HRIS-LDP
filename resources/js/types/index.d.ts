@@ -17,4 +17,5 @@ export type PageProps<
     auth: {
         user: User;
     };
+    sidebarNotifications?: Record<string, number>;
 };

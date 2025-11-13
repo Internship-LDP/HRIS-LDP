@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Departemen;
 use App\Models\Surat;
 use App\Models\User;
+use App\Models\SuratReplyHistory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -135,6 +136,7 @@ class LetterController extends Controller
             'prioritas' => $request->input('prioritas'),
             'penerima' => $request->input('penerima') ?: 'Admin HR',
             'target_division' => $request->input('target_division'),
+            'previous_division' => $user->division ?? $departemen?->nama,
             'current_recipient' => 'hr',
         ];
 
@@ -200,15 +202,35 @@ class LetterController extends Controller
             ?? $surat->penerima
             ?? 'Admin HR';
 
+        $currentDivision = $user->division ?? $surat->target_division ?? $originDivision;
+        $nextTarget = $surat->previous_division;
+
+        if (! $nextTarget || $nextTarget === $currentDivision) {
+            $nextTarget = $originDivision;
+        }
+        if (! $nextTarget) {
+            $nextTarget = 'Admin HR';
+        }
+
         $surat->forceFill([
             'reply_note' => $validated['reply_note'],
             'reply_by' => $user->id,
             'reply_at' => now(),
             'current_recipient' => 'hr',
             'penerima' => 'Admin HR',
-            'target_division' => $originDivision,
+            'target_division' => $nextTarget,
+            'previous_division' => $currentDivision,
             'status_persetujuan' => 'Menunggu HR',
         ])->save();
+
+        SuratReplyHistory::create([
+            'surat_id' => $surat->surat_id,
+            'replied_by' => $user->id,
+            'from_division' => $currentDivision,
+            'to_division' => $nextTarget,
+            'note' => $validated['reply_note'],
+            'replied_at' => $surat->reply_at,
+        ]);
 
         return redirect()
             ->route('admin-staff.letters')
@@ -326,10 +348,48 @@ class LetterController extends Controller
                 'replyNote' => $surat->reply_note,
                 'replyBy' => $surat->replyAuthor?->name,
                 'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
+                'replyHistory' => $this->replyHistoryPayload($surat),
                 'canReply' => $this->canReply($surat),
+                'targetDivision' => $surat->target_division ?? $surat->penerima,
+                'recipient' => $surat->penerima,
+                'currentRecipient' => $surat->current_recipient,
+                'disposedBy' => $surat->disposer?->name,
+                'disposedAt' => optional($surat->disposed_at)->format('d M Y H:i'),
+                'approvalDate' => optional($surat->tanggal_persetujuan)->format('d M Y H:i'),
+                'createdAt' => optional($surat->created_at)->format('d M Y H:i'),
+                'updatedAt' => optional($surat->updated_at)->format('d M Y H:i'),
             ])
             ->values()
             ->toArray();
+    }
+
+    private function replyHistoryPayload(Surat $surat): array
+    {
+        $histories = $surat->replyHistories
+            ? $surat->replyHistories->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'note' => $history->note,
+                    'author' => $history->author?->name,
+                    'division' => $history->from_division,
+                    'toDivision' => $history->to_division,
+                    'timestamp' => optional($history->replied_at)->format('d M Y H:i'),
+                ];
+            })->values()->toArray()
+            : [];
+
+        if (empty($histories) && $surat->reply_note) {
+            $histories[] = [
+                'id' => null,
+                'note' => $surat->reply_note,
+                'author' => $surat->replyAuthor?->name,
+                'division' => $surat->previous_division,
+                'toDivision' => $surat->target_division,
+                'timestamp' => optional($surat->reply_at)->format('d M Y H:i'),
+            ];
+        }
+
+        return $histories;
     }
 
     private function authorized(?User $user): bool
@@ -385,6 +445,10 @@ class LetterController extends Controller
             'departemen:id,nama',
             'user:id,name,division',
             'replyAuthor:id,name',
+            'disposer:id,name',
+            'replyHistories' => function ($query) {
+                $query->with('author:id,name,division')->orderBy('replied_at');
+            },
         ];
     }
 }
