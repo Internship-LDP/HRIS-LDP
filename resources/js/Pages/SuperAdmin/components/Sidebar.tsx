@@ -17,6 +17,7 @@ interface NavItem {
     routeName: string;
     pattern: string | string[];
     superAdminOnly?: boolean;
+    badgeKey?: string;
 }
 
 const defaultNavItems: NavItem[] = [
@@ -38,6 +39,7 @@ const defaultNavItems: NavItem[] = [
         icon: UserPlus,
         routeName: 'super-admin.recruitment',
         pattern: 'super-admin.recruitment',
+        badgeKey: 'super-admin.recruitment',
     },
     {
         label: 'Kelola Divisi',
@@ -50,25 +52,28 @@ const defaultNavItems: NavItem[] = [
         icon: Mail,
         routeName: 'super-admin.letters.index',
         pattern: 'super-admin.letters.*',
+        badgeKey: 'super-admin.letters.index',
     },
     {
         label: 'Kelola Staff',
         icon: UserMinus,
         routeName: 'super-admin.staff.index',
         pattern: 'super-admin.staff.*',
+        badgeKey: 'super-admin.staff.index',
     },
     {
         label: 'Kelola Pengaduan',
         icon: MessageSquare,
         routeName: 'super-admin.complaints.index',
         pattern: 'super-admin.complaints.*',
+        badgeKey: 'super-admin.complaints.index',
     },
 ];
 
 export default function Sidebar() {
     const {
-        props: { auth },
-    } = usePage<PageProps>();
+        props: { auth, sidebarNotifications = {} },
+    } = usePage<PageProps<{ sidebarNotifications?: Record<string, number> }>>();
     const user = auth?.user;
     const isSuperAdmin = user?.role === 'Super Admin';
     const isHumanCapitalAdmin =
@@ -126,7 +131,23 @@ export default function Sidebar() {
                             }`}
                         >
                             <Icon className="h-4 w-4" />
-                            {item.label}
+                            <span className="flex flex-1 items-center justify-between">
+                                <span>{item.label}</span>
+                                {(() => {
+                                    const rawCount = item.badgeKey
+                                        ? sidebarNotifications[item.badgeKey] ?? 0
+                                        : 0;
+                                    if (!rawCount || rawCount <= 0) {
+                                        return null;
+                                    }
+                                    const displayCount = rawCount > 99 ? '99+' : rawCount;
+                                    return (
+                                        <span className="ml-3 inline-flex min-w-[2rem] justify-center rounded-full bg-rose-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                            {displayCount}
+                                        </span>
+                                    );
+                                })()}
+                            </span>
                         </Link>
                     );
                 })}
