@@ -39,9 +39,7 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
     };
 
     const removeRequirement = (index: number) => {
-        if (form.data.job_requirements.length === 1) {
-            return;
-        }
+        if (form.data.job_requirements.length === 1) return;
 
         form.setData(
             'job_requirements',
@@ -51,7 +49,7 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
 
     return (
         <Dialog open={Boolean(division)} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl p-6">
                 <DialogHeader>
                     <DialogTitle>Publikasikan Lowongan</DialogTitle>
                     <DialogDescription>
@@ -60,11 +58,10 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                 </DialogHeader>
 
                 {division && (
-                    <form onSubmit={onSubmit} className="space-y-6">
+                    <form onSubmit={onSubmit} className="space-y-6 mt-4">
                         <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-1">
-                            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                                Kapasitas {division.current_staff}/{division.capacity} • Slot tersedia{' '}
-                                {division.available_slots}
+                            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+                                Kapasitas {division.current_staff}/{division.capacity} • Slot tersedia {division.available_slots}
                                 {division.available_slots === 0 && (
                                     <span className="mt-1 block text-xs text-red-600">
                                         Tidak ada slot kosong. Tingkatkan kapasitas sebelum membuka lowongan.
@@ -75,11 +72,11 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label>Divisi</Label>
-                                    <Input value={division.name} disabled className="bg-slate-50" />
+                                    <Input value={division.name} disabled className="bg-muted/40" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Manager</Label>
-                                    <Input value={division.manager_name ?? '-'} disabled className="bg-slate-50" />
+                                    <Input value={division.manager_name ?? '-'} disabled className="bg-muted/40" />
                                 </div>
                             </div>
 
@@ -88,11 +85,11 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                 <Input
                                     id="job-title"
                                     value={form.data.job_title}
-                                    onChange={(event) => form.setData('job_title', event.target.value)}
+                                    onChange={(e) => form.setData('job_title', e.target.value)}
                                     placeholder="Contoh: Marketing Specialist"
                                 />
                                 {form.errors.job_title && (
-                                    <p className="text-xs text-red-500">{form.errors.job_title}</p>
+                                    <p className="text-xs text-destructive">{form.errors.job_title}</p>
                                 )}
                             </div>
 
@@ -102,11 +99,11 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                     id="job-description"
                                     rows={4}
                                     value={form.data.job_description}
-                                    onChange={(event) => form.setData('job_description', event.target.value)}
+                                    onChange={(e) => form.setData('job_description', e.target.value)}
                                     placeholder="Ceritakan tanggung jawab utama, ekspektasi, dan ruang lingkup pekerjaan."
                                 />
                                 {form.errors.job_description && (
-                                    <p className="text-xs text-red-500">{form.errors.job_description}</p>
+                                    <p className="text-xs text-destructive">{form.errors.job_description}</p>
                                 )}
                             </div>
 
@@ -114,19 +111,16 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                 <div className="flex items-center justify-between">
                                     <Label>Persyaratan Kandidat</Label>
                                     <Button type="button" size="sm" variant="outline" onClick={addRequirement}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Tambah
+                                        <Plus className="mr-2 h-4 w-4" /> Tambah
                                     </Button>
                                 </div>
 
                                 <div className="space-y-3">
                                     {form.data.job_requirements.map((requirement, index) => (
-                                        <div key={`requirement-${index}`} className="flex items-center gap-2">
+                                        <div key={index} className="flex items-center gap-2">
                                             <Input
                                                 value={requirement}
-                                                onChange={(event) =>
-                                                    updateRequirement(index, event.target.value)
-                                                }
+                                                onChange={(e) => updateRequirement(index, e.target.value)}
                                                 placeholder={`Persyaratan ${index + 1}`}
                                             />
                                             {form.data.job_requirements.length > 1 && (
@@ -144,16 +138,16 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                 </div>
 
                                 {form.errors.job_requirements && (
-                                    <p className="text-xs text-red-500">{form.errors.job_requirements}</p>
+                                    <p className="text-xs text-destructive">{form.errors.job_requirements}</p>
                                 )}
                             </div>
                         </div>
 
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={onClose}>
+                        <DialogFooter className="flex justify-end gap-2 pt-2">
+                            <Button type="button" className="bg-red-600 text-white hover:bg-red-700" onClick={onClose}>
                                 Batalkan
                             </Button>
-                            <Button type="submit" disabled={form.processing}>
+                            <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700" disabled={form.processing}>
                                 Simpan Lowongan
                             </Button>
                         </DialogFooter>

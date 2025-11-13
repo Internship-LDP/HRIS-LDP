@@ -19,9 +19,7 @@ export default function Create({
     statusOptions,
     divisionOptions,
 }: CreateProps) {
-    const defaultRole = roleOptions.includes('Staff')
-        ? 'Staff'
-        : roleOptions[0] ?? 'Staff';
+    const defaultRole = '';
 
     const form = useForm({
         name: '',

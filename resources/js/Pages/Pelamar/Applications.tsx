@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { toast } from 'sonner';
 import PelamarLayout from '@/Pages/Pelamar/Layout';
 import ApplicationForm, {
@@ -8,7 +8,6 @@ import ApplicationForm, {
 import ApplicationHistory, {
     ApplicationHistoryItem,
 } from '@/Pages/Pelamar/components/applications/ApplicationHistory';
-import { FormEvent } from 'react';
 import { PageProps } from '@/types';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -21,6 +20,7 @@ import {
     CheckCircle2,
     XCircle,
     Send,
+    X,
 } from 'lucide-react';
 import {
     Dialog,
@@ -69,6 +69,7 @@ export default function Applications({
         divisions.find(
             (division) => division.is_hiring && division.available_slots > 0,
         ) ?? null;
+
     const [formDivision, setFormDivision] = useState<DivisionSummary | null>(
         firstOpenDivision,
     );
@@ -220,6 +221,7 @@ export default function Applications({
                     )}
                 </Card>
 
+                {/* RESPONSIVE DIALOG */}
                 <Dialog
                     open={formOpen && Boolean(formDivision)}
                     onOpenChange={(open) => {
@@ -228,9 +230,29 @@ export default function Applications({
                         }
                     }}
                 >
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                            <DialogTitle>
+                    <DialogContent
+                        className="
+                            w-[95vw]
+                            max-w-xl
+                            sm:max-w-2xl
+                            lg:max-w-3xl
+                            max-h-[90vh]
+                            overflow-y-auto
+                            rounded-xl
+                            p-0
+                        "
+                    >
+                        <DialogHeader
+                            className="
+                                sticky top-0 z-10
+                                flex flex-col gap-1
+                                border-b border-slate-200
+                                bg-white
+                                px-6 py-4
+                                relative
+                            "
+                        >
+                            <DialogTitle className="text-lg font-semibold">
                                 {formDivision
                                     ? `Lamaran untuk ${formDivision.job_title}`
                                     : 'Form Lamaran'}
@@ -238,24 +260,49 @@ export default function Applications({
                             <DialogDescription>
                                 Lengkapi formulir di bawah ini untuk melamar ke divisi terkait.
                             </DialogDescription>
+
+                            {/* Tombol X di pojok kanan atas */}
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-4 top-4 h-8 w-8 text-slate-500 hover:text-slate-700"
+                                onClick={handleCloseForm}
+                            >
+                                <span className="sr-only">Tutup</span>
+                                <X className="h-4 w-4" />
+                            </Button>
                         </DialogHeader>
-                        {formDivision && (
-                            <ApplicationForm
-                                selectedDivision={{
-                                    id: formDivision.id,
-                                    name: formDivision.name,
-                                    job_title: formDivision.job_title,
-                                    job_description: formDivision.job_description,
-                                    job_requirements: formDivision.job_requirements,
-                                }}
-                                data={form.data}
-                                errors={form.errors}
-                                processing={form.processing}
-                                setData={handleSetData}
-                                onSubmit={handleSubmit}
-                            />
-                        )}
-                        <DialogFooter>
+
+                        {/* Isi form dengan padding terpisah supaya scroll enak */}
+                        <div className="px-6 pb-6 pt-4">
+                            {formDivision && (
+                                <ApplicationForm
+                                    selectedDivision={{
+                                        id: formDivision.id,
+                                        name: formDivision.name,
+                                        job_title: formDivision.job_title,
+                                        job_description: formDivision.job_description,
+                                        job_requirements: formDivision.job_requirements,
+                                    }}
+                                    data={form.data}
+                                    errors={form.errors}
+                                    processing={form.processing}
+                                    setData={handleSetData}
+                                    onSubmit={handleSubmit}
+                                />
+                            )}
+                        </div>
+
+                        <DialogFooter
+                            className="
+                                sticky bottom-0 z-10
+                                flex flex-wrap justify-end gap-2
+                                border-t border-slate-200
+                                bg-white
+                                px-6 py-4
+                            "
+                        >
                             <Button type="button" variant="outline" onClick={handleCloseForm}>
                                 Batal
                             </Button>
@@ -390,7 +437,10 @@ function DivisionCard({
                         {division.job_requirements.length > 0 && (
                             <ul className="mt-3 space-y-1 text-xs text-slate-600">
                                 {division.job_requirements.map((requirement, index) => (
-                                    <li key={`division-${division.id}-req-${index}`} className="flex items-start gap-2">
+                                    <li
+                                        key={`division-${division.id}-req-${index}`}
+                                        className="flex items-start gap-2"
+                                    >
                                         <CheckCircle2 className="mt-0.5 h-3 w-3 text-blue-600" />
                                         <span>{requirement}</span>
                                     </li>

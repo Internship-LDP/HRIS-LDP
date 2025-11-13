@@ -44,6 +44,11 @@ export default function AccountForm({
     submitLabel,
     secondaryAction,
 }: AccountFormProps) {
+    const filteredRoleOptions =
+        data.role === 'Super Admin'
+            ? roleOptions
+            : roleOptions.filter((role) => role !== 'Super Admin');
+
     const handleStatusChange = (nextStatus: string) => {
         setData('status', nextStatus);
 
@@ -134,7 +139,7 @@ export default function AccountForm({
                         className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     >
                         <option value="">Pilih role</option>
-                        {roleOptions.map((role) => (
+                        {filteredRoleOptions.map((role) => (
                             <option key={role} value={role}>
                                 {role}
                             </option>

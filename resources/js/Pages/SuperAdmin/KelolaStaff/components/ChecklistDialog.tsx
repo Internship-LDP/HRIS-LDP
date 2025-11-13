@@ -22,11 +22,7 @@ interface ChecklistDialogProps {
     trigger: React.ReactNode;
 }
 
-export default function ChecklistDialog({
-    termination,
-    checklistTemplate,
-    trigger,
-}: ChecklistDialogProps) {
+export default function ChecklistDialog({ termination, checklistTemplate, trigger }: ChecklistDialogProps) {
     const [checks, setChecks] = useState<Record<string, boolean>>(
         Object.fromEntries(checklistTemplate.map((item) => [item, termination.progress >= 100]))
     );
@@ -34,20 +30,36 @@ export default function ChecklistDialog({
     return (
         <Dialog>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
-            <DialogContent className="max-w-3xl border-0 bg-white p-0">
-                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
-                    <DialogTitle>Checklist Offboarding: {termination.employeeName}</DialogTitle>
-                    <DialogDescription>
-                        Pantau progres serah terima dan lengkapi catatan exit interview.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-5 px-6 pb-6 pt-4">
-                    <div className="grid grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+
+            <DialogContent
+                className="w-[92vw] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto border-0 bg-white p-0 rounded-xl"
+            >
+                {/* HEADER */}
+                <DialogHeader className="space-y-1 border-b border-slate-200 px-6 py-4 sticky top-0 bg-white z-10 relative">
+    <DialogTitle>Checklist Offboarding: {termination.employeeName}</DialogTitle>
+    <DialogDescription>
+        Pantau progres serah terima dan lengkapi catatan exit interview.
+    </DialogDescription>
+    <Button
+        variant="ghost"
+        className="absolute right-4 top-4 h-8 w-8 p-0 text-slate-500 hover:text-slate-700"
+        onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))}
+    >
+        <span className="sr-only">Tutup</span>
+        ✕
+    </Button>
+</DialogHeader>
+
+                {/* BODY */}
+                <div className="space-y-6 px-6 pb-6 pt-4">
+                    {/* DETAIL GRID */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
                         <DetailItem label="ID" value={termination.reference} />
                         <DetailItem label="Divisi" value={termination.division} />
                         <DetailItem label="Tipe" value={termination.type} />
                         <DetailItem label="Tanggal Efektif" value={termination.effectiveDate} />
                         <DetailItem label="Status" value={termination.status} />
+
                         <div>
                             <p className="text-xs text-slate-500">Progress</p>
                             <div className="mt-1 flex items-center gap-2">
@@ -57,13 +69,12 @@ export default function ChecklistDialog({
                                         style={{ width: `${termination.progress}%` }}
                                     />
                                 </div>
-                                <span className="text-xs text-slate-500">
-                                    {termination.progress}%
-                                </span>
+                                <span className="text-xs text-slate-500">{termination.progress}%</span>
                             </div>
                         </div>
                     </div>
 
+                    {/* CHECKLIST */}
                     <div>
                         <h4 className="mb-3 text-base font-semibold text-slate-900">
                             Checklist Offboarding
@@ -77,22 +88,18 @@ export default function ChecklistDialog({
                                     <Checkbox
                                         checked={checks[item]}
                                         onCheckedChange={(value) =>
-                                            setChecks((prev) => ({
-                                                ...prev,
-                                                [item]: Boolean(value),
-                                            }))
+                                            setChecks((prev) => ({ ...prev, [item]: Boolean(value) }))
                                         }
                                     />
                                     <span className="flex-1 text-slate-700">{item}</span>
-                                    {checks[item] && (
-                                        <CheckCircle className="h-4 w-4 text-green-500" />
-                                    )}
+                                    {checks[item] && <CheckCircle className="h-4 w-4 text-green-500" />}
                                 </label>
                             ))}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* EXIT INTERVIEW + NOTES */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label>Jadwal Exit Interview</Label>
                             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -106,12 +113,15 @@ export default function ChecklistDialog({
                         </div>
                     </div>
 
+                    {/* FOOTER BUTTONS */}
                     <div className="flex flex-wrap gap-2">
-                        <Button className="bg-blue-900 hover:bg-blue-800">Simpan Progress</Button>
+                        <Button className="bg-blue-900 hover:bg-blue-800 text-white">Simpan Progress</Button>
+
                         <Button variant="outline" className="border-green-500 text-green-600">
                             <CheckCircle className="mr-2 h-4 w-4" />
                             Tandai Selesai
                         </Button>
+
                         <Badge variant="outline" className="border-slate-300 text-slate-600">
                             Form ini bersifat informatif untuk tim HR.
                         </Badge>

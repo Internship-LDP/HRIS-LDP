@@ -264,7 +264,7 @@ function DivisionVacancySection({
                                     <XCircle className="mr-2 h-4 w-4" />
                                 </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="bg-white">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Hapus Lowongan?</AlertDialogTitle>
                                     <AlertDialogDescription>
