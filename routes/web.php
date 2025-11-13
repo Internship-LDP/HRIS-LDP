@@ -18,16 +18,13 @@ use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
 use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
+    return Inertia::render('LandingPage/Index', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
