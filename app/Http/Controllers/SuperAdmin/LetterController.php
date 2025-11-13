@@ -127,7 +127,7 @@ class LetterController extends Controller
     /**
      * Simpan surat keluar baru.
      */
-    public function store(StoreSuratRequest $request): Response
+    public function store(StoreSuratRequest $request): RedirectResponse
     {
         $this->authorizeAccess($request->user());
 
