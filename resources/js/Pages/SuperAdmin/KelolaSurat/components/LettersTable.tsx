@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -8,7 +9,19 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
-import { FileText } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
+import { Archive, FileText, Loader2 } from 'lucide-react';
+import { PriorityBadge } from './PriorityBadge';
 
 export interface LetterRecord {
     id: number;
@@ -41,19 +54,9 @@ interface LettersTableProps {
     letters: LetterRecord[];
     variant: 'inbox' | 'outbox';
     onSelect: (letter: LetterRecord) => void;
-}
-
-function getPriorityBadge(priority: string) {
-    switch (priority) {
-        case 'high':
-            return <Badge className="bg-red-500">Tinggi</Badge>;
-        case 'medium':
-            return <Badge className="bg-orange-500">Sedang</Badge>;
-        case 'low':
-            return <Badge className="bg-blue-500">Rendah</Badge>;
-        default:
-            return <Badge variant="outline">{priority}</Badge>;
-    }
+    onArchive?: (letter: LetterRecord) => void;
+    archivingId?: number | null;
+    archiveProcessing?: boolean;
 }
 
 function getStatusBadge(status: string) {
@@ -94,6 +97,9 @@ export default function LettersTable({
     letters,
     variant,
     onSelect,
+    onArchive,
+    archivingId,
+    archiveProcessing,
 }: LettersTableProps) {
     const isInbox = variant === 'inbox';
 
@@ -160,7 +166,9 @@ export default function LettersTable({
                         <TableCell>
                             <Badge variant="outline">{letter.category}</Badge>
                         </TableCell>
-                        <TableCell>{getPriorityBadge(letter.priority)}</TableCell>
+                        <TableCell>
+                            <PriorityBadge priority={letter.priority} />
+                        </TableCell>
                         <TableCell>{letter.date}</TableCell>
                         <TableCell>
                             {getStatusBadge(letter.status)}
@@ -171,14 +179,24 @@ export default function LettersTable({
                             )}
                         </TableCell>
                         <TableCell className="text-right">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onSelect(letter)}
-                            >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Detail
-                            </Button>
+                            <div className="flex justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onSelect(letter)}
+                                >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Detail
+                                </Button>
+                                {onArchive && (
+                                    <ArchiveActionButton
+                                        letter={letter}
+                                        onConfirm={onArchive}
+                                        disabled={archiveProcessing}
+                                        isProcessing={archiveProcessing && archivingId === letter.id}
+                                    />
+                                )}
+                            </div>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -186,3 +204,69 @@ export default function LettersTable({
         </Table>
     );
 }
+
+function ArchiveActionButton({
+    letter,
+    onConfirm,
+    disabled,
+    isProcessing,
+}: {
+    letter: LetterRecord;
+    onConfirm: (letter: LetterRecord) => void;
+    disabled?: boolean;
+    isProcessing?: boolean;
+}) {
+    const [open, setOpen] = useState(false);
+    const canArchive = letter.status === 'Didisposisi';
+
+    return (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-rose-600 hover:text-rose-700"
+                    disabled={disabled || letter.status === 'Diarsipkan'}
+                >
+                    {isProcessing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Archive className="mr-2 h-4 w-4" />
+                    )}
+                    Arsipkan
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Arsipkan surat ini?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {canArchive
+                            ? 'Surat akan dipindahkan ke tab Arsip dan tidak muncul di daftar aktif.'
+                            : 'Surat belum didisposisi oleh HR sehingga belum dapat diarsipkan.'}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-rose-600 hover:bg-rose-700"
+                        disabled={!canArchive || disabled || isProcessing}
+                        onClick={() => {
+                            if (!canArchive || disabled || isProcessing) {
+                                return;
+                            }
+                            onConfirm(letter);
+                            setOpen(false);
+                        }}
+                    >
+                        {isProcessing ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            'Ya, Arsipkan'
+                        )}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+

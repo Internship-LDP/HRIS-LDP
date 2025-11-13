@@ -87,6 +87,8 @@ Route::middleware('auth')->group(function () {
             ->name('recruitment.destroy');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
+        Route::post('/kelola-surat/{surat}/archive', [LetterController::class, 'archive'])->name('letters.archive');
+        Route::post('/kelola-surat/{surat}/unarchive', [LetterController::class, 'unarchive'])->name('letters.unarchive');
         Route::post('/kelola-surat/disposition/bulk', [LetterController::class, 'bulkDisposition'])->name('letters.disposition.bulk');
         Route::post('/kelola-surat/disposition/reject', [LetterController::class, 'rejectDisposition'])->name('letters.disposition.reject');
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
@@ -106,6 +108,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/kelola-surat', [AdminStaffLetterController::class, 'index'])->name('letters');
         Route::post('/kelola-surat', [AdminStaffLetterController::class, 'store'])->name('letters.store');
         Route::post('/kelola-surat/{surat}/reply', [AdminStaffLetterController::class, 'reply'])->name('letters.reply');
+        Route::post('/kelola-surat/{surat}/archive', [AdminStaffLetterController::class, 'archive'])->name('letters.archive');
+        Route::post('/kelola-surat/{surat}/unarchive', [AdminStaffLetterController::class, 'unarchive'])->name('letters.unarchive');
         Route::get('/recruitment', AdminStaffRecruitmentController::class)->name('recruitment');
     });
 });

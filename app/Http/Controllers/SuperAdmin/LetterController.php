@@ -303,6 +303,52 @@ class LetterController extends Controller
             );
     }
 
+    public function archive(Request $request, Surat $surat): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        if ($surat->status_persetujuan === 'Diarsipkan') {
+            return redirect()
+                ->back()
+                ->with('info', 'Surat sudah berada di arsip.');
+        }
+
+        if ($surat->status_persetujuan !== 'Didisposisi') {
+            return redirect()
+                ->back()
+                ->with('error', 'Hanya surat yang sudah didisposisi yang dapat diarsipkan.');
+        }
+
+        $surat->forceFill([
+            'status_persetujuan' => 'Diarsipkan',
+            'current_recipient' => 'archive',
+        ])->save();
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with('success', 'Surat dipindahkan ke arsip.');
+    }
+
+    public function unarchive(Request $request, Surat $surat): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        if ($surat->status_persetujuan !== 'Diarsipkan') {
+            return redirect()
+                ->back()
+                ->with('info', 'Surat tidak berada di arsip.');
+        }
+
+        $surat->forceFill([
+            'status_persetujuan' => 'Didisposisi',
+            'current_recipient' => 'division',
+        ])->save();
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with('success', 'Surat dikembalikan ke daftar aktif.');
+    }
+
     /**
      * Transform collection surat untuk frontend.
      */

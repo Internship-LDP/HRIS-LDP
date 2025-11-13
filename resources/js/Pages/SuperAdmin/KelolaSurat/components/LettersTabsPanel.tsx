@@ -23,6 +23,12 @@ interface LettersTabsPanelProps {
         archive: LetterRecord[];
     };
     onSelectLetter: (letter: LetterRecord) => void;
+    onArchiveLetter?: (letter: LetterRecord) => void;
+    archivingLetterId?: number | null;
+    archiveProcessing?: boolean;
+    onUnarchiveLetter?: (letter: LetterRecord) => void;
+    unarchivingLetterId?: number | null;
+    unarchiveProcessing?: boolean;
 }
 
 export default function LettersTabsPanel({
@@ -35,6 +41,12 @@ export default function LettersTabsPanel({
     onTabChange,
     filteredLetters,
     onSelectLetter,
+    onArchiveLetter,
+    archivingLetterId,
+    archiveProcessing,
+    onUnarchiveLetter,
+    unarchivingLetterId,
+    unarchiveProcessing,
 }: LettersTabsPanelProps) {
     return (
         <Card className="p-6">
@@ -71,13 +83,33 @@ export default function LettersTabsPanel({
                 </TabsList>
 
                 <TabsContent value="inbox">
-                    <LettersTable letters={filteredLetters.inbox} variant="inbox" onSelect={onSelectLetter} />
+                    <LettersTable
+                        letters={filteredLetters.inbox}
+                        variant="inbox"
+                        onSelect={onSelectLetter}
+                        onArchive={onArchiveLetter}
+                        archivingId={archivingLetterId}
+                        archiveProcessing={archiveProcessing}
+                    />
                 </TabsContent>
                 <TabsContent value="outbox">
-                    <LettersTable letters={filteredLetters.outbox} variant="outbox" onSelect={onSelectLetter} />
+                    <LettersTable
+                        letters={filteredLetters.outbox}
+                        variant="outbox"
+                        onSelect={onSelectLetter}
+                        onArchive={onArchiveLetter}
+                        archivingId={archivingLetterId}
+                        archiveProcessing={archiveProcessing}
+                    />
                 </TabsContent>
                 <TabsContent value="archive">
-                    <ArchiveList letters={filteredLetters.archive} onSelect={onSelectLetter} />
+                    <ArchiveList
+                        letters={filteredLetters.archive}
+                        onSelect={onSelectLetter}
+                        onUnarchive={onUnarchiveLetter}
+                        unarchivingId={unarchivingLetterId}
+                        unarchiveProcessing={unarchiveProcessing}
+                    />
                 </TabsContent>
             </Tabs>
         </Card>

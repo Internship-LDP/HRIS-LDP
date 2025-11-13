@@ -9,6 +9,7 @@ import {
 } from '@/Components/ui/dialog';
 import { FileText } from 'lucide-react';
 import { LetterRecord } from './LettersTable';
+import { PriorityBadge } from './PriorityBadge';
 
 interface LetterDetailDialogProps {
     letter: LetterRecord | null;
@@ -49,7 +50,9 @@ export default function LetterDetailDialog({
                             <DetailItem label="Kategori" value={letter.category} />
                             <div>
                                 <p className="text-xs text-slate-500">Prioritas</p>
-                                <div className="mt-1">{priorityBadge(letter.priority)}</div>
+                                <div className="mt-1">
+                                    <PriorityBadge priority={letter.priority} />
+                                </div>
                             </div>
                             <div>
                                 <p className="text-xs text-slate-500">Status</p>
@@ -133,17 +136,4 @@ function DetailItem({ label, value }: { label: string; value?: string | null }) 
             <p className="mt-1 text-sm text-slate-900">{value ?? '-'}</p>
         </div>
     );
-}
-
-function priorityBadge(priority: string) {
-    switch (priority) {
-        case 'high':
-            return <Badge className="bg-red-500">Tinggi</Badge>;
-        case 'medium':
-            return <Badge className="bg-orange-500">Sedang</Badge>;
-        case 'low':
-            return <Badge className="bg-blue-500">Rendah</Badge>;
-        default:
-            return <Badge variant="outline">{priority}</Badge>;
-    }
 }

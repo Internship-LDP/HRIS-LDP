@@ -14,6 +14,17 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import {
@@ -44,6 +55,8 @@ import {
     FileText,
     Filter,
     Inbox,
+    Loader2,
+    RotateCcw,
     Search,
     Send,
     Users,
@@ -111,6 +124,8 @@ export default function AdminStaffLetters() {
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [replyOpen, setReplyOpen] = useState(false);
+    const [archivingLetterId, setArchivingLetterId] = useState<number | null>(null);
+    const [unarchivingLetterId, setUnarchivingLetterId] = useState<number | null>(null);
 
     const form = useForm({
         penerima: 'Admin HR',
@@ -125,6 +140,8 @@ export default function AdminStaffLetters() {
     const replyForm = useForm({
         reply_note: '',
     });
+    const archiveForm = useForm({});
+    const unarchiveForm = useForm({});
 
     useEffect(() => {
         replyForm.reset();
@@ -179,6 +196,58 @@ export default function AdminStaffLetters() {
     const openDetail = (letter: LetterRecord) => {
         setSelectedLetter(letter);
         setDetailOpen(true);
+    };
+
+    const handleArchive = (letter: LetterRecord) => {
+        if (!letter || archiveForm.processing) {
+            return;
+        }
+
+        if (letter.status !== 'Didisposisi') {
+            return;
+        }
+
+        if (letter.status === 'Diarsipkan') {
+            toast.info('Surat sudah berada di arsip.');
+            return;
+        }
+
+        setArchivingLetterId(letter.id);
+
+        archiveForm.post(route('admin-staff.letters.archive', letter.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Surat dipindahkan ke arsip.');
+                if (selectedLetter?.id === letter.id) {
+                    setDetailOpen(false);
+                    setSelectedLetter(null);
+                }
+            },
+            onError: () => toast.error('Gagal mengarsipkan surat, coba lagi.'),
+            onFinish: () => setArchivingLetterId(null),
+        });
+    };
+
+    const handleUnarchive = (letter: LetterRecord) => {
+        if (!letter || unarchiveForm.processing) {
+            return;
+        }
+
+        if (letter.status !== 'Diarsipkan') {
+            toast.info('Surat ini belum berada di arsip.');
+            return;
+        }
+
+        setUnarchivingLetterId(letter.id);
+
+        unarchiveForm.post(route('admin-staff.letters.unarchive', letter.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Arsip surat dibatalkan.');
+            },
+            onError: () => toast.error('Gagal membatalkan arsip surat, coba lagi.'),
+            onFinish: () => setUnarchivingLetterId(null),
+        });
     };
 
     const openReplyDialog = () => {
@@ -329,16 +398,36 @@ export default function AdminStaffLetters() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="inbox">
-                        <LettersTable letters={activeLetters} onViewDetail={openDetail} />
-                    </TabsContent>
-                    <TabsContent value="outbox">
-                        <LettersTable letters={activeLetters} variant="outbox" onViewDetail={openDetail} />
-                    </TabsContent>
-                    <TabsContent value="archive">
-                        <LettersTable letters={activeLetters} variant="archive" onViewDetail={openDetail} />
-                    </TabsContent>
-                </Tabs>
+                <TabsContent value="inbox">
+                    <LettersTable
+                        letters={activeLetters}
+                        onViewDetail={openDetail}
+                        onArchive={handleArchive}
+                        archivingId={archivingLetterId}
+                        archiveProcessing={archiveForm.processing}
+                    />
+                </TabsContent>
+                <TabsContent value="outbox">
+                    <LettersTable
+                        letters={activeLetters}
+                        variant="outbox"
+                        onViewDetail={openDetail}
+                        onArchive={handleArchive}
+                        archivingId={archivingLetterId}
+                        archiveProcessing={archiveForm.processing}
+                    />
+                </TabsContent>
+                <TabsContent value="archive">
+                    <LettersTable
+                        letters={activeLetters}
+                        variant="archive"
+                        onViewDetail={openDetail}
+                        onUnarchive={handleUnarchive}
+                        unarchivingId={unarchivingLetterId}
+                        unarchiveProcessing={unarchiveForm.processing}
+                    />
+                </TabsContent>
+            </Tabs>
             </Card>
 
             {/* <Card className="p-6">
@@ -413,7 +502,7 @@ export default function AdminStaffLetters() {
                                     <InfoTile label="Kategori" value={selectedLetter.category} />
                                     <InfoTile
                                         label="Prioritas"
-                                        value={<Badge className="bg-slate-900 text-white">{selectedLetter.priority}</Badge>}
+                                        value={<PriorityBadge priority={selectedLetter.priority} />}
                                     />
                                     <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
                                 </section>
@@ -481,15 +570,21 @@ export default function AdminStaffLetters() {
                                                 : 'rounded-xl border border-slate-200/80 bg-white p-4'
                                         }
                                     >
-                                        <p
-                                            className={
-                                                isSelectedLetterRejected
-                                                    ? 'text-xs uppercase tracking-wide text-rose-500'
-                                                    : 'text-xs uppercase tracking-wide text-slate-500'
-                                            }
-                                        >
-                                            {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
-                                        </p>
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <p
+                                                className={
+                                                    isSelectedLetterRejected
+                                                        ? 'text-xs uppercase tracking-wide text-rose-500'
+                                                        : 'text-xs uppercase tracking-wide text-slate-500'
+                                                }
+                                            >
+                                                {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
+                                            </p>
+                                            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                                <span>Prioritas</span>
+                                                <PriorityBadge priority={selectedLetter.priority} />
+                                            </div>
+                                        </div>
                                         <p
                                             className={
                                                 isSelectedLetterRejected
@@ -583,10 +678,22 @@ function LettersTable({
     letters,
     variant = 'inbox',
     onViewDetail,
+    onArchive,
+    archivingId,
+    archiveProcessing,
+    onUnarchive,
+    unarchivingId,
+    unarchiveProcessing,
 }: {
     letters: LetterRecord[];
     variant?: TabValue;
     onViewDetail: (letter: LetterRecord) => void;
+    onArchive?: (letter: LetterRecord) => void;
+    archivingId?: number | null;
+    archiveProcessing?: boolean;
+    onUnarchive?: (letter: LetterRecord) => void;
+    unarchivingId?: number | null;
+    unarchiveProcessing?: boolean;
 }) {
     if (letters.length === 0) {
         return <EmptyState message="Belum ada surat pada tab ini." />;
@@ -600,6 +707,7 @@ function LettersTable({
                     <TableHead>Pengirim</TableHead>
                     <TableHead>Subjek</TableHead>
                     <TableHead>Kategori</TableHead>
+                    <TableHead>Prioritas</TableHead>
                     <TableHead>Tanggal</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
@@ -628,6 +736,9 @@ function LettersTable({
                         <TableCell>
                             <Badge variant="outline">{letter.category}</Badge>
                         </TableCell>
+                        <TableCell>
+                            <PriorityBadge priority={letter.priority} />
+                        </TableCell>
                         <TableCell>{letter.date}</TableCell>
                         <TableCell>
                             <StatusBadge status={letter.status} />
@@ -643,14 +754,160 @@ function LettersTable({
                             )}
                         </TableCell>
                         <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
-                                Detail
-                            </Button>
+                            <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
+                                    Detail
+                                </Button>
+                                {onArchive && variant !== 'archive' && (
+                                    <ArchiveConfirmButton
+                                        letter={letter}
+                                        onConfirm={onArchive}
+                                        disabled={archiveProcessing}
+                                        isProcessing={archiveProcessing && archivingId === letter.id}
+                                    />
+                                )}
+                                {onUnarchive && variant === 'archive' && (
+                                    <UnarchiveConfirmButton
+                                        letter={letter}
+                                        onConfirm={onUnarchive}
+                                        disabled={unarchiveProcessing}
+                                        isProcessing={unarchiveProcessing && unarchivingId === letter.id}
+                                    />
+                                )}
+                            </div>
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
         </Table>
+    );
+}
+
+function ArchiveConfirmButton({
+    letter,
+    onConfirm,
+    disabled,
+    isProcessing,
+}: {
+    letter: LetterRecord;
+    onConfirm: (letter: LetterRecord) => void;
+    disabled?: boolean;
+    isProcessing?: boolean;
+}) {
+    const [open, setOpen] = useState(false);
+    const canArchive = letter.status === 'Didisposisi';
+
+    return (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-rose-600 hover:text-rose-700"
+                    disabled={disabled || letter.status === 'Diarsipkan'}
+                >
+                    {isProcessing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Archive className="mr-2 h-4 w-4" />
+                    )}
+                    Arsipkan
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Arsipkan surat?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {canArchive
+                            ? 'Surat akan disimpan sebagai arsip dan tidak tampil di daftar aktif.'
+                            : 'Surat ini belum didisposisi HR sehingga belum dapat diarsipkan.'}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-rose-600 hover:bg-rose-700"
+                        disabled={!canArchive || disabled || isProcessing}
+                        onClick={() => {
+                            if (!canArchive || disabled || isProcessing) {
+                                return;
+                            }
+                            onConfirm(letter);
+                            setOpen(false);
+                        }}
+                    >
+                        {isProcessing ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            'Ya, Arsipkan'
+                        )}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
+function UnarchiveConfirmButton({
+    letter,
+    onConfirm,
+    disabled,
+    isProcessing,
+}: {
+    letter: LetterRecord;
+    onConfirm: (letter: LetterRecord) => void;
+    disabled?: boolean;
+    isProcessing?: boolean;
+}) {
+    const [open, setOpen] = useState(false);
+    const canUnarchive = letter.status === 'Diarsipkan';
+
+    return (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-amber-700 hover:text-amber-800"
+                    disabled={disabled || !canUnarchive}
+                >
+                    {isProcessing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                    )}
+                    Batalkan Arsip
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Batalkan arsip surat?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Surat akan dikembalikan ke daftar aktif untuk diproses kembali.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-amber-600 hover:bg-amber-700"
+                        disabled={!canUnarchive || disabled || isProcessing}
+                        onClick={() => {
+                            if (!canUnarchive || disabled || isProcessing) {
+                                return;
+                            }
+                            onConfirm(letter);
+                            setOpen(false);
+                        }}
+                    >
+                        {isProcessing ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            'Ya, Batalkan'
+                        )}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
 
@@ -706,6 +963,58 @@ function StatusBadge({ status }: { status: string }) {
     }
 
     return <Badge variant="outline">{status}</Badge>;
+}
+
+const PRIORITY_META: Record<
+    string,
+    {
+        label: string;
+        badgeClass: string;
+    }
+> = {
+    high: {
+        label: 'Tinggi',
+        badgeClass: 'bg-rose-100 text-rose-700 border border-rose-200',
+    },
+    medium: {
+        label: 'Sedang',
+        badgeClass: 'bg-amber-100 text-amber-700 border border-amber-200',
+    },
+    low: {
+        label: 'Rendah',
+        badgeClass: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+    },
+};
+
+const FALLBACK_PRIORITY_META = PRIORITY_META.medium;
+
+function resolvePriorityMeta(priority?: string | null) {
+    if (typeof priority !== 'string') {
+        return FALLBACK_PRIORITY_META;
+    }
+
+    const normalized = priority.toLowerCase();
+
+    return PRIORITY_META[normalized] ?? FALLBACK_PRIORITY_META;
+}
+
+function PriorityBadge({
+    priority,
+    className,
+}: {
+    priority?: string | null;
+    className?: string;
+}) {
+    const meta = resolvePriorityMeta(priority);
+    const classes = [
+        'border-0 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
+        meta.badgeClass,
+        className,
+    ]
+        .filter((value): value is string => Boolean(value))
+        .join(' ');
+
+    return <Badge className={classes}>{meta.label}</Badge>;
 }
 
 function EmptyState({ message }: { message: string }) {

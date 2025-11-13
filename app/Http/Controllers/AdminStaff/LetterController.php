@@ -42,7 +42,8 @@ class LetterController extends Controller
             ->with($this->letterRelations())
             ->where(function ($query) use ($user) {
                 $query->where('target_division', $user->division)
-                    ->orWhere('penerima', $user->division);
+                    ->orWhere('penerima', $user->division)
+                    ->orWhere('user_id', $user->id);
             })
             ->where('status_persetujuan', 'Diarsipkan')
             ->orderByDesc('tanggal_surat')
@@ -212,6 +213,72 @@ class LetterController extends Controller
         return redirect()
             ->route('admin-staff.letters')
             ->with('success', 'Balasan surat dikirim ke HR untuk diteruskan.');
+    }
+
+    public function archive(Request $request, Surat $surat): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        abort_unless($this->authorized($user), 403);
+
+        $belongsToDivision = $surat->target_division === $user->division
+            || $surat->penerima === $user->division;
+
+        $canArchiveInbox = $surat->current_recipient === 'division' && $belongsToDivision;
+        $canArchiveOutbox = (int) $surat->user_id === (int) $user->id;
+
+        abort_unless($canArchiveInbox || $canArchiveOutbox, 403);
+
+        if ($surat->status_persetujuan === 'Diarsipkan') {
+            return redirect()
+                ->back()
+                ->with('info', 'Surat sudah berada di arsip.');
+        }
+
+        if ($surat->status_persetujuan !== 'Didisposisi') {
+            return redirect()
+                ->back()
+                ->with('error', 'Hanya surat yang sudah didisposisi yang dapat diarsipkan.');
+        }
+
+        $surat->forceFill([
+            'status_persetujuan' => 'Diarsipkan',
+            'current_recipient' => 'archive',
+        ])->save();
+
+        return redirect()
+            ->route('admin-staff.letters')
+            ->with('success', 'Surat berhasil dipindahkan ke arsip.');
+    }
+
+    public function unarchive(Request $request, Surat $surat): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        abort_unless($this->authorized($user), 403);
+
+        $belongsToDivision = $surat->target_division === $user->division
+            || $surat->penerima === $user->division;
+
+        $canUnarchiveInbox = $belongsToDivision;
+        $canUnarchiveOutbox = (int) $surat->user_id === (int) $user->id;
+
+        abort_unless($canUnarchiveInbox || $canUnarchiveOutbox, 403);
+
+        if ($surat->status_persetujuan !== 'Diarsipkan') {
+            return redirect()
+                ->back()
+                ->with('info', 'Surat tidak berada di arsip.');
+        }
+
+        $surat->forceFill([
+            'status_persetujuan' => 'Didisposisi',
+            'current_recipient' => 'division',
+        ])->save();
+
+        return redirect()
+            ->route('admin-staff.letters')
+            ->with('success', 'Surat dikembalikan ke daftar aktif.');
     }
 
     private function lettersForStaff(User $user)

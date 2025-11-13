@@ -13,6 +13,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Download, Eye, FileText, SendHorizontal } from 'lucide-react';
 import { LetterRecord } from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTable';
 import type { InertiaFormProps } from '@inertiajs/react';
+import { PriorityBadge } from '@/Pages/SuperAdmin/KelolaSurat/components/PriorityBadge';
 
 interface DispositionDialogProps {
     open: boolean;
@@ -64,16 +65,19 @@ export default function DispositionDialog({
                                             key={letter.id}
                                             className="rounded-xl border border-white/60 bg-white p-3 shadow-sm"
                                         >
-                                            <div className="flex items-start justify-between gap-3">
+                                            <div className="flex flex-wrap items-start justify-between gap-3">
                                                 <div>
                                                     <p className="text-sm font-semibold text-slate-900">
                                                         {letter.letterNumber}
                                                     </p>
                                                     <p className="text-xs text-slate-500">{letter.subject}</p>
                                                 </div>
-                                                <Badge variant="outline" className="text-slate-600">
-                                                    {letter.targetDivision ?? '-'}
-                                                </Badge>
+                                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                                    <PriorityBadge priority={letter.priority} />
+                                                    <Badge variant="outline" className="text-slate-600">
+                                                        {letter.targetDivision ?? '-'}
+                                                    </Badge>
+                                                </div>
                                             </div>
                                             <p className="mt-1 text-xs text-slate-500">
                                                 {letter.senderName} - {letter.date}

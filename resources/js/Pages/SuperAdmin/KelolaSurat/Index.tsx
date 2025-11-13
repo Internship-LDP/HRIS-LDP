@@ -93,6 +93,12 @@ export default function KelolaSuratIndex() {
         form,
         handleComposeSubmit,
         handleDispositionSubmit,
+        archiveForm,
+        handleArchiveLetter,
+        archivingLetterId,
+        unarchiveForm,
+        handleUnarchiveLetter,
+        unarchivingLetterId,
     } = useKelolaSuratState({
         letters,
         pendingDisposition,
@@ -150,6 +156,12 @@ export default function KelolaSuratIndex() {
                 onTabChange={setActiveTab}
                 filteredLetters={filteredLetters}
                 onSelectLetter={handleSelectLetter}
+                onArchiveLetter={handleArchiveLetter}
+                archivingLetterId={archivingLetterId}
+                archiveProcessing={archiveForm.processing}
+                onUnarchiveLetter={handleUnarchiveLetter}
+                unarchivingLetterId={unarchivingLetterId}
+                unarchiveProcessing={unarchiveForm.processing}
             />
 
             <LetterDetailDialog

@@ -15,6 +15,7 @@ import { cn } from '@/Components/ui/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Download, Eye, FileText, Info, MailCheck, SendHorizontal } from 'lucide-react';
 import { LetterRecord } from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTable';
+import { PriorityBadge } from '@/Pages/SuperAdmin/KelolaSurat/components/PriorityBadge';
 
 interface PendingDispositionPanelProps {
     pendingDisposition: LetterRecord[];
@@ -81,7 +82,7 @@ export default function PendingDispositionPanel({
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-blue-100 text-blue-700">{selectedCount} surat dipilih</Badge>
-                    <Button
+                    {/* <Button
                         size="sm"
                         variant="outline"
                         className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
@@ -90,7 +91,7 @@ export default function PendingDispositionPanel({
                     >
                         <SendHorizontal className="mr-2 h-4 w-4" />
                         Disposisi Terpilih
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
 
@@ -115,6 +116,7 @@ export default function PendingDispositionPanel({
                                 <TableHead>Nomor</TableHead>
                                 <TableHead>Pengirim</TableHead>
                                 <TableHead>Divisi Tujuan</TableHead>
+                                <TableHead>Prioritas</TableHead>
                                 <TableHead>Subjek</TableHead>
                                 <TableHead>Lampiran</TableHead>
                                 <TableHead>Tanggal</TableHead>
@@ -157,6 +159,9 @@ export default function PendingDispositionPanel({
                                             <Badge variant="outline">{letter.targetDivision ?? '-'}</Badge>
                                         </TableCell>
                                         <TableCell>
+                                            <PriorityBadge priority={letter.priority} />
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="max-w-[240px]">
                                                 <p className="truncate">{letter.subject}</p>
                                                 {letter.replyNote && (
@@ -181,7 +186,7 @@ export default function PendingDispositionPanel({
                                         <TableCell>{letter.date}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                {letter.attachment?.url && (
+                                                {/* {letter.attachment?.url && (
                                                     <>
                                                         <Button variant="ghost" size="icon" className="text-slate-500" asChild>
                                                             <a href={letter.attachment.url} target="_blank" rel="noreferrer">
@@ -201,7 +206,7 @@ export default function PendingDispositionPanel({
                                                             </a>
                                                         </Button>
                                                     </>
-                                                )}
+                                                )} */}
                                                 <Button
                                                     size="sm"
                                                     className="bg-blue-500 text-white hover:bg-blue-600"
@@ -234,14 +239,15 @@ export default function PendingDispositionPanel({
                                 {isAllSelected ? 'Batalkan Pilihan' : 'Pilih Semua'}
                             </Button>
                             <Button
-                                size="sm"
-                                className="gap-2 bg-blue-600 text-white hover:bg-blue-700"
-                                disabled={selectedCount === 0}
-                                onClick={() => onOpenDialog()}
-                            >
-                                <SendHorizontal className="h-4 w-4" />
-                                Disposisi Terpilih
-                            </Button>
+                        size="sm"
+                        variant="outline"
+                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        disabled={selectedCount === 0}
+                        onClick={() => onOpenDialog()}
+                    >
+                        <SendHorizontal className="mr-2 h-4 w-4" />
+                        Disposisi Terpilih
+                    </Button>
                         </div>
                     </div>
                 </>

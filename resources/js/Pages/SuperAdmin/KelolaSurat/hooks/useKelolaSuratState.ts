@@ -33,6 +33,8 @@ export function useKelolaSuratState({
     const [dispositionOpen, setDispositionOpen] = useState(false);
     const [selectedDispositionIds, setSelectedDispositionIds] = useState<number[]>([]);
     const [dispositionTargets, setDispositionTargets] = useState<LetterRecord[]>([]);
+    const [archivingLetterId, setArchivingLetterId] = useState<number | null>(null);
+    const [unarchivingLetterId, setUnarchivingLetterId] = useState<number | null>(null);
 
     const form = useForm({
         penerima: '',
@@ -49,6 +51,9 @@ export function useKelolaSuratState({
         disposition_note: '',
         letter_ids: [] as number[],
     });
+
+    const archiveForm = useForm({});
+    const unarchiveForm = useForm({});
 
     const filteredLetters = useMemo(() => {
         const applyFilter = (items: LetterRecord[]) => {
@@ -199,6 +204,58 @@ export function useKelolaSuratState({
         });
     };
 
+    const handleArchiveLetter = (letter: LetterRecord) => {
+        if (!letter || archiveForm.processing) {
+            return;
+        }
+
+        if (letter.status !== 'Didisposisi') {
+            return;
+        }
+
+        if (letter.status === 'Diarsipkan') {
+            toast.info('Surat sudah berada di arsip.');
+            return;
+        }
+
+        setArchivingLetterId(letter.id);
+
+        archiveForm.post(route('super-admin.letters.archive', letter.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Surat dipindahkan ke arsip.');
+                if (selectedLetter && selectedLetter.id === letter.id) {
+                    setDetailOpen(false);
+                    setSelectedLetter(null);
+                }
+            },
+            onError: () => toast.error('Gagal mengarsipkan surat, coba lagi.'),
+            onFinish: () => setArchivingLetterId(null),
+        });
+    };
+
+    const handleUnarchiveLetter = (letter: LetterRecord) => {
+        if (!letter || unarchiveForm.processing) {
+            return;
+        }
+
+        if (letter.status !== 'Diarsipkan') {
+            toast.info('Surat ini belum berada di arsip.');
+            return;
+        }
+
+        setUnarchivingLetterId(letter.id);
+
+        unarchiveForm.post(route('super-admin.letters.unarchive', letter.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Surat dikembalikan ke daftar aktif.');
+            },
+            onError: () => toast.error('Gagal membatalkan arsip surat, coba lagi.'),
+            onFinish: () => setUnarchivingLetterId(null),
+        });
+    };
+
     return {
         searchQuery,
         setSearchQuery,
@@ -221,13 +278,19 @@ export function useKelolaSuratState({
         isAllPendingSelected,
         form,
         dispositionForm,
+        archiveForm,
+        unarchiveForm,
         openDispositionDialog,
         handlePendingSelect,
         selectAllPending,
         clearPendingSelection,
         handleHeaderCheckboxChange,
         handleSelectLetter,
+        handleArchiveLetter,
+        handleUnarchiveLetter,
         handleComposeSubmit,
         handleDispositionSubmit,
+        archivingLetterId,
+        unarchivingLetterId,
     };
 }
