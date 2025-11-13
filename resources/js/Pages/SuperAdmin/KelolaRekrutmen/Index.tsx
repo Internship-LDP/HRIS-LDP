@@ -12,7 +12,7 @@ import {
     RecruitmentPageProps,
     StatusSummary,
 } from './types';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 const statusOrder: ApplicantStatus[] = [
     'Applied',
@@ -95,12 +95,14 @@ export default function KelolaRekrutmenIndex({
           ];
 
     return (
-        <SuperAdminLayout
-            title="Recruitment & Onboarding"
-            description="Kelola pelamar dan proses rekrutmen"
-            breadcrumbs={breadcrumbs}
-            actions={<AddApplicantDialog />}
-        >
+        <>
+            <Head title="Kelola Rekrutmen" />
+            <SuperAdminLayout
+                title="Recruitment & Onboarding"
+                description="Kelola pelamar dan proses rekrutmen"
+                breadcrumbs={breadcrumbs}
+                actions={<AddApplicantDialog />}
+            >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
                 <TabsList>
                     <TabsTrigger value="applicants">Daftar Pelamar</TabsTrigger>
@@ -132,11 +134,12 @@ export default function KelolaRekrutmenIndex({
                 </TabsContent>
             </Tabs>
 
-            <ApplicantDetailDialog
-                open={detailOpen}
-                onOpenChange={setDetailOpen}
-                applicant={selectedApplicant}
-            />
-        </SuperAdminLayout>
+                <ApplicantDetailDialog
+                    open={detailOpen}
+                    onOpenChange={setDetailOpen}
+                    applicant={selectedApplicant}
+                />
+            </SuperAdminLayout>
+        </>
     );
 }

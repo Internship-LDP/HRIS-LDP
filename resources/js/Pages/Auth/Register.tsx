@@ -1,10 +1,12 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { gsap } from 'gsap';
+import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { FormEventHandler, useEffect, useRef, useState } from 'react';
+
+const logo = '/img/LogoLDP.png';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -13,6 +15,29 @@ export default function Register() {
         password: '',
         password_confirmation: '',
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            gsap.from(containerRef.current, {
+                opacity: 0,
+                duration: 0.4,
+            });
+        }
+
+        if (cardRef.current) {
+            gsap.from(cardRef.current, {
+                opacity: 0,
+                y: 30,
+                duration: 0.8,
+                delay: 0.15,
+                ease: 'power3.out',
+            });
+        }
+    }, []);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -23,99 +48,230 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout>
-            <Head title="Register" />
+        <>
+            <Head title="Daftar" />
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
+            <div className="relative min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 px-4 py-10 text-gray-900">
+                <div className="pointer-events-none absolute top-16 right-10 size-72 rounded-full bg-purple-400/20 blur-3xl" />
+                <div
+                    className="pointer-events-none absolute bottom-10 left-10 h-96 w-96 rounded-full bg-purple-300/20 blur-3xl"
+                    style={{ animationDelay: '1s' }}
+                />
 
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
+                <div
+                    ref={containerRef}
+                    className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-center"
+                >
+                    <div className="w-full max-w-md">
+                        <Link
+                            href="/"
+                            className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 transition hover:text-purple-600"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Kembali ke Beranda
+                        </Link>
 
-                    <InputError message={errors.name} className="mt-2" />
+                        <div
+                            ref={cardRef}
+                            className="rounded-2xl border border-purple-100 bg-white/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
+                        >
+                            <div className="mb-8 text-center">
+                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-purple-50">
+                                    <img
+                                        src={logo}
+                                        alt="Lintas Data Prima"
+                                        className="h-12 w-12 object-contain"
+                                    />
+                                </div>
+                                <h1 className="text-2xl font-semibold text-gray-900">
+                                    Buat Akun Baru
+                                </h1>
+                                <p className="mt-2 text-sm text-gray-600">
+                                    Bergabung dengan Lintas Data Prima hari ini
+                                </p>
+                            </div>
+
+                            <form onSubmit={submit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="name"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
+                                        Nama Lengkap
+                                    </label>
+                                    <div className="relative">
+                                        <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={data.name}
+                                            autoComplete="name"
+                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            onChange={(e) =>
+                                                setData('name', e.target.value)
+                                            }
+                                            required
+                                        />
+                                    </div>
+                                    <InputError
+                                        message={errors.name}
+                                        className="text-sm text-red-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="email"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
+                                        Email
+                                    </label>
+                                    <div className="relative">
+                                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            value={data.email}
+                                            autoComplete="username"
+                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            onChange={(e) =>
+                                                setData('email', e.target.value)
+                                            }
+                                            required
+                                        />
+                                    </div>
+                                    <InputError
+                                        message={errors.email}
+                                        className="text-sm text-red-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="password"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
+                                        Kata Sandi
+                                    </label>
+                                    <div className="relative">
+                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            value={data.password}
+                                            autoComplete="new-password"
+                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 pr-12 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            onChange={(e) =>
+                                                setData('password', e.target.value)
+                                            }
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowPassword((prev) => !prev)
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-5 w-5" />
+                                            ) : (
+                                                <Eye className="h-5 w-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    <InputError
+                                        message={errors.password}
+                                        className="text-sm text-red-500"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="password_confirmation"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
+                                        Konfirmasi Kata Sandi
+                                    </label>
+                                    <div className="relative">
+                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Input
+                                            id="password_confirmation"
+                                            type={
+                                                showConfirmPassword
+                                                    ? 'text'
+                                                    : 'password'
+                                            }
+                                            name="password_confirmation"
+                                            value={data.password_confirmation}
+                                            autoComplete="new-password"
+                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 pr-12 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            onChange={(e) =>
+                                                setData(
+                                                    'password_confirmation',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setShowConfirmPassword(
+                                                    (prev) => !prev,
+                                                )
+                                            }
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeOff className="h-5 w-5" />
+                                            ) : (
+                                                <Eye className="h-5 w-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    <InputError
+                                        message={errors.password_confirmation}
+                                        className="text-sm text-red-500"
+                                    />
+                                </div>
+
+                                <div className="text-xs text-gray-500">
+                                    Dengan mendaftar, Anda menyetujui{' '}
+                                    <span className="font-medium text-purple-600">
+                                        Syarat & Ketentuan
+                                    </span>{' '}
+                                    dan{' '}
+                                    <span className="font-medium text-purple-600">
+                                        Kebijakan Privasi
+                                    </span>{' '}
+                                    Lintas Data Prima.
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="h-12 w-full rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 text-base font-semibold text-white shadow-lg shadow-purple-200 transition hover:from-purple-700 hover:to-purple-600"
+                                >
+                                    {processing ? 'Memproses...' : 'Daftar Sekarang'}
+                                </Button>
+                            </form>
+
+                            <div className="mt-8 text-center text-sm text-gray-600">
+                                Sudah punya akun?{' '}
+                                <Link
+                                    href={route('login')}
+                                    className="font-semibold text-purple-600 hover:text-purple-700"
+                                >
+                                    Masuk di sini
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Already registered?
-                    </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+            </div>
+        </>
     );
 }
