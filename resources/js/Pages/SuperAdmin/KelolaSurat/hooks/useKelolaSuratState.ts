@@ -209,12 +209,12 @@ export function useKelolaSuratState({
             return;
         }
 
-        if (letter.status !== 'Didisposisi') {
+        if (letter.status === 'Diarsipkan') {
+            toast.info('Surat sudah berada di arsip.');
             return;
         }
 
-        if (letter.status === 'Diarsipkan') {
-            toast.info('Surat sudah berada di arsip.');
+        if (letter.status !== 'Didisposisi') {
             return;
         }
 
