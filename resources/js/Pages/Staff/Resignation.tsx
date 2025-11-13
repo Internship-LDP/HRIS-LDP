@@ -177,7 +177,7 @@ export default function StaffResignation() {
                             )}
                             <div className="flex flex-wrap gap-3">
                                 <Button
-                                    className="bg-blue-900 hover:bg-blue-800"
+                                    className="bg-blue-900 hover:bg-blue-800 text-white"
                                     onClick={submit}
                                     disabled={form.processing}
                                 >

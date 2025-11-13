@@ -15,12 +15,12 @@ const nav = [
         route: 'admin-staff.letters',
         pattern: 'admin-staff.letters',
     },
-    {
-        label: 'Rekrutmen Baru',
-        icon: Users,
-        route: 'admin-staff.recruitment',
-        pattern: 'admin-staff.recruitment',
-    },
+    // {
+    //     label: 'Rekrutmen Baru',
+    //     icon: Users,
+    //     route: 'admin-staff.recruitment',
+    //     pattern: 'admin-staff.recruitment',
+    // },
 ];
 
 export default function Sidebar() {
