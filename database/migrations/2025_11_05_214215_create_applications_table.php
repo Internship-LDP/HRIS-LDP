@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone')->nullable();
             $table->string('position');
+            $table->string('division')->nullable();
             $table->string('education')->nullable();
             $table->string('experience')->nullable();
             $table->text('skills')->nullable();

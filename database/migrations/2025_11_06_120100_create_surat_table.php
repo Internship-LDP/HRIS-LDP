@@ -26,6 +26,15 @@ return new class extends Migration
             $table->string('kategori')->default('Internal');
             $table->string('prioritas')->default('medium');
             $table->string('penerima');
+            $table->string('target_division')->nullable();
+            $table->string('previous_division')->nullable();
+            $table->enum('current_recipient', ['hr', 'division', 'archive'])->default('hr');
+            $table->foreignId('disposed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('disposed_at')->nullable();
+            $table->text('disposition_note')->nullable();
+            $table->text('reply_note')->nullable();
+            $table->foreignId('reply_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('reply_at')->nullable();
             $table->text('alamat_pengirim')->nullable();
             $table->string('lampiran_path')->nullable();
             $table->string('lampiran_nama')->nullable();
