@@ -6,6 +6,9 @@ interface AccountFormState {
     email: string;
     role: string;
     division?: string | null;
+    religion?: string | null;
+    gender?: string | null;
+    education_level?: string | null;
     status: string;
     registered_at?: string | null;
     inactive_at?: string | null;
@@ -22,6 +25,9 @@ interface AccountFormProps {
     roleOptions: string[];
     divisionOptions: string[];
     statusOptions: string[];
+    religionOptions: string[];
+    genderOptions: string[];
+    educationLevelOptions: string[];
     setData: (key: EditableField, value: string) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     showDivision: boolean;
@@ -37,6 +43,9 @@ export default function AccountForm({
     roleOptions,
     divisionOptions,
     statusOptions,
+    religionOptions,
+    genderOptions,
+    educationLevelOptions,
     setData,
     onSubmit,
     showDivision,
@@ -48,6 +57,7 @@ export default function AccountForm({
         data.role === 'Super Admin'
             ? roleOptions
             : roleOptions.filter((role) => role !== 'Super Admin');
+    const isStaffRole = data.role === 'Staff';
 
     const handleStatusChange = (nextStatus: string) => {
         setData('status', nextStatus);
@@ -180,6 +190,94 @@ export default function AccountForm({
                             </p>
                         )}
                     </div>
+                )}
+                {isStaffRole && (
+                    <>
+                        <div>
+                            <label
+                                className="text-sm font-medium text-slate-600"
+                                htmlFor="religion"
+                            >
+                                Agama
+                            </label>
+                            <select
+                                id="religion"
+                                value={data.religion ?? ''}
+                                onChange={(event) =>
+                                    setData('religion', event.target.value)
+                                }
+                                className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+                                <option value="">Pilih agama</option>
+                                {religionOptions.map((religion) => (
+                                    <option key={religion} value={religion}>
+                                        {religion}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.religion && (
+                                <p className="mt-1 text-xs text-red-500">
+                                    {errors.religion}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label
+                                className="text-sm font-medium text-slate-600"
+                                htmlFor="gender"
+                            >
+                                Jenis Kelamin
+                            </label>
+                            <select
+                                id="gender"
+                                value={data.gender ?? ''}
+                                onChange={(event) =>
+                                    setData('gender', event.target.value)
+                                }
+                                className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+                                <option value="">Pilih jenis kelamin</option>
+                                {genderOptions.map((gender) => (
+                                    <option key={gender} value={gender}>
+                                        {gender}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.gender && (
+                                <p className="mt-1 text-xs text-red-500">
+                                    {errors.gender}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label
+                                className="text-sm font-medium text-slate-600"
+                                htmlFor="education_level"
+                            >
+                                Tingkat Pendidikan
+                            </label>
+                            <select
+                                id="education_level"
+                                value={data.education_level ?? ''}
+                                onChange={(event) =>
+                                    setData('education_level', event.target.value)
+                                }
+                                className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+                                <option value="">Pilih tingkat pendidikan</option>
+                                {educationLevelOptions.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.education_level && (
+                                <p className="mt-1 text-xs text-red-500">
+                                    {errors.education_level}
+                                </p>
+                            )}
+                        </div>
+                    </>
                 )}
                 <div>
                     <label

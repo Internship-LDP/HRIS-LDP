@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,6 +95,9 @@ class AccountController extends Controller
             'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
             'divisionOptions' => User::DIVISIONS,
+            'religionOptions' => StaffProfile::RELIGIONS,
+            'genderOptions' => StaffProfile::GENDERS,
+            'educationLevelOptions' => StaffProfile::EDUCATION_LEVELS,
         ]);
     }
 
@@ -107,11 +111,40 @@ class AccountController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', 'string', Rule::in($this->allowedRoles())],
             'division' => ['nullable', 'string', 'max:255'],
+            'religion' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::RELIGIONS),
+            ],
+            'gender' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::GENDERS),
+            ],
+            'education_level' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::EDUCATION_LEVELS),
+            ],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
             'inactive_at' => ['nullable', 'date'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
+
+        $profileData = [
+            'religion' => $validated['religion'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'education_level' => $validated['education_level'] ?? null,
+        ];
+        unset($validated['religion'], $validated['gender'], $validated['education_level']);
+        $profileData = array_map(
+            static fn ($value) => $value !== null ? trim((string) $value) : null,
+            $profileData
+        );
 
         if (!$this->roleRequiresDivision($validated['role'])) {
             $validated['division'] = null;
@@ -125,7 +158,9 @@ class AccountController extends Controller
                 : null;
         $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        $this->syncStaffProfile($user, $profileData);
 
         return redirect()
             ->route('super-admin.accounts.index')
@@ -145,6 +180,9 @@ class AccountController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'division' => $user->division,
+                'religion' => $user->staffProfile?->religion,
+                'gender' => $user->staffProfile?->gender,
+                'education_level' => $user->staffProfile?->education_level,
                 'status' => $user->status,
                 'registered_at' => optional($user->registered_at)->format('Y-m-d'),
                 'inactive_at' => optional($user->inactive_at)->format('Y-m-d'),
@@ -152,6 +190,9 @@ class AccountController extends Controller
             'roleOptions' => $this->allowedRoles(),
             'statusOptions' => User::STATUSES,
             'divisionOptions' => User::DIVISIONS,
+            'religionOptions' => StaffProfile::RELIGIONS,
+            'genderOptions' => StaffProfile::GENDERS,
+            'educationLevelOptions' => StaffProfile::EDUCATION_LEVELS,
         ]);
     }
 
@@ -170,11 +211,40 @@ class AccountController extends Controller
             ],
             'role' => ['required', 'string', Rule::in($this->allowedRoles())],
             'division' => ['nullable', 'string', 'max:255'],
+            'religion' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::RELIGIONS),
+            ],
+            'gender' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::GENDERS),
+            ],
+            'education_level' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->input('role') === User::ROLES['staff']),
+                Rule::in(StaffProfile::EDUCATION_LEVELS),
+            ],
             'status' => ['required', 'string', Rule::in(User::STATUSES)],
             'registered_at' => ['nullable', 'date'],
             'inactive_at' => ['nullable', 'date'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
+
+        $profileData = [
+            'religion' => $validated['religion'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'education_level' => $validated['education_level'] ?? null,
+        ];
+        unset($validated['religion'], $validated['gender'], $validated['education_level']);
+        $profileData = array_map(
+            static fn ($value) => $value !== null ? trim((string) $value) : null,
+            $profileData
+        );
 
         if (!$this->roleRequiresDivision($validated['role'])) {
             $validated['division'] = null;
@@ -192,6 +262,8 @@ class AccountController extends Controller
                 : null;
 
         $user->update($validated);
+
+        $this->syncStaffProfile($user, $profileData);
 
         return redirect()
             ->route('super-admin.accounts.index')
@@ -269,5 +341,15 @@ class AccountController extends Controller
             User::ROLES['staff'],
             User::ROLES['pelamar'],
         ];
+    }
+
+    private function syncStaffProfile(User $user, array $profileData): void
+    {
+        if ($user->role !== User::ROLES['staff']) {
+            $user->staffProfile()->delete();
+            return;
+        }
+
+        $user->staffProfile()->updateOrCreate([], $profileData);
     }
 }

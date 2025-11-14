@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -68,6 +69,104 @@ class DashboardController extends Controller
             })
             ->values();
 
+        $staffBaseQuery = User::query()->where('role', User::ROLES['staff']);
+
+        $staffStats = [
+            'total' => (clone $staffBaseQuery)->count(),
+            'active' => (clone $staffBaseQuery)->where('status', 'Active')->count(),
+            'inactive' => (clone $staffBaseQuery)->where('status', 'Inactive')->count(),
+        ];
+
+        $profileBaseQuery = StaffProfile::query()->whereHas(
+            'user',
+            fn ($query) => $query->where('role', User::ROLES['staff'])
+        );
+
+        $profileCounts = static function (string $column) use ($profileBaseQuery): array {
+            return (clone $profileBaseQuery)
+                ->select($column)
+                ->selectRaw('count(*) as total')
+                ->groupBy($column)
+                ->pluck('total', $column)
+                ->all();
+        };
+
+        $religionCounts = $profileCounts('religion');
+        $genderCounts = $profileCounts('gender');
+        $educationCounts = $profileCounts('education_level');
+
+        $religionColors = [
+            '#0ea5e9',
+            '#6366f1',
+            '#f97316',
+            '#22c55e',
+            '#eab308',
+            '#ec4899',
+            '#14b8a6',
+        ];
+
+        $religionData = collect(StaffProfile::RELIGIONS)
+            ->map(function (string $religion, int $index) use ($religionCounts, $religionColors) {
+                return [
+                    'name' => $religion,
+                    'value' => $religionCounts[$religion] ?? 0,
+                    'color' => $religionColors[$index % count($religionColors)],
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (array_key_exists(null, $religionCounts) && $religionCounts[null] > 0) {
+            $religionData[] = [
+                'name' => 'Belum Diisi',
+                'value' => $religionCounts[null],
+                'color' => '#94a3b8',
+            ];
+        }
+
+        $genderColors = ['#2563eb', '#f97316'];
+        $totalStaff = max($staffStats['total'], 1);
+
+        $genderData = collect(StaffProfile::GENDERS)
+            ->map(function (string $gender, int $index) use ($genderCounts, $genderColors, $totalStaff) {
+                $value = $genderCounts[$gender] ?? 0;
+
+                return [
+                    'name' => $gender,
+                    'value' => $value,
+                    'percentage' => round(($value / $totalStaff) * 100),
+                    'color' => $genderColors[$index % count($genderColors)],
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (array_key_exists(null, $genderCounts) && $genderCounts[null] > 0) {
+            $genderData[] = [
+                'name' => 'Belum Diisi',
+                'value' => $genderCounts[null],
+                'percentage' => round(($genderCounts[null] / $totalStaff) * 100),
+                'color' => '#94a3b8',
+            ];
+        }
+
+        $educationData = collect(StaffProfile::EDUCATION_LEVELS)
+            ->map(function (string $level) use ($educationCounts) {
+                return [
+                    'level' => $level,
+                    'value' => $educationCounts[$level] ?? 0,
+                ];
+            })
+            ->values()
+            ->all();
+
+        if (array_key_exists(null, $educationCounts) && $educationCounts[null] > 0) {
+            $educationData[] = [
+                'level' => 'Belum Diisi',
+                'value' => $educationCounts[null],
+            ];
+        }
+
         $activityData = collect(range(0, 5))
             ->map(function ($index) use ($registrationDate) {
                 $monthStart = now()->copy()->subMonths(5 - $index)->startOfMonth();
@@ -94,6 +193,10 @@ class DashboardController extends Controller
             'statChanges' => $statChanges,
             'userDistribution' => $userDistribution,
             'activityData' => $activityData,
+            'staffStats' => $staffStats,
+            'religionData' => $religionData,
+            'genderData' => $genderData,
+            'educationData' => $educationData,
         ]);
     }
 }
