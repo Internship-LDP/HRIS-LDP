@@ -39,6 +39,7 @@ class StaffTerminationController extends Controller
         $inactiveEmployees = $archive
             ->take(10)
             ->map(fn (StaffTermination $termination) => [
+                'id' => $termination->id,
                 'name' => $termination->employee_name,
                 'employeeCode' => $termination->employee_code,
                 'division' => $termination->division,
@@ -56,7 +57,6 @@ class StaffTerminationController extends Controller
             'Serah terima pekerjaan',
             'Pengembalian inventaris (laptop, ID card, dll)',
             'Clearance dari Finance',
-            'Exit interview terjadwal',
             'Dokumen kelengkapan (BPJS, pajak, dll)',
             'Data arsip ke sistem',
         ];
@@ -98,6 +98,62 @@ class StaffTerminationController extends Controller
             ->with('success', 'Pengajuan termination berhasil dibuat.');
     }
 
+    public function update(Request $request, StaffTermination $termination): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:Diajukan,Proses,Selesai'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'checklist' => ['nullable', 'array'],
+            'checklist.*' => ['boolean'],
+        ]);
+
+        $incomingChecklist = $data['checklist'] ?? [];
+        $mergedChecklist = array_replace($termination->checklist ?? [], $incomingChecklist);
+
+        $totalItems = count($mergedChecklist);
+        $completedItems = collect($mergedChecklist)->filter()->count();
+        $calculatedProgress = $totalItems > 0
+            ? (int) round(($completedItems / $totalItems) * 100)
+            : $termination->progress;
+
+        if ($data['status'] === 'Selesai') {
+            $calculatedProgress = 100;
+        }
+
+        $termination
+            ->forceFill([
+                'status' => $data['status'],
+                'notes' => $data['notes'] ?? null,
+                'checklist' => $mergedChecklist,
+                'progress' => $calculatedProgress,
+            ])
+            ->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Progress offboarding berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request, StaffTermination $termination): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        abort_unless(
+            $termination->status === 'Selesai',
+            403,
+            'Hanya arsip nonaktif yang dapat dihapus.'
+        );
+
+        $employeeName = $termination->employee_name;
+        $termination->delete();
+
+        return redirect()
+            ->route('super-admin.staff.index')
+            ->with('success', "Arsip offboarding {$employeeName} berhasil dihapus.");
+    }
+
     private function transformTerminations(Collection $terminations): array
     {
         return $terminations
@@ -111,6 +167,9 @@ class StaffTerminationController extends Controller
                     'position' => $termination->position,
                     'type' => $termination->type,
                     'reason' => $termination->reason,
+                    'suggestion' => $termination->suggestion,
+                    'notes' => $termination->notes,
+                    'checklist' => $termination->checklist ?? [],
                     'status' => $termination->status,
                     'progress' => $termination->progress,
                     'requestDate' => optional($termination->request_date)->format('d M Y'),

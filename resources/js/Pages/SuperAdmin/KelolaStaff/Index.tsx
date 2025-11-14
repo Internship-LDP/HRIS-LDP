@@ -29,6 +29,7 @@ export default function KelolaStaffIndex() {
           ];
 
     const archiveEmployees = terminations.archive.map((item) => ({
+        id: item.id,
         name: item.employeeName,
         employeeCode: item.employeeCode,
         division: item.division,

@@ -110,6 +110,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
         Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
         Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
+        Route::patch('/kelola-staff/{termination}', [StaffTerminationController::class, 'update'])->name('staff.update');
+        Route::delete('/kelola-staff/{termination}', [StaffTerminationController::class, 'destroy'])->name('staff.destroy');
         Route::get('/kelola-pengaduan', [SuperAdminComplaintController::class, 'index'])->name('complaints.index');
         Route::patch('/kelola-pengaduan/{complaint}', [SuperAdminComplaintController::class, 'update'])->name('complaints.update');
         Route::resource('accounts', AccountController::class)
