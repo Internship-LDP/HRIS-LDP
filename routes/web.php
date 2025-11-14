@@ -18,13 +18,32 @@ use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
 use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
+use App\Support\DivisionOverview;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    $divisionData = DivisionOverview::build();
+
+    $jobs = $divisionData['divisions']
+        ->map(function (array $division) {
+            return [
+                'division' => $division['name'],
+                'title' => $division['job_title'],
+                'description' => $division['job_description'],
+                'location' => 'Divisi ' . $division['name'],
+                'type' => 'Full-time',
+                'isHiring' => $division['is_hiring'],
+                'availableSlots' => $division['available_slots'],
+            ];
+        })
+        ->values()
+        ->all();
+
     return Inertia::render('LandingPage/Index', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
+        'jobs' => $jobs,
     ]);
 });
 

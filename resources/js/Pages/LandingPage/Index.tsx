@@ -9,14 +9,26 @@ import { PricingSection } from './PricingSection';
 import { CareersSection } from './CareersSection';
 import { ContactSection } from './ContactSection';
 
+type CareerJob = {
+  division: string;
+  title?: string | null;
+  location?: string | null;
+  type?: string | null;
+  description?: string | null;
+  isHiring: boolean;
+  availableSlots?: number | null;
+};
+
 type LandingPageProps = PageProps<{
   canLogin: boolean;
   canRegister: boolean;
+  jobs: CareerJob[];
 }>;
 
 export default function LandingPage({
   canLogin,
   canRegister,
+  jobs = [],
 }: LandingPageProps) {
   return (
     <>
@@ -27,7 +39,7 @@ export default function LandingPage({
           <HeroSection />
           <FeaturesSection />
           <PricingSection />
-          <CareersSection />
+          <CareersSection jobs={jobs} />
           <ContactSection />
         </main>
       </div>
