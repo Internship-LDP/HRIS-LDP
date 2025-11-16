@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/Components/ui/button';
+import BlurText from '@/Components/BlurText';
 import { ArrowRight, MapPin, Wifi, Zap, Globe } from 'lucide-react';
 
 export function HeroSection() {
@@ -71,15 +72,25 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
-            <h1
-              ref={headingRef}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-gray-900"
-            >
-              Internet Cepat & Terpercaya untuk{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                Semua Orang
-              </span>
-            </h1>
+            <div ref={headingRef} className="space-y-2">
+              <BlurText
+                as="h1"
+                text="Internet Cepat & Terpercaya untuk"
+                animateBy="words"
+                direction="top"
+                delay={120}
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-gray-900 font-bold leading-tight"
+              />
+              <BlurText
+                as="h1"
+                text="Semua Orang"
+                animateBy="words"
+                direction="top"
+                delay={140}
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-purple-700"
+                style={{ WebkitTextFillColor: '#7e22ce' }}
+              />
+            </div>
 
             <p
               ref={subtextRef}
@@ -210,6 +221,4 @@ export function HeroSection() {
     </section>
   );
 }
-
-
 
