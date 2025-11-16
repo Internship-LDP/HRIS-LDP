@@ -72,7 +72,7 @@ export function Navbar({ canLogin = true, canRegister = true }: NavbarProps) {
                 className="text-base"
                 textColor="#6b7280"
                 activeTextColor="#ffffff"
-                pillColor="#7c3aed"
+                pillColor="#a78bfa"
                 bubbleColor="#a78bfa"
                 filterColor="#8b5cf6"
                 textShadowColor="rgba(0,0,0,0.15)"
