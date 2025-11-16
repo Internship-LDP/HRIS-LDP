@@ -8,6 +8,7 @@ import { FeaturesSection } from './FeaturesSection';
 import { PricingSection } from './PricingSection';
 import { CareersSection } from './CareersSection';
 import { ContactSection } from './ContactSection';
+import SplashCursor from '@/Components/SplashCursor';
 
 type CareerJob = {
   division: string;
@@ -33,6 +34,7 @@ export default function LandingPage({
   return (
     <>
       <Head title="Lintas Data Prima" />
+      <SplashCursor />
       <div className="bg-white min-h-screen overflow-x-hidden">
         <Navbar canLogin={canLogin} canRegister={canRegister} />
         <main>
