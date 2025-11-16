@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 type BlurTextProps = {
   text?: string;
   delay?: number;
-  className?: string;
+  className?: string; // class untuk wrapper
   style?: React.CSSProperties;
   animateBy?: 'words' | 'letters';
   direction?: 'top' | 'bottom';
@@ -16,6 +16,8 @@ type BlurTextProps = {
   onAnimationComplete?: () => void;
   stepDuration?: number;
   as?: React.ElementType;
+  // ⬇️ class untuk setiap span huruf/kata
+  spanClassName?: string;
 };
 
 const buildKeyframes = (
@@ -24,12 +26,12 @@ const buildKeyframes = (
 ): Record<string, Array<string | number>> => {
   const keys = new Set<string>([
     ...Object.keys(from),
-    ...steps.flatMap(s => Object.keys(s)),
+    ...steps.flatMap((s) => Object.keys(s)),
   ]);
 
   const keyframes: Record<string, Array<string | number>> = {};
-  keys.forEach(k => {
-    keyframes[k] = [from[k], ...steps.map(s => s[k])];
+  keys.forEach((k) => {
+    keyframes[k] = [from[k], ...steps.map((s) => s[k])];
   });
   return keyframes;
 };
@@ -49,6 +51,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   stepDuration = 0.35,
   as = 'p',
   style,
+  spanClassName = '',
 }) => {
   const elements = animateBy === 'words' ? text.split(' ') : text.split('');
   const [inView, setInView] = useState(false);
@@ -105,11 +108,16 @@ const BlurText: React.FC<BlurTextProps> = ({
 
   const Wrapper: React.ElementType = as;
 
+  // ✅ ref callback dengan tipe eksplisit
+  const setWrapperRef: React.RefCallback<HTMLElement | SVGElement> = (
+    node
+  ) => {
+    ref.current = node;
+  };
+
   return (
     <Wrapper
-      ref={(node: HTMLElement | SVGElement | null) => {
-        ref.current = node;
-      }}
+      ref={setWrapperRef}
       className={`blur-text ${className}`}
       style={style}
     >
@@ -132,6 +140,7 @@ const BlurText: React.FC<BlurTextProps> = ({
             onAnimationComplete={
               index === elements.length - 1 ? onAnimationComplete : undefined
             }
+            className={spanClassName}
             style={{
               display: 'inline-block',
               willChange: 'transform, filter, opacity',
