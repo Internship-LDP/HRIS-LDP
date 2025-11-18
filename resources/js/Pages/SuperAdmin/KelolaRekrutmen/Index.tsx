@@ -1,3 +1,5 @@
+// src/Pages/SuperAdmin/Recruitment/KelolaRekrutmenIndex.tsx
+
 import SuperAdminLayout from '@/Pages/SuperAdmin/Layout';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
@@ -6,6 +8,7 @@ import ApplicantDetailDialog from './components/ApplicantDetailDialog';
 import AddApplicantDialog from './components/AddApplicantDialog';
 import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
+import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
 import {
     ApplicantRecord,
     ApplicantStatus,
@@ -22,6 +25,17 @@ const statusOrder: ApplicantStatus[] = [
     'Rejected',
 ];
 
+type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
+
+interface ScheduleData extends Record<string, any> { 
+    date: string;
+    time: string;
+    mode: string;
+    interviewer: string;
+    meeting_link: string;
+    notes: string;
+}
+
 export default function KelolaRekrutmenIndex({
     auth,
     applications,
@@ -32,8 +46,14 @@ export default function KelolaRekrutmenIndex({
     const [activeTab, setActiveTab] = useState('applicants');
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    
     const [detailOpen, setDetailOpen] = useState(false);
+    const [scheduleOpen, setScheduleOpen] = useState(false);
+    
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
+    
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false); 
+    const [updatingApplicantId, setUpdatingApplicantId] = useState<number | null>(null);
 
     const filteredApplications =
         statusFilter === 'all'
@@ -51,13 +71,60 @@ export default function KelolaRekrutmenIndex({
         : filteredApplications;
 
     const statusSummary: StatusSummary = applications.reduce((acc, application) => {
-        acc[application.status] = (acc[application.status] ?? 0) + 1;
+        acc[application.status as ApplicantStatus] = (acc[application.status as ApplicantStatus] ?? 0) + 1;
         return acc;
     }, {} as StatusSummary);
+    
+    // FUNGSI 1: Update Status
+    const handleStatusUpdate: ApplicantActionHandler = (applicantId, newStatus) => {
+        if (isUpdatingStatus) return;
+        
+        setUpdatingApplicantId(applicantId);
+        setIsUpdatingStatus(true);
+        
+        router.put(
+            route('super-admin.recruitment.update-status', applicantId), 
+            { status: newStatus },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    console.log(`Status ID ${applicantId} berhasil diubah menjadi ${newStatus}.`);
+                },
+                onError: (errors) => {
+                    console.error('Gagal memperbarui status:', errors);
+                    alert('Gagal memperbarui status. Cek konsol untuk detail error.'); 
+                },
+                onFinish: () => {
+                    setIsUpdatingStatus(false);
+                    setUpdatingApplicantId(null); 
+                },
+            }
+        );
+    };
 
+
+    // FUNGSI 2: Membuka Dialog Detail (Memicu Screening otomatis)
     const handleViewDetail = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setDetailOpen(true);
+
+        if (application.status === 'Applied' && application.id !== updatingApplicantId) {
+             handleStatusUpdate(application.id, 'Screening');
+        }
+    };
+
+    // FUNGSI 3: Membuka Dialog Penjadwalan Interview
+    const handleOpenScheduleDialog = (application: ApplicantRecord) => {
+        setSelectedApplicant(application);
+        setScheduleOpen(true);
+        setDetailOpen(false); 
+    };
+
+    // FUNGSI 4: Logika Setelah Submit Jadwal Sukses
+    const handleScheduleSuccess = (applicantId: number) => {
+        handleStatusUpdate(applicantId, 'Interview');
+        setScheduleOpen(false);
+        setSelectedApplicant(null);
     };
 
     const handleDelete = (application: ApplicantRecord) => {
@@ -122,6 +189,10 @@ export default function KelolaRekrutmenIndex({
                         visibleApplications={visibleApplications}
                         onViewDetail={handleViewDetail}
                         onDelete={handleDelete}
+                        onStatusUpdate={handleStatusUpdate}
+                        isUpdatingStatus={isUpdatingStatus}
+                        updatingApplicantId={updatingApplicantId}
+                        onScheduleInterview={handleOpenScheduleDialog}
                     />
                 </TabsContent>
 
@@ -134,11 +205,18 @@ export default function KelolaRekrutmenIndex({
                 </TabsContent>
             </Tabs>
 
-                <ApplicantDetailDialog
-                    open={detailOpen}
-                    onOpenChange={setDetailOpen}
-                    applicant={selectedApplicant}
-                />
+            <ApplicantDetailDialog
+                open={detailOpen}
+                onOpenChange={setDetailOpen}
+                applicant={selectedApplicant}
+            />
+            
+            <ScheduleInterviewDialog
+                open={scheduleOpen}
+                onOpenChange={setScheduleOpen}
+                applicant={selectedApplicant}
+                onSuccessSubmit={handleScheduleSuccess}
+            />
             </SuperAdminLayout>
         </>
     );

@@ -1,3 +1,5 @@
+// src/Pages/SuperAdmin/Recruitment/types.ts
+
 import { PageProps } from '@/types';
 
 export type ApplicantStatus =
@@ -6,6 +8,9 @@ export type ApplicantStatus =
     | 'Interview'
     | 'Hired'
     | 'Rejected';
+
+// DEFINISI TIPE: Untuk handler aksi perubahan status
+export type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
 
 export interface ApplicantRecord {
     id: number;
@@ -18,6 +23,7 @@ export interface ApplicantRecord {
     email: string;
     phone?: string | null;
     skills?: string | null;
+    cv_filename: string; // Wajib ada untuk link dokumen
 }
 
 export interface InterviewSchedule {

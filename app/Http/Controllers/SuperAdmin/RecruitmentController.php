@@ -7,6 +7,8 @@ use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,13 +39,14 @@ class RecruitmentController extends Controller
         $interviews = $applicationCollection
             ->where('status', 'Interview')
             ->map(function (Application $application) {
+                // Menggunakan data interview yang diasumsikan disimpan di model Application
                 return [
                     'candidate' => $application->full_name,
                     'position' => $application->position,
-                    'date' => optional($application->submitted_at)->format('d M Y') ?? '-',
-                    'time' => optional($application->submitted_at)->format('H:i') ?? '09:00',
-                    'mode' => 'Online',
-                    'interviewer' => 'Tim HR',
+                    'date' => $application->interview_date ? \Carbon\Carbon::parse($application->interview_date)->format('d M Y') : '-',
+                    'time' => $application->interview_time ?? '09:00',
+                    'mode' => $application->interview_mode ?? 'Offline',
+                    'interviewer' => $application->interviewer_name ?? 'Tim HR',
                 ];
             })
             ->values();
@@ -67,11 +70,91 @@ class RecruitmentController extends Controller
 
         return Inertia::render('SuperAdmin/KelolaRekrutmen/Index', [
             'applications' => $applications,
-            'statusOptions' => Application::STATUSES,
+            'statusOptions' => Application::STATUSES, 
             'interviews' => $interviews,
             'onboarding' => $onboarding,
         ]);
     }
+
+    /**
+     * Endpoint PUT untuk memperbarui status rekrutmen.
+     */
+    public function updateStatus(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        try {
+            $validated = $request->validate([
+                'status' => ['required', 'string', 'in:'.implode(',', Application::STATUSES)],
+            ]);
+
+            if ($application->status !== $validated['status']) {
+                $application->status = $validated['status'];
+                $application->save();
+                Log::info("Application ID {$application->id} status updated to {$validated['status']}");
+            }
+            
+            return redirect()->back()->with('success', 'Status pelamar berhasil diperbarui.');
+
+        } catch (ValidationException $e) {
+            Log::error("Validation failed for application ID {$application->id} (Status Update): ", $e->errors());
+            return redirect()->back()->withErrors($e->errors()); 
+        } catch (\Exception $e) {
+            Log::error("Failed to update status for application ID {$application->id}: ", ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Gagal memperbarui status: Terjadi kesalahan server.');
+        }
+    }
+
+    /**
+     * Endpoint POST untuk menyimpan jadwal interview (KONFIRMASI JADWAL).
+     */
+    public function scheduleInterview(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        try {
+            $validated = $request->validate([
+                'date' => ['required', 'date', 'after_or_equal:today'],
+                'time' => ['required', 'date_format:H:i'],
+                'mode' => ['required', 'string', 'in:Online,Offline'],
+                'interviewer' => ['required', 'string', 'max:100'],
+                'meeting_link' => ['nullable', 'string', 'url', 'max:500'],
+                'notes' => ['nullable', 'string', 'max:500'],
+            ], [
+                'meeting_link.url' => 'Link meeting harus berupa URL yang valid.',
+            ]);
+
+            // VALIDASI BERSYARAT: Jika mode Online, link meeting WAJIB diisi
+            if ($validated['mode'] === 'Online' && empty($validated['meeting_link'])) {
+                throw ValidationException::withMessages([
+                    'meeting_link' => 'Link meeting wajib diisi jika mode wawancara adalah Online.',
+                ]);
+            }
+
+            // LOGIKA PENYIMPANAN DATA JADWAL (KONFIRMASI JADWAL)
+            $application->update([
+                'interview_date' => $validated['date'],
+                'interview_time' => $validated['time'],
+                'interview_mode' => $validated['mode'],
+                'interviewer_name' => $validated['interviewer'],
+                'meeting_link' => $validated['meeting_link'] ?? null,
+                'interview_notes' => $validated['notes'] ?? null,
+            ]);
+            
+            // TODO: LOGIKA PENGIRIMAN EMAIL/NOTIFIKASI KE PELAMAR
+
+            // Redirect sukses. Status akan diubah di frontend setelah ini
+            return redirect()->back()->with('success', 'Jadwal wawancara berhasil dikonfirmasi dan disimpan.');
+
+        } catch (ValidationException $e) {
+            Log::error("Validation failed for application ID {$application->id} (Schedule): ", $e->errors());
+            return redirect()->back()->withErrors($e->errors());
+        } catch (\Exception $e) {
+            Log::error("Failed to schedule interview for application ID {$application->id}: ", ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Gagal menjadwalkan interview: Terjadi kesalahan server.');
+        }
+    }
+
 
     public function destroy(Request $request, Application $application): RedirectResponse
     {

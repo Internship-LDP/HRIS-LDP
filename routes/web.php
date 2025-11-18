@@ -15,7 +15,7 @@ use App\Http\Controllers\SuperAdmin\ComplaintController as SuperAdminComplaintCo
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\DivisionController;
 use App\Http\Controllers\SuperAdmin\LetterController;
-use App\Http\Controllers\SuperAdmin\RecruitmentController;
+use App\Http\Controllers\SuperAdmin\RecruitmentController; // Pastikan ini di-import
 use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
 use App\Support\DivisionOverview;
@@ -94,13 +94,22 @@ Route::middleware('auth')->group(function () {
     Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
         Route::get('/admin-hr/dashboard', AdminHrDashboardController::class)->name('admin-hr.dashboard');
+        
+        // --- RECRUITMENT ROUTES ---
         Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
+        
+        // RUTE KRITIS BARU: Rute PUT untuk Update Status Rekrutmen
+        Route::put('/recruitment/{application}/update-status', [RecruitmentController::class, 'updateStatus'])
+            ->name('recruitment.update-status');
+            
+        Route::delete('/recruitment/{application}', [RecruitmentController::class, 'destroy'])
+            ->name('recruitment.destroy');
+        // -------------------------
+
         Route::get('/kelola-divisi', [DivisionController::class, 'index'])->name('divisions.index');
         Route::patch('/kelola-divisi/{division}', [DivisionController::class, 'update'])->name('divisions.update');
         Route::post('/kelola-divisi/{division}/open-job', [DivisionController::class, 'openJob'])->name('divisions.open-job');
         Route::delete('/kelola-divisi/{division}/open-job', [DivisionController::class, 'closeJob'])->name('divisions.close-job');
-        Route::delete('/recruitment/{application}', [RecruitmentController::class, 'destroy'])
-            ->name('recruitment.destroy');
         Route::get('/kelola-surat', [LetterController::class, 'index'])->name('letters.index');
         Route::post('/kelola-surat', [LetterController::class, 'store'])->name('letters.store');
         Route::post('/kelola-surat/{surat}/archive', [LetterController::class, 'archive'])->name('letters.archive');
