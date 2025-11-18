@@ -27,7 +27,7 @@ class LetterController extends Controller
 
         $filters = [
             'search' => $request->string('search')->toString(),
-            'category' => $request->string('category')->toString(),
+            'category' => $request->string('category')->toString() ?: 'all',
             'tab' => $request->string('tab')->toString() ?: 'inbox',
         ];
 
@@ -38,6 +38,7 @@ class LetterController extends Controller
             'replyHistories' => function ($query) {
                 $query->with('author:id,name,division')->orderBy('replied_at');
             },
+            'disposer:id,name',
         ]);
 
         if ($filters['search']) {
@@ -381,6 +382,11 @@ class LetterController extends Controller
                 'replyBy' => $surat->replyAuthor?->name,
                 'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
                 'replyHistory' => $this->replyHistoryPayload($surat),
+                'disposedBy' => $surat->disposer?->name,
+                'disposedAt' => optional($surat->disposed_at)->format('d M Y H:i'),
+                'approvalDate' => optional($surat->tanggal_persetujuan)->format('d M Y H:i'),
+                'createdAt' => optional($surat->created_at)->format('d M Y H:i'),
+                'updatedAt' => optional($surat->updated_at)->format('d M Y H:i'),
                 'attachment' => $surat->lampiran_path
                     ? [
                         'name' => $surat->lampiran_nama,

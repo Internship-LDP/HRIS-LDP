@@ -56,6 +56,9 @@ export default function ArchiveList({
                         <p className="text-xs text-slate-500">
                             Pengirim: {letter.senderName} • Penerima: {letter.recipientName}
                         </p>
+                        <p className="text-xs text-slate-500">
+                            Divisi Tujuan: {letter.targetDivision ?? letter.recipientName ?? '-'}
+                        </p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Badge variant="outline">Diarsipkan</Badge>

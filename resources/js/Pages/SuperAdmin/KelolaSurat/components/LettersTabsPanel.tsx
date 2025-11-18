@@ -1,4 +1,5 @@
 import ArchiveList from '@/Pages/SuperAdmin/KelolaSurat/components/ArchiveList';
+import DispositionHistoryTab from '@/Pages/SuperAdmin/KelolaSurat/components/DispositionHistoryTab';
 import FiltersBar from '@/Pages/SuperAdmin/KelolaSurat/components/FiltersBar';
 import LettersTable, { LetterRecord } from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTable';
 import {
@@ -15,12 +16,13 @@ interface LettersTabsPanelProps {
     categories: string[];
     onSearchChange: (value: string) => void;
     onCategoryChange: (value: string) => void;
-    activeTab: 'inbox' | 'outbox' | 'archive';
-    onTabChange: (value: 'inbox' | 'outbox' | 'archive') => void;
+    activeTab: 'inbox' | 'outbox' | 'archive' | 'history';
+    onTabChange: (value: 'inbox' | 'outbox' | 'archive' | 'history') => void;
     filteredLetters: {
         inbox: LetterRecord[];
         outbox: LetterRecord[];
         archive: LetterRecord[];
+        history: LetterRecord[];
     };
     onSelectLetter: (letter: LetterRecord) => void;
     onArchiveLetter?: (letter: LetterRecord) => void;
@@ -80,6 +82,12 @@ export default function LettersTabsPanel({
                     >
                         Arsip
                     </TabsTrigger>
+                    <TabsTrigger
+                        value="history"
+                        className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                    >
+                        Riwayat Disposisi
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbox">
@@ -110,6 +118,9 @@ export default function LettersTabsPanel({
                         unarchivingId={unarchivingLetterId}
                         unarchiveProcessing={unarchiveProcessing}
                     />
+                </TabsContent>
+                <TabsContent value="history">
+                    <DispositionHistoryTab letters={filteredLetters.history} onSelect={onSelectLetter} />
                 </TabsContent>
             </Tabs>
         </Card>

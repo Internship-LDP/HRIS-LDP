@@ -15,7 +15,7 @@ interface UseKelolaSuratStateParams {
     appliedFilters: {
         search: string;
         category: string;
-        tab: 'inbox' | 'outbox' | 'archive';
+        tab: 'inbox' | 'outbox' | 'archive' | 'history';
     };
 }
 
@@ -24,9 +24,9 @@ export function useKelolaSuratState({
     pendingDisposition,
     appliedFilters,
 }: UseKelolaSuratStateParams) {
-    const [activeTab, setActiveTab] = useState<'inbox' | 'outbox' | 'archive'>(appliedFilters.tab);
+    const [activeTab, setActiveTab] = useState<'inbox' | 'outbox' | 'archive' | 'history'>(appliedFilters.tab);
     const [searchQuery, setSearchQuery] = useState(appliedFilters.search ?? '');
-    const [categoryFilter, setCategoryFilter] = useState(appliedFilters.category ?? 'all');
+    const [categoryFilter, setCategoryFilter] = useState(appliedFilters.category || 'all');
     const [isComposeOpen, setComposeOpen] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
@@ -55,6 +55,32 @@ export function useKelolaSuratState({
     const archiveForm = useForm({});
     const unarchiveForm = useForm({});
 
+    const historyLetters = useMemo(() => {
+        const merged = [...letters.inbox, ...letters.outbox, ...letters.archive];
+        const seenIds = new Set<number>();
+
+        return merged.filter((letter) => {
+            if (seenIds.has(letter.id)) {
+                return false;
+            }
+
+            seenIds.add(letter.id);
+
+            const status = (letter.status ?? '').toLowerCase();
+            const hasProgress =
+                (letter.replyHistory && letter.replyHistory.length > 0) ||
+                Boolean(letter.dispositionNote) ||
+                Boolean(letter.disposedAt);
+
+            const isProcessed =
+                status === 'didisposisi' ||
+                status === 'diarsipkan' ||
+                status.includes('tolak');
+
+            return hasProgress || isProcessed;
+        });
+    }, [letters]);
+
     const filteredLetters = useMemo(() => {
         const applyFilter = (items: LetterRecord[]) => {
             return items.filter((letter) => {
@@ -63,7 +89,9 @@ export function useKelolaSuratState({
                     !searchLower ||
                     letter.subject.toLowerCase().includes(searchLower) ||
                     letter.letterNumber.toLowerCase().includes(searchLower) ||
-                    letter.recipientName.toLowerCase().includes(searchLower);
+                    (letter.recipientName ?? '').toLowerCase().includes(searchLower) ||
+                    (letter.senderName ?? '').toLowerCase().includes(searchLower) ||
+                    (letter.senderDivision ?? '').toLowerCase().includes(searchLower);
                 const matchCategory = categoryFilter === 'all' || letter.category === categoryFilter;
                 return matchSearch && matchCategory;
             });
@@ -73,8 +101,9 @@ export function useKelolaSuratState({
             inbox: applyFilter(letters.inbox),
             outbox: applyFilter(letters.outbox),
             archive: applyFilter(letters.archive),
+            history: applyFilter(historyLetters),
         };
-    }, [letters, searchQuery, categoryFilter]);
+    }, [letters, searchQuery, categoryFilter, historyLetters]);
 
     useEffect(() => {
         setSelectedDispositionIds((prev) =>

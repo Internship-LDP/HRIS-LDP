@@ -23,7 +23,7 @@ import {
 import { Archive, FileText, Loader2 } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 
-type ReplyHistoryEntry = {
+export type ReplyHistoryEntry = {
     id: number | null;
     note: string;
     author?: string | null;
@@ -58,6 +58,12 @@ export interface LetterRecord {
     replyBy?: string | null;
     replyAt?: string | null;
     replyHistory?: ReplyHistoryEntry[];
+    dispositionNote?: string | null;
+    disposedBy?: string | null;
+    disposedAt?: string | null;
+    approvalDate?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
 }
 
 interface LettersTableProps {
@@ -129,6 +135,7 @@ export default function LettersTable({
                     <TableHead>{isInbox ? 'Dari' : 'Pengirim'}</TableHead>
                     <TableHead>{isInbox ? 'Pengirim' : 'Kepada'}</TableHead>
                     <TableHead>Subjek</TableHead>
+                    <TableHead>Divisi Tujuan</TableHead>
                     {!isInbox && <TableHead>Jenis Surat</TableHead>}
                     <TableHead>Kategori</TableHead>
                     <TableHead>Prioritas</TableHead>
@@ -174,6 +181,14 @@ export default function LettersTable({
                                     <FileText className="h-4 w-4 text-slate-400" />
                                 )}
                             </div>
+                        </TableCell>
+                        <TableCell>
+                            <p className="text-sm font-medium text-slate-900">
+                                {letter.targetDivision ?? letter.recipientName ?? '-'}
+                            </p>
+                            {letter.targetDivision && letter.recipientName && letter.targetDivision !== letter.recipientName && (
+                                <p className="text-[11px] text-slate-500">Penerima: {letter.recipientName}</p>
+                            )}
                         </TableCell>
                         {!isInbox && (
                             <TableCell>

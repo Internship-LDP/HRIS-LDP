@@ -20,7 +20,7 @@ interface KelolaSuratPageProps extends Record<string, unknown> {
     filters?: {
         search: string;
         category: string;
-        tab: 'inbox' | 'outbox' | 'archive';
+        tab: 'inbox' | 'outbox' | 'archive' | 'history';
     };
     letters: {
         inbox: LetterRecord[];
@@ -57,10 +57,12 @@ export default function KelolaSuratIndex() {
 
     const appliedFilters = {
         search: filters?.search ?? '',
-        category: filters?.category ?? 'all',
-    tab: (['inbox', 'outbox', 'archive'].includes(filters?.tab ?? '')
-            ? (filters?.tab as 'inbox' | 'outbox' | 'archive')
-            : 'inbox') as 'inbox' | 'outbox' | 'archive',
+        category: filters?.category ? filters.category : 'all',
+        tab: (
+            ['inbox', 'outbox', 'archive', 'history'].includes(filters?.tab ?? '')
+                ? (filters?.tab as 'inbox' | 'outbox' | 'archive' | 'history')
+                : 'inbox'
+        ) as 'inbox' | 'outbox' | 'archive' | 'history',
     };
 
     const {
