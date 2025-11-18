@@ -9,13 +9,17 @@ export interface TerminationRecord {
     position?: string | null;
     type: 'Resign' | 'PHK' | 'Pensiun';
     reason?: string | null;
+    suggestion?: string | null;
     status: 'Diajukan' | 'Proses' | 'Selesai' | string;
     progress: number;
     requestDate?: string | null;
     effectiveDate?: string | null;
+    notes?: string | null;
+    checklist?: Record<string, boolean> | null;
 }
 
 export interface InactiveEmployeeRecord {
+    id?: number;
     name: string;
     employeeCode?: string | null;
     division?: string | null;

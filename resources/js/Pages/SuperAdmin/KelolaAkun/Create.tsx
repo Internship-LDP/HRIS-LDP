@@ -7,6 +7,9 @@ interface CreateProps {
     roleOptions: string[];
     statusOptions: string[];
     divisionOptions: string[];
+    religionOptions: string[];
+    genderOptions: string[];
+    educationLevelOptions: string[];
 }
 
 const today = new Date().toISOString().split('T')[0];
@@ -18,6 +21,9 @@ export default function Create({
     roleOptions,
     statusOptions,
     divisionOptions,
+    religionOptions,
+    genderOptions,
+    educationLevelOptions,
 }: CreateProps) {
     const defaultRole = '';
 
@@ -26,6 +32,9 @@ export default function Create({
         email: '',
         role: defaultRole,
         division: '',
+        religion: '',
+        gender: '',
+        education_level: '',
         status: statusOptions[0] ?? 'Active',
         registered_at: today,
         inactive_at: '',
@@ -40,6 +49,22 @@ export default function Create({
             form.setData('division', '');
         }
     }, [form.data.role]);
+
+    useEffect(() => {
+        if (form.data.role === 'Staff') {
+            return;
+        }
+
+        if (form.data.religion) {
+            form.setData('religion', '');
+        }
+        if (form.data.gender) {
+            form.setData('gender', '');
+        }
+        if (form.data.education_level) {
+            form.setData('education_level', '');
+        }
+    }, [form.data.role, form.data.religion, form.data.gender, form.data.education_level]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -65,6 +90,9 @@ export default function Create({
                 roleOptions={roleOptions}
                 divisionOptions={divisionOptions}
                 statusOptions={statusOptions}
+                religionOptions={religionOptions}
+                genderOptions={genderOptions}
+                educationLevelOptions={educationLevelOptions}
                 setData={(key, value) =>
                     form.setData(key, value ?? '')
                 }

@@ -18,13 +18,32 @@ use App\Http\Controllers\SuperAdmin\LetterController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController;
 use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
+use App\Support\DivisionOverview;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    $divisionData = DivisionOverview::build();
+
+    $jobs = $divisionData['divisions']
+        ->map(function (array $division) {
+            return [
+                'division' => $division['name'],
+                'title' => $division['job_title'],
+                'description' => $division['job_description'],
+                'location' => 'Divisi ' . $division['name'],
+                'type' => 'Full-time',
+                'isHiring' => $division['is_hiring'],
+                'availableSlots' => $division['available_slots'],
+            ];
+        })
+        ->values()
+        ->all();
+
     return Inertia::render('LandingPage/Index', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
+        'jobs' => $jobs,
     ]);
 });
 
@@ -91,6 +110,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
         Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
         Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
+        Route::patch('/kelola-staff/{termination}', [StaffTerminationController::class, 'update'])->name('staff.update');
+        Route::delete('/kelola-staff/{termination}', [StaffTerminationController::class, 'destroy'])->name('staff.destroy');
         Route::get('/kelola-pengaduan', [SuperAdminComplaintController::class, 'index'])->name('complaints.index');
         Route::patch('/kelola-pengaduan/{complaint}', [SuperAdminComplaintController::class, 'update'])->name('complaints.update');
         Route::resource('accounts', AccountController::class)

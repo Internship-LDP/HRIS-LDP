@@ -1,10 +1,12 @@
 ﻿import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/Components/ui/button';
+import BlurText from '@/Components/BlurText';
+import ShinyText from '@/Components/ShinyText';
 import { ArrowRight, MapPin, Wifi, Zap, Globe } from 'lucide-react';
 
 export function HeroSection() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = useRef<HTMLDivElement>(null);       // ⬅️ div, bukan h1
   const subtextRef = useRef<HTMLParagraphElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -59,27 +61,54 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section id="home" className="relative pt-24 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-screen flex items-center">
+    <section
+      id="home"
+      className="relative pt-24 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-screen flex items-center"
+    >
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50 -z-10" />
-      
+
       {/* Animated Background Elements */}
       <div className="absolute top-20 right-10 w-48 h-48 md:w-72 md:h-72 bg-purple-400/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 left-10 w-64 h-64 md:w-96 md:h-96 bg-purple-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <div
+        className="absolute bottom-20 left-10 w-64 h-64 md:w-96 md:h-96 bg-purple-300/20 rounded-full blur-3xl animate-pulse"
+        style={{ animationDelay: '1s' }}
+      />
 
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
-            <h1
-              ref={headingRef}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-gray-900"
-            >
-              Internet Cepat & Terpercaya untuk{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                Semua Orang
-              </span>
-            </h1>
+            <div ref={headingRef} className="space-y-2">
+  <BlurText
+    as="h1"
+    text="Internet Cepat & Terpercaya untuk"
+    animateBy="words"
+    direction="top"
+    delay={120}
+    className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-gray-900 font-bold leading-tight"
+  />
+
+  {/* Blur + Gradient + Shiny */}
+  <ShinyText
+    as="h1"
+    className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight inline-block"
+    speed={3}
+  >
+    <BlurText
+      as="span"
+      text="Semua Orang"
+      animateBy="words"
+      direction="top"
+      delay={140}
+      className="
+        inline-flex flex-wrap justify-center lg:justify-start
+        bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-400
+        bg-clip-text text-purple-700
+      "
+    />
+  </ShinyText>
+            </div>
 
             <p
               ref={subtextRef}
@@ -88,7 +117,10 @@ export function HeroSection() {
               Menghubungkan Anda ke dunia dengan kecepatan kilat.
             </p>
 
-            <div ref={buttonsRef} className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start">
+            <div
+              ref={buttonsRef}
+              className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start"
+            >
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-xl shadow-purple-200 group w-full sm:w-auto"
@@ -107,18 +139,31 @@ export function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div ref={statsRef} className="grid grid-cols-3 gap-4 md:gap-6 pt-8">
+            <div
+              ref={statsRef}
+              className="grid grid-cols-3 gap-4 md:gap-6 pt-8"
+            >
               <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">1J+</div>
-                <div className="text-xs md:text-sm text-gray-600">Pengguna Aktif</div>
+                <div className="text-2xl md:text-3xl text-purple-600">
+                  1J+
+                </div>
+                <div className="text-xs md:text-sm text-gray-600">
+                  Pengguna Aktif
+                </div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">99.9%</div>
+                <div className="text-2xl md:text-3xl text-purple-600">
+                  99.9%
+                </div>
                 <div className="text-xs md:text-sm text-gray-600">Uptime</div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">24/7</div>
-                <div className="text-xs md:text-sm text-gray-600">Dukungan</div>
+                <div className="text-2xl md:text-3xl text-purple-600">
+                  24/7
+                </div>
+                <div className="text-xs md:text-sm text-gray-600">
+                  Dukungan
+                </div>
               </div>
             </div>
           </div>
@@ -137,9 +182,11 @@ export function HeroSection() {
                 <div className="relative w-full aspect-square">
                   {[0, 60, 120, 180, 240, 300].map((angle, index) => {
                     const radius = 100;
-                    const x = Math.cos((angle * Math.PI) / 180) * radius;
-                    const y = Math.sin((angle * Math.PI) / 180) * radius;
-                    
+                    const x =
+                      Math.cos((angle * Math.PI) / 180) * radius;
+                    const y =
+                      Math.sin((angle * Math.PI) / 180) * radius;
+
                     return (
                       <div
                         key={index}
@@ -162,18 +209,41 @@ export function HeroSection() {
                 </div>
 
                 {/* Connection Lines */}
-                <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  style={{ zIndex: 0 }}
+                >
                   <defs>
-                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: 'rgba(255,255,255,0.3)', stopOpacity: 1 }} />
-                      <stop offset="100%" style={{ stopColor: 'rgba(255,255,255,0)', stopOpacity: 1 }} />
+                    <linearGradient
+                      id="lineGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop
+                        offset="0%"
+                        style={{
+                          stopColor: 'rgba(255,255,255,0.3)',
+                          stopOpacity: 1,
+                        }}
+                      />
+                      <stop
+                        offset="100%"
+                        style={{
+                          stopColor: 'rgba(255,255,255,0)',
+                          stopOpacity: 1,
+                        }}
+                      />
                     </linearGradient>
                   </defs>
                   {[0, 60, 120, 180, 240, 300].map((angle, index) => {
                     const radius = 100;
-                    const x = Math.cos((angle * Math.PI) / 180) * radius;
-                    const y = Math.sin((angle * Math.PI) / 180) * radius;
-                    
+                    const x =
+                      Math.cos((angle * Math.PI) / 180) * radius;
+                    const y =
+                      Math.sin((angle * Math.PI) / 180) * radius;
+
                     return (
                       <line
                         key={index}
@@ -191,7 +261,7 @@ export function HeroSection() {
                 </svg>
               </div>
             </div>
-            
+
             {/* Floating Card */}
             <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 bg-white/90 backdrop-blur-lg rounded-xl p-4 md:p-6 shadow-xl border border-purple-100">
               <div className="flex items-center gap-3 md:gap-4">
@@ -199,8 +269,12 @@ export function HeroSection() {
                   <span className="text-lg md:text-xl">⚡</span>
                 </div>
                 <div>
-                  <div className="text-xl md:text-2xl text-purple-600">1000 Mbps</div>
-                  <div className="text-xs md:text-sm text-gray-600">Max Speed</div>
+                  <div className="text-xl md:text-2xl text-purple-600">
+                    1000 Mbps
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-600">
+                    Max Speed
+                  </div>
                 </div>
               </div>
             </div>
@@ -210,6 +284,3 @@ export function HeroSection() {
     </section>
   );
 }
-
-
-

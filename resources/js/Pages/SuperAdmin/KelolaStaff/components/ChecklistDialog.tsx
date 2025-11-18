@@ -8,13 +8,32 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/Components/ui/dialog';
-import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { TerminationRecord } from '../types';
 import { CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 interface ChecklistDialogProps {
     termination: TerminationRecord;
@@ -22,59 +41,99 @@ interface ChecklistDialogProps {
     trigger: React.ReactNode;
 }
 
-export default function ChecklistDialog({ termination, checklistTemplate, trigger }: ChecklistDialogProps) {
-    const [checks, setChecks] = useState<Record<string, boolean>>(
-        Object.fromEntries(checklistTemplate.map((item) => [item, termination.progress >= 100]))
+export default function ChecklistDialog({
+    termination,
+    checklistTemplate,
+    trigger,
+}: ChecklistDialogProps) {
+    const [open, setOpen] = useState(false);
+    const defaultChecklist = useMemo(
+        () =>
+            checklistTemplate.reduce<Record<string, boolean>>(
+                (acc, item) => ({
+                    ...acc,
+                    [item]: Boolean(termination.checklist?.[item]),
+                }),
+                {}
+            ),
+        [checklistTemplate, termination.checklist]
     );
 
+    const form = useForm({
+        checklist: defaultChecklist,
+        notes: termination.notes ?? '',
+        status: termination.status as TerminationRecord['status'],
+    });
+
+    const totalItems = checklistTemplate.length || 1;
+    const completedItems = Object.values(form.data.checklist).filter(Boolean).length;
+    const progressValue = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
+    const handleSubmit = (
+        statusOverride?: TerminationRecord['status'],
+        options: { closeAfterSuccess?: boolean } = {}
+    ) => {
+        form.transform((data) => ({
+            ...data,
+            status: statusOverride ?? data.status,
+        }));
+
+        form.patch(route('super-admin.staff.update', termination.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Progress checklist tersimpan.');
+                if (options.closeAfterSuccess) {
+                    setOpen(false);
+                }
+            },
+            onFinish: () => {
+                form.transform((data) => data);
+            },
+        });
+    };
+
+    const markCompleted = () => {
+        const allTrue = checklistTemplate.reduce<Record<string, boolean>>(
+            (acc, item) => ({ ...acc, [item]: true }),
+            {}
+        );
+        form.setData('checklist', allTrue);
+        handleSubmit('Selesai', { closeAfterSuccess: true });
+    };
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-            <DialogContent
-                className="w-[92vw] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto border-0 bg-white p-0 rounded-xl"
-            >
-                {/* HEADER */}
-                <DialogHeader className="space-y-1 border-b border-slate-200 px-6 py-4 sticky top-0 bg-white z-10 relative">
-    <DialogTitle>Checklist Offboarding: {termination.employeeName}</DialogTitle>
-    <DialogDescription>
-        Pantau progres serah terima dan lengkapi catatan exit interview.
-    </DialogDescription>
-    <Button
-        variant="ghost"
-        className="absolute right-4 top-4 h-8 w-8 p-0 text-slate-500 hover:text-slate-700"
-        onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))}
-    >
-        <span className="sr-only">Tutup</span>
-        ✕
-    </Button>
-</DialogHeader>
+            <DialogContent className="w-[92vw] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto border-0 bg-white p-0 rounded-xl">
+                <DialogHeader className="sticky top-0 z-10 space-y-1 border-b border-slate-200 bg-white px-6 py-4 text-left">
+                    <DialogTitle>Checklist Offboarding: {termination.employeeName}</DialogTitle>
+                    <DialogDescription>
+                        Pantau progres serah terima dan catatan HR terkait karyawan.
+                    </DialogDescription>
+                </DialogHeader>
 
-                {/* BODY */}
                 <div className="space-y-6 px-6 pb-6 pt-4">
-                    {/* DETAIL GRID */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                    <div className="grid grid-cols-1 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2">
                         <DetailItem label="ID" value={termination.reference} />
                         <DetailItem label="Divisi" value={termination.division} />
                         <DetailItem label="Tipe" value={termination.type} />
                         <DetailItem label="Tanggal Efektif" value={termination.effectiveDate} />
-                        <DetailItem label="Status" value={termination.status} />
-
+                        <DetailItem label="Status saat ini" value={termination.status} />
                         <div>
                             <p className="text-xs text-slate-500">Progress</p>
                             <div className="mt-1 flex items-center gap-2">
                                 <div className="h-2 flex-1 rounded-full bg-slate-200">
                                     <div
                                         className="h-2 rounded-full bg-blue-900"
-                                        style={{ width: `${termination.progress}%` }}
+                                        style={{ width: `${progressValue}%` }}
                                     />
                                 </div>
-                                <span className="text-xs text-slate-500">{termination.progress}%</span>
+                                <span className="text-xs text-slate-500">{progressValue}%</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* CHECKLIST */}
                     <div>
                         <h4 className="mb-3 text-base font-semibold text-slate-900">
                             Checklist Offboarding
@@ -86,44 +145,108 @@ export default function ChecklistDialog({ termination, checklistTemplate, trigge
                                     className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm"
                                 >
                                     <Checkbox
-                                        checked={checks[item]}
+                                        checked={form.data.checklist[item] ?? false}
                                         onCheckedChange={(value) =>
-                                            setChecks((prev) => ({ ...prev, [item]: Boolean(value) }))
+                                            form.setData('checklist', {
+                                                ...form.data.checklist,
+                                                [item]: Boolean(value),
+                                            })
                                         }
                                     />
                                     <span className="flex-1 text-slate-700">{item}</span>
-                                    {checks[item] && <CheckCircle className="h-4 w-4 text-green-500" />}
+                                    {form.data.checklist[item] && (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                    )}
                                 </label>
                             ))}
                         </div>
                     </div>
 
-                    {/* EXIT INTERVIEW + NOTES */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label>Jadwal Exit Interview</Label>
-                            <div className="mt-2 grid grid-cols-2 gap-2">
-                                <Input type="date" />
-                                <Input type="time" />
-                            </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label>Status Proses</Label>
+                            <Select
+                                value={form.data.status}
+                                onValueChange={(value) =>
+                                    form.setData('status', value as TerminationRecord['status'])
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Diajukan">Diajukan</SelectItem>
+                                    <SelectItem value="Proses">Proses</SelectItem>
+                                    <SelectItem value="Selesai">Selesai</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {form.errors.status && (
+                                <p className="text-xs text-red-500">{form.errors.status}</p>
+                            )}
                         </div>
                         <div>
-                            <Label>Catatan</Label>
-                            <Textarea rows={3} placeholder="Tambahkan catatan..." />
+                            <Label>Catatan HR</Label>
+                            <Textarea
+                                rows={3}
+                                placeholder="Tambahkan catatan..."
+                                value={form.data.notes}
+                                onChange={(event) => form.setData('notes', event.target.value)}
+                            />
+                            {form.errors.notes && (
+                                <p className="text-xs text-red-500">{form.errors.notes}</p>
+                            )}
                         </div>
                     </div>
 
-                    {/* FOOTER BUTTONS */}
                     <div className="flex flex-wrap gap-2">
-                        <Button className="bg-blue-900 hover:bg-blue-800 text-white">Simpan Progress</Button>
-
-                        <Button variant="outline" className="border-green-500 text-green-600">
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Tandai Selesai
+                        <Button
+                            className="bg-blue-900 text-white hover:bg-blue-800"
+                            onClick={() => handleSubmit(undefined, { closeAfterSuccess: true })}
+                            disabled={form.processing}
+                        >
+                            {form.processing ? 'Menyimpan...' : 'Simpan Progress'}
                         </Button>
 
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="border-green-500 text-green-600"
+                                    disabled={form.processing}
+                                >
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Tandai Selesai
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-white">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Sudah yakin checklist selesai?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Tindakan ini akan menandai seluruh item checklist sebagai selesai dan
+                                        memperbarui status offboarding menjadi selesai.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                                    {completedItems} dari {totalItems} tugas saat ini sudah dicentang. Mohon
+                                    pastikan tidak ada pending checklist sebelum melanjutkan.
+                                </div>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={form.processing}>
+                                        Cek Lagi
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        className="bg-green-600 text-white hover:bg-green-500"
+                                        onClick={() => markCompleted()}
+                                        disabled={form.processing}
+                                    >
+                                        Ya, tandai selesai
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
                         <Badge variant="outline" className="border-slate-300 text-slate-600">
-                            Form ini bersifat informatif untuk tim HR.
+                            Checklist bersifat internal untuk tim HR.
                         </Badge>
                     </div>
                 </div>

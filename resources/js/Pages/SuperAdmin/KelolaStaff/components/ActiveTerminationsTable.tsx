@@ -11,6 +11,7 @@ import {
 import { TerminationRecord } from '../types';
 import { CheckSquare, FileText } from 'lucide-react';
 import ChecklistDialog from './ChecklistDialog';
+import TerminationDetailDialog from './TerminationDetailDialog';
 
 interface ActiveTerminationsTableProps {
     terminations: TerminationRecord[];
@@ -86,10 +87,15 @@ export default function ActiveTerminationsTable({
                                         </Button>
                                     }
                                 />
-                                <Button variant="ghost" size="sm">
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Detail
-                                </Button>
+                                <TerminationDetailDialog
+                                    termination={request}
+                                    trigger={
+                                        <Button variant="ghost" size="sm">
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Detail
+                                        </Button>
+                                    }
+                                />
                             </div>
                         </TableCell>
                     </TableRow>

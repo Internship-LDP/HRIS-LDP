@@ -11,6 +11,9 @@ interface EditProps {
         email: string;
         role: string;
         division?: string | null;
+        religion?: string | null;
+        gender?: string | null;
+        education_level?: string | null;
         status: string;
         registered_at?: string | null;
         inactive_at?: string | null;
@@ -18,6 +21,9 @@ interface EditProps {
     roleOptions: string[];
     statusOptions: string[];
     divisionOptions: string[];
+    religionOptions: string[];
+    genderOptions: string[];
+    educationLevelOptions: string[];
 }
 
 const roleRequiresDivision = (role: string) =>
@@ -28,6 +34,9 @@ export default function Edit({
     roleOptions,
     statusOptions,
     divisionOptions,
+    religionOptions,
+    genderOptions,
+    educationLevelOptions,
 }: EditProps) {
     const form = useForm({
         employee_code: user.employee_code ?? '',
@@ -35,6 +44,9 @@ export default function Edit({
         email: user.email,
         role: user.role,
         division: user.division ?? '',
+        religion: user.religion ?? '',
+        gender: user.gender ?? '',
+        education_level: user.education_level ?? '',
         status: user.status,
         registered_at: user.registered_at ?? '',
         inactive_at: user.inactive_at ?? '',
@@ -49,6 +61,22 @@ export default function Edit({
             form.setData('division', '');
         }
     }, [form.data.role]);
+
+    useEffect(() => {
+        if (form.data.role === 'Staff') {
+            return;
+        }
+
+        if (form.data.religion) {
+            form.setData('religion', '');
+        }
+        if (form.data.gender) {
+            form.setData('gender', '');
+        }
+        if (form.data.education_level) {
+            form.setData('education_level', '');
+        }
+    }, [form.data.role, form.data.religion, form.data.gender, form.data.education_level]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -74,6 +102,9 @@ export default function Edit({
                 roleOptions={roleOptions}
                 divisionOptions={divisionOptions}
                 statusOptions={statusOptions}
+                religionOptions={religionOptions}
+                genderOptions={genderOptions}
+                educationLevelOptions={educationLevelOptions}
                 setData={(key, value) => form.setData(key, value ?? '')}
                 onSubmit={handleSubmit}
                 showDivision={showDivision}

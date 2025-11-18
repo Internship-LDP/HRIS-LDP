@@ -5,9 +5,9 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\DivisionProfile;
 use App\Models\User;
+use App\Support\DivisionOverview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,44 +21,11 @@ class DivisionController extends Controller
     {
         $this->ensureAuthorized($request->user());
 
-        $profiles = $this->ensureDivisionProfiles();
-
-        $divisions = $profiles->map(function (DivisionProfile $profile) {
-            $staff = $this->staffForDivision($profile->name);
-            $currentStaff = $staff->count();
-
-            if ($profile->capacity < $currentStaff) {
-                $profile->forceFill(['capacity' => $currentStaff])->save();
-            }
-
-            $availableSlots = max($profile->capacity - $currentStaff, 0);
-
-            return [
-                'id' => $profile->id,
-                'name' => $profile->name,
-                'description' => $profile->description,
-                'manager_name' => $profile->manager_name,
-                'capacity' => $profile->capacity,
-                'current_staff' => $currentStaff,
-                'available_slots' => $availableSlots,
-                'is_hiring' => $profile->is_hiring,
-                'job_title' => $profile->job_title,
-                'job_description' => $profile->job_description,
-                'job_requirements' => $profile->job_requirements ?? [],
-                'staff' => $staff,
-            ];
-        })->values();
-
-        $stats = [
-            'total_divisions' => $divisions->count(),
-            'total_staff' => $divisions->sum('current_staff'),
-            'active_vacancies' => $divisions->where('is_hiring', true)->count(),
-            'available_slots' => $divisions->sum(fn ($division) => $division['available_slots']),
-        ];
+        $divisionData = DivisionOverview::build();
 
         return Inertia::render('SuperAdmin/KelolaDivisi/Index', [
-            'divisions' => $divisions,
-            'stats' => $stats,
+            'divisions' => $divisionData['divisions'],
+            'stats' => $divisionData['stats'],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
@@ -73,7 +40,7 @@ class DivisionController extends Controller
     {
         $this->ensureAuthorized($request->user());
 
-        $currentStaff = $this->staffForDivision($division->name)->count();
+        $currentStaff = DivisionOverview::staffForDivision($division->name)->count();
 
         $validated = $request->validate([
             'description' => ['nullable', 'string', 'max:2000'],
@@ -93,7 +60,7 @@ class DivisionController extends Controller
     {
         $this->ensureAuthorized($request->user());
 
-        $currentStaff = $this->staffForDivision($division->name)->count();
+        $currentStaff = DivisionOverview::staffForDivision($division->name)->count();
         $availableSlots = max($division->capacity - $currentStaff, 0);
 
         if ($availableSlots <= 0) {
@@ -167,42 +134,5 @@ class DivisionController extends Controller
             ),
             403
         );
-    }
-
-    /**
-     * Make sure every configured division has a profile row.
-     *
-     * @return \Illuminate\Support\Collection<int, \App\Models\DivisionProfile>
-     */
-    private function ensureDivisionProfiles(): Collection
-    {
-        return collect(User::DIVISIONS)
-            ->map(function (string $name) {
-                return DivisionProfile::firstOrCreate(['name' => $name]);
-            });
-    }
-
-    /**
-     * Retrieve staff info for a division.
-     */
-    private function staffForDivision(string $division): Collection
-    {
-        return User::query()
-            ->where('division', $division)
-            ->whereIn('role', [
-                User::ROLES['admin'],
-                User::ROLES['staff'],
-            ])
-            ->orderBy('name')
-            ->get()
-            ->map(function (User $user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'position' => $user->role,
-                    'join_date' => optional($user->registered_at ?? $user->created_at)->format('Y-m-d'),
-                ];
-            });
     }
 }
