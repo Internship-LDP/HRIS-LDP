@@ -24,12 +24,15 @@ export default function UpcomingInterviewCard({
             <h3 className="mb-4 text-lg font-semibold text-blue-900">
                 Jadwal Interview
             </h3>
+
             {!interview ? (
                 <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
                     Belum ada jadwal interview yang tersedia.
                 </p>
             ) : (
                 <div className="space-y-4 rounded-lg bg-blue-50 p-6">
+                    
+                    {/* Posisi */}
                     <div>
                         <p className="text-xs text-slate-500">Posisi</p>
                         <p className="text-base font-semibold text-blue-900">
@@ -37,6 +40,7 @@ export default function UpcomingInterviewCard({
                         </p>
                     </div>
 
+                    {/* Tanggal & Waktu */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p className="text-xs text-slate-500">Tanggal</p>
@@ -59,16 +63,16 @@ export default function UpcomingInterviewCard({
                         </div>
                     </div>
 
+                    {/* Metode */}
                     <div>
                         <p className="text-xs text-slate-500">Metode</p>
                         <div className="mt-1 flex items-center gap-2">
                             <Video className="h-4 w-4 text-blue-900" />
-                            <span className="text-slate-800">
-                                {interview.mode}
-                            </span>
+                            <span className="text-slate-800">{interview.mode}</span>
                         </div>
                     </div>
 
+                    {/* Pewawancara */}
                     <div>
                         <p className="text-xs text-slate-500">Pewawancara</p>
                         <p className="mt-1 text-slate-800">
@@ -76,6 +80,7 @@ export default function UpcomingInterviewCard({
                         </p>
                     </div>
 
+                    {/* Notes */}
                     {interview.notes && (
                         <div>
                             <p className="text-xs text-slate-500">Catatan</p>
@@ -88,15 +93,24 @@ export default function UpcomingInterviewCard({
                         </div>
                     )}
 
+                    {/* LINK MEETING + JOIN BUTTON */}
                     {interview.link && (
-                        <>
-                            <Button className="w-full bg-blue-900 hover:bg-blue-800">
+                        <div className="pt-2 space-y-2">
+                            <a
+                                href={interview.link}
+                                target="_blank"
+                                className="block text-center text-sm text-blue-700 underline"
+                            >
+                                {interview.link}
+                            </a>
+
+                            <Button
+                                className="w-full bg-blue-900 hover:bg-blue-800"
+                                onClick={() => window.open(interview.link!, '_blank')}
+                            >
                                 Join Interview
                             </Button>
-                            <p className="text-center text-xs text-slate-500">
-                                {interview.link}
-                            </p>
-                        </>
+                        </div>
                     )}
                 </div>
             )}

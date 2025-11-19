@@ -23,10 +23,8 @@ class DashboardController extends Controller
         $latestApplication = $applications->first();
         $statusOrder = Application::STATUSES;
 
-        // === DEFINE EMPTY INTERVIEW VARIABLE FIRST ===
-        $upcomingInterview = null; 
-
-        // === FILL INTERVIEW ONLY IF DATA EXISTS ===
+        // Prepare interview details
+        $upcomingInterview = null;
         if ($latestApplication && $latestApplication->interview_date) {
             $upcomingInterview = [
                 'position'    => $latestApplication->position ?? '-',
@@ -34,19 +32,23 @@ class DashboardController extends Controller
                 'time'        => $latestApplication->interview_time ?? '-',
                 'mode'        => $latestApplication->interview_mode ?? '-',
                 'interviewer' => $latestApplication->interviewer_name ?? '-',
-                'link'        => $latestApplication->interview_link,
-                'notes'       => $latestApplication->interview_notes, // ⬅️ IMPORTANT
+                'link'        => $latestApplication->meeting_link ?? null,
+                'notes'       => $latestApplication->interview_notes,
             ];
         }
 
-        // STATUS PIPELINE
+        // Determine current status index
         $statusIndex = $latestApplication
             ? array_search($latestApplication->status, $statusOrder, true)
             : null;
 
-        $statusIndex = $statusIndex === false ? null : $statusIndex;
+        if ($statusIndex === false) {
+            $statusIndex = null;
+        }
 
-        $stages = collect($statusOrder)->map(function (string $status, int $index) use ($statusIndex, $latestApplication) {
+        // Build status timeline
+        $stages = collect($statusOrder)->map(function ($status, $index) use ($statusIndex, $latestApplication) {
+
             $stageStatus = 'pending';
             if ($statusIndex !== null) {
                 if ($index < $statusIndex) {
@@ -56,12 +58,22 @@ class DashboardController extends Controller
                 }
             }
 
+            // Map timestamps per status
+            $date = match ($status) {
+                'Applied'   => $latestApplication?->submitted_at,
+                'Screening' => $latestApplication?->screening_at,
+                'Interview' => $latestApplication?->interview_at,
+                'Hired'     => $latestApplication?->hired_at,
+                'Rejected'  => $latestApplication?->rejected_at,
+                default     => null
+            };
+
             return [
                 'name' => $status,
                 'status' => $stageStatus,
                 'date' => $stageStatus === 'pending'
                     ? '-'
-                    : optional($latestApplication?->submitted_at)->format('d M Y') ?? '-',
+                    : optional($date)->format('d M Y') ?? '-',
             ];
         })->all();
 
@@ -69,21 +81,24 @@ class DashboardController extends Controller
             $stages = [];
         }
 
-        $progress = ($statusIndex !== null && count($statusOrder) > 1)
-            ? (int) round(($statusIndex / (count($statusOrder) - 1)) * 100)
-            : 0;
+        // Progress bar (100% if Hired or Rejected)
+        $progress = match ($latestApplication?->status) {
+            'Hired', 'Rejected' => 100,
+            default => ($statusIndex !== null && count($statusOrder) > 1)
+                ? (int) round(($statusIndex / (count($statusOrder) - 1)) * 100)
+                : 0,
+        };
 
+        // Documents listing
         $documents = $applications
-            ->filter(fn (Application $application) => filled($application->cv_file))
-            ->map(function (Application $application) {
+            ->filter(fn ($application) => filled($application->cv_file))
+            ->map(function ($application) {
                 return [
                     'name' => $application->cv_file ?? 'CV',
                     'status' => $application->status === 'Hired' ? 'approved' : 'pending',
                     'date' => optional($application->submitted_at)->format('d M Y') ?? '-',
                 ];
-            })
-            ->values()
-            ->all();
+            })->values()->all();
 
         return Inertia::render('Pelamar/Dashboard', [
             'applicationStatus' => [
@@ -95,8 +110,6 @@ class DashboardController extends Controller
                 'totalApplications' => $applications->count(),
                 'latestStatus' => $latestApplication?->status,
             ],
-
-            // === SEND INTERVIEW TO FRONTEND ===
             'upcomingInterview' => $upcomingInterview,
         ]);
     }

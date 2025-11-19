@@ -20,6 +20,9 @@ class RecruitmentController extends Controller
 
         $applicationCollection = Application::latest('submitted_at')->get();
 
+        // ============================
+        // LIST SEMUA PELAMAR
+        // ============================
         $applications = $applicationCollection
             ->map(function (Application $application) {
                 return [
@@ -36,27 +39,34 @@ class RecruitmentController extends Controller
                 ];
             });
 
+        // ============================
+        // LIST INTERVIEW
+        // ============================
         $interviews = $applicationCollection
             ->where('status', 'Interview')
             ->map(function (Application $application) {
                 return [
                     'candidate' => $application->full_name,
                     'position' => $application->position,
-                    'date' => $application->interview_date ? \Carbon\Carbon::parse($application->interview_date)->format('d M Y') : '-',
-                    'time' => $application->interview_time ?? '09:00',
-                    'mode' => $application->interview_mode ?? 'Offline',
-                    'interviewer' => $application->interviewer_name ?? 'Tim HR',
+                    'date' => optional($application->interview_date)->format('d M Y'),
+                    'time' => $application->interview_time ?? '-',
+                    'mode' => $application->interview_mode ?? '-',
+                    'interviewer' => $application->interviewer_name ?? '-',
+                    'meeting_link' => $application->meeting_link,
                 ];
             })
             ->values();
 
+        // ============================
+        // LIST ONBOARDING (HIRED)
+        // ============================
         $onboarding = $applicationCollection
             ->where('status', 'Hired')
             ->map(function (Application $application) {
                 return [
                     'name' => $application->full_name,
                     'position' => $application->position ?? '-',
-                    'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
+                    'startedAt' => optional($application->submitted_at)->format('d M Y'),
                     'status' => 'In Progress',
                     'steps' => [
                         ['label' => 'Kontrak ditandatangani', 'complete' => false],
@@ -69,7 +79,7 @@ class RecruitmentController extends Controller
 
         return Inertia::render('SuperAdmin/KelolaRekrutmen/Index', [
             'applications' => $applications,
-            'statusOptions' => Application::STATUSES, 
+            'statusOptions' => Application::STATUSES,
             'interviews' => $interviews,
             'onboarding' => $onboarding,
         ]);
@@ -95,7 +105,7 @@ class RecruitmentController extends Controller
             return redirect()->back()->with('success', 'Status pelamar berhasil diperbarui.');
 
         } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors()); 
+            return redirect()->back()->withErrors($e->errors());
         }
     }
 
@@ -107,31 +117,39 @@ class RecruitmentController extends Controller
         $this->ensureAuthorized($request->user());
 
         try {
+
             $validated = $request->validate([
                 'date' => ['required', 'date', 'after_or_equal:today'],
                 'time' => ['required', 'date_format:H:i'],
                 'mode' => ['required', 'string', 'in:Online,Offline'],
                 'interviewer' => ['required', 'string', 'max:100'],
-                'meeting_link' => ['nullable', 'string', 'url', 'max:500'],
+                'meeting_link' => ['nullable', 'string', 'max:500'],
                 'notes' => ['nullable', 'string', 'max:500'],
             ]);
 
+            // Jika Online, meeting_link wajib
             if ($validated['mode'] === 'Online' && empty($validated['meeting_link'])) {
                 throw ValidationException::withMessages([
-                    'meeting_link' => 'Link meeting wajib diisi jika mode wawancara adalah Online.',
+                    'meeting_link' => 'Link meeting wajib diisi untuk interview Online.',
                 ]);
             }
 
-            // SIMPAN JADWAL
+            // ============================
+            // SIMPAN JADWAL INTERVIEW
+            // ============================
             $application->update([
                 'interview_date' => $validated['date'],
                 'interview_time' => $validated['time'],
                 'interview_mode' => $validated['mode'],
                 'interviewer_name' => $validated['interviewer'],
-                'meeting_link' => $validated['meeting_link'] ?? null,
-                'interview_notes' => $validated['notes'] ?? null,
 
-                // 🔥 UPDATE STATUS OTOMATIS
+                // FIX 🔥 GUNAKAN meeting_link
+                'meeting_link' => $validated['meeting_link'] ?? null,
+
+                'interview_notes' => $validated['notes'] ?? null,
+                'interview_at' => now(),
+
+                // Update status
                 'status' => 'Interview',
             ]);
 
@@ -141,7 +159,6 @@ class RecruitmentController extends Controller
             return redirect()->back()->withErrors($e->errors());
         }
     }
-
 
     public function destroy(Request $request, Application $application): RedirectResponse
     {
