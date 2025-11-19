@@ -32,10 +32,20 @@ class Application extends Model
         'status',
         'notes',
         'submitted_at',
+
+        // Interview fields
+        'interview_date',
+        'interview_time',
+        'interview_mode',
+        'interviewer_name',
+        'meeting_link',
+        'interview_notes',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
+        'interview_date' => 'date',
+        'interview_time' => 'string',
     ];
 
     public function user(): BelongsTo

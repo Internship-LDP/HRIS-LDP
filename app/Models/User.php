@@ -119,4 +119,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(StaffProfile::class);
     }
+
+    // Relation to applications
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
 }

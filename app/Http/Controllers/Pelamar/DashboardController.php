@@ -23,9 +23,27 @@ class DashboardController extends Controller
         $latestApplication = $applications->first();
         $statusOrder = Application::STATUSES;
 
+        // === DEFINE EMPTY INTERVIEW VARIABLE FIRST ===
+        $upcomingInterview = null; 
+
+        // === FILL INTERVIEW ONLY IF DATA EXISTS ===
+        if ($latestApplication && $latestApplication->interview_date) {
+            $upcomingInterview = [
+                'position'    => $latestApplication->position ?? '-',
+                'date'        => optional($latestApplication->interview_date)->format('d M Y'),
+                'time'        => $latestApplication->interview_time ?? '-',
+                'mode'        => $latestApplication->interview_mode ?? '-',
+                'interviewer' => $latestApplication->interviewer_name ?? '-',
+                'link'        => $latestApplication->interview_link,
+                'notes'       => $latestApplication->interview_notes, // ⬅️ IMPORTANT
+            ];
+        }
+
+        // STATUS PIPELINE
         $statusIndex = $latestApplication
             ? array_search($latestApplication->status, $statusOrder, true)
             : null;
+
         $statusIndex = $statusIndex === false ? null : $statusIndex;
 
         $stages = collect($statusOrder)->map(function (string $status, int $index) use ($statusIndex, $latestApplication) {
@@ -77,7 +95,9 @@ class DashboardController extends Controller
                 'totalApplications' => $applications->count(),
                 'latestStatus' => $latestApplication?->status,
             ],
-            'upcomingInterview' => null,
+
+            // === SEND INTERVIEW TO FRONTEND ===
+            'upcomingInterview' => $upcomingInterview,
         ]);
     }
 }

@@ -95,16 +95,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
         Route::get('/admin-hr/dashboard', AdminHrDashboardController::class)->name('admin-hr.dashboard');
         
-        // --- RECRUITMENT ROUTES ---
-        Route::get('/recruitment', RecruitmentController::class)->name('recruitment');
-        
-        // RUTE KRITIS BARU: Rute PUT untuk Update Status Rekrutmen
-        Route::put('/recruitment/{application}/update-status', [RecruitmentController::class, 'updateStatus'])
+         // RECRUITMENT ROUTES
+        Route::get('/recruitment', RecruitmentController::class)
+            ->name('recruitment');
+
+        // UPDATE STATUS (PUT)
+        Route::put('/recruitment/{application}/update-status', 
+            [RecruitmentController::class, 'updateStatus'])
             ->name('recruitment.update-status');
-            
-        Route::delete('/recruitment/{application}', [RecruitmentController::class, 'destroy'])
+        Route::post('/recruitment/{application}/schedule-interview',
+            [RecruitmentController::class, 'scheduleInterview'])
+            ->name('recruitment.schedule-interview');
+
+        Route::delete('/recruitment/{application}',
+            [RecruitmentController::class, 'destroy'])
             ->name('recruitment.destroy');
-        // -------------------------
 
         Route::get('/kelola-divisi', [DivisionController::class, 'index'])->name('divisions.index');
         Route::patch('/kelola-divisi/{division}', [DivisionController::class, 'update'])->name('divisions.update');
