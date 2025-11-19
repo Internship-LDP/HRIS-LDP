@@ -23,7 +23,8 @@ export interface ApplicantRecord {
     email: string;
     phone?: string | null;
     skills?: string | null;
-    cv_filename: string; // Wajib ada untuk link dokumen
+    cv_file?: string | null;
+    cv_url?: string | null;
 }
 
 export interface InterviewSchedule {

@@ -8,12 +8,16 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RecruitmentController extends Controller
 {
+    /**
+     * GET: Tampilkan daftar semua pelamar, interview, dan onboarding
+     */
     public function __invoke(Request $request): Response
     {
         $this->ensureAuthorized($request->user());
@@ -36,6 +40,14 @@ class RecruitmentController extends Controller
                     'email' => $application->email,
                     'phone' => $application->phone,
                     'skills' => $application->skills,
+
+                    // =========================
+                    // CV FILE (gunakan URL storage public)
+                    // =========================
+                    'cv_file' => $application->cv_file,
+                    'cv_url' => $application->cv_file
+                        ? Storage::disk('public')->url($application->cv_file)
+                        : null,
                 ];
             });
 
@@ -48,7 +60,7 @@ class RecruitmentController extends Controller
                 return [
                     'candidate' => $application->full_name,
                     'position' => $application->position,
-                    'date' => optional($application->interview_date)->format('d M Y'),
+                    'date' => optional($application->interview_date)->format('d M Y') ?? '-',
                     'time' => $application->interview_time ?? '-',
                     'mode' => $application->interview_mode ?? '-',
                     'interviewer' => $application->interviewer_name ?? '-',
@@ -66,7 +78,7 @@ class RecruitmentController extends Controller
                 return [
                     'name' => $application->full_name,
                     'position' => $application->position ?? '-',
-                    'startedAt' => optional($application->submitted_at)->format('d M Y'),
+                    'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
                     'status' => 'In Progress',
                     'steps' => [
                         ['label' => 'Kontrak ditandatangani', 'complete' => false],
@@ -94,7 +106,7 @@ class RecruitmentController extends Controller
 
         try {
             $validated = $request->validate([
-                'status' => ['required', 'string', 'in:'.implode(',', Application::STATUSES)],
+                'status' => ['required', 'string', 'in:' . implode(',', Application::STATUSES)],
             ]);
 
             if ($application->status !== $validated['status']) {
@@ -117,7 +129,6 @@ class RecruitmentController extends Controller
         $this->ensureAuthorized($request->user());
 
         try {
-
             $validated = $request->validate([
                 'date' => ['required', 'date', 'after_or_equal:today'],
                 'time' => ['required', 'date_format:H:i'],
@@ -127,29 +138,21 @@ class RecruitmentController extends Controller
                 'notes' => ['nullable', 'string', 'max:500'],
             ]);
 
-            // Jika Online, meeting_link wajib
             if ($validated['mode'] === 'Online' && empty($validated['meeting_link'])) {
                 throw ValidationException::withMessages([
                     'meeting_link' => 'Link meeting wajib diisi untuk interview Online.',
                 ]);
             }
 
-            // ============================
-            // SIMPAN JADWAL INTERVIEW
-            // ============================
+            // SIMPAN JADWAL INTERVIEW + UPDATE STATUS
             $application->update([
                 'interview_date' => $validated['date'],
                 'interview_time' => $validated['time'],
                 'interview_mode' => $validated['mode'],
                 'interviewer_name' => $validated['interviewer'],
-
-                // FIX 🔥 GUNAKAN meeting_link
                 'meeting_link' => $validated['meeting_link'] ?? null,
-
                 'interview_notes' => $validated['notes'] ?? null,
                 'interview_at' => now(),
-
-                // Update status
                 'status' => 'Interview',
             ]);
 
@@ -160,6 +163,9 @@ class RecruitmentController extends Controller
         }
     }
 
+    /**
+     * DELETE: Hapus lamaran
+     */
     public function destroy(Request $request, Application $application): RedirectResponse
     {
         $this->ensureAuthorized($request->user());
@@ -170,6 +176,9 @@ class RecruitmentController extends Controller
             ->with('success', 'Lamaran berhasil dihapus.');
     }
 
+    /**
+     * Pastikan user berhak mengakses
+     */
     private function ensureAuthorized(?User $user): void
     {
         abort_unless(

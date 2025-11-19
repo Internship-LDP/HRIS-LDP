@@ -27,7 +27,6 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
     );
 }
 
-
 export default function ApplicantDetailDialog({
     open,
     onOpenChange,
@@ -36,14 +35,15 @@ export default function ApplicantDetailDialog({
     
     if (!applicant) return null;
 
-    // FUNGSI: Melihat dokumen
+    // FUNGSI: Melihat dokumen CV
     const handleViewDocument = () => {
-        // TODO: Ganti dengan URL file yang sebenarnya dari properti applicant
-        const documentUrl = `/storage/applications/documents/${applicant.id}/${applicant.name}.pdf`;
-        
-        // Hanya simulasi:
-        alert(`Membuka dokumen CV dari ${applicant.name}. URL: ${documentUrl}`);
-        // window.open(documentUrl, '_blank'); 
+        if (!applicant.cv_url) {
+            alert('Dokumen CV belum tersedia.');
+            return;
+        }
+
+        // Buka dokumen CV di tab baru
+        window.open(applicant.cv_url, '_blank');
     };
 
     return (
@@ -68,8 +68,8 @@ export default function ApplicantDetailDialog({
                     </div>
                 </div>
 
-                <DialogFooter className="border-t border-slate-100 p-4">
-                    {/* Tombol Lihat Dokumen (Sekarang di sini) */}
+                <DialogFooter className="border-t border-slate-100 p-4 flex gap-2">
+                    {/* Tombol Lihat Dokumen */}
                     <Button 
                         variant="secondary" 
                         onClick={handleViewDocument}
