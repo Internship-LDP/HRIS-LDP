@@ -174,16 +174,37 @@ export default function ApplicantsTab({
 
                                             {/* 2. BUTTON AKSI KONTEKSTUAL: TERIMA (HIRED) */}
                                             {application.status === 'Interview' && (
-                                                <Button
-                                                    variant="default"
-                                                    size="sm"
-                                                    onClick={() => handleHire(application)}
-                                                    disabled={isCurrentlyUpdating}
-                                                    className="bg-green-600 hover:bg-green-700"
-                                                >
-                                                    <Check className="h-4 w-4 mr-2" />
-                                                    Terima (Hired)
-                                                </Button>
+                                                <>
+                                                    <Button
+                                                        variant="default"
+                                                        size="sm"
+                                                        onClick={() => handleHire(application)}
+                                                        disabled={isCurrentlyUpdating}
+                                                        className="bg-green-600 hover:bg-green-700"
+                                                    >
+                                                        <Check className="h-4 w-4 mr-2" />
+                                                        Terima (Hired)
+                                                    </Button>
+
+                                                    {/* BUTTON REJECTED */}
+                                                    <Button
+                                                        variant="default"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            const confirmed = window.confirm(
+                                                                `Tolak pelamar ${application.name}? Status akan berubah menjadi 'Rejected'.`
+                                                            );
+                                                            if (confirmed) {
+                                                                onStatusUpdate(application.id, 'Rejected');
+                                                            }
+                                                        }}
+                                                        disabled={isCurrentlyUpdating}
+                                                        className="bg-red-600 hover:bg-red-700"
+                                                    >
+                                                        <XCircle className="h-4 w-4 mr-2" />
+                                                        Tolak (Rejected)
+                                                    </Button>
+                                                </>
                                             )}
                                             
                                             {/* 3. ICON MATA (VIEW DETAIL/SCREENING) & Loading */}
