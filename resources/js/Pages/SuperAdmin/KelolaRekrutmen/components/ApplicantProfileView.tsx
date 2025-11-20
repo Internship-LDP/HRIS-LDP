@@ -52,10 +52,7 @@ export function ApplicantProfileView({
     }
   };
 
-  // Parse skills from comma-separated string
-  const skillsList = applicant.skills 
-    ? applicant.skills.split(',').map(s => s.trim()).filter(s => s.length > 0)
-    : [];
+
 
   return (
     <div className="space-y-6">
@@ -66,8 +63,16 @@ export function ApplicantProfileView({
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-16 relative">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
-                <User className="w-16 h-16 text-white" />
+              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
+                {applicant.profile_photo_url ? (
+                  <img 
+                    src={applicant.profile_photo_url} 
+                    alt={applicant.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-16 h-16 text-white" />
+                )}
               </div>
               <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-green-500 border-4 border-white flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-white" />
@@ -80,12 +85,14 @@ export function ApplicantProfileView({
                 <div className="space-y-3">
                   <div>
                     <h2 className="text-gray-900 mb-1">{applicant.name}</h2>
-                    <p className="text-gray-600">{applicant.position}</p>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-blue-900 hover:bg-blue-800">ID: APL{String(applicant.id).padStart(3, '0')}</Badge>
                     {getStatusBadge(applicant.status)}
+                    <Badge variant="outline" className="border-gray-400 text-gray-700">
+                      {applicant.position}
+                    </Badge>
                   </div>
                   
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
@@ -158,7 +165,7 @@ export function ApplicantProfileView({
 
       {/* Modern Tabbed Content */}
       <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto bg-gray-100 p-1 rounded-xl">
+        <TabsList className="grid w-full grid-cols-3 h-auto bg-gray-100 p-1 rounded-xl">
           <TabsTrigger value="personal" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
             <User className="w-4 h-4 mr-0 sm:mr-2" />
             <span className="hidden sm:inline">Data Pribadi</span>
@@ -173,11 +180,6 @@ export function ApplicantProfileView({
             <Briefcase className="w-4 h-4 mr-0 sm:mr-2" />
             <span className="hidden sm:inline">Pengalaman</span>
             <span className="sm:hidden">Exp</span>
-          </TabsTrigger>
-          <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
-            <Award className="w-4 h-4 mr-0 sm:mr-2" />
-            <span className="hidden sm:inline">Skills</span>
-            <span className="sm:hidden">Skills</span>
           </TabsTrigger>
         </TabsList>
 
@@ -278,53 +280,10 @@ export function ApplicantProfileView({
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">Informasi pengalaman tidak tersedia</p>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* Skills Tab */}
-        <TabsContent value="skills">
-          <Card className="border-0 shadow-md">
-            <div className="p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-purple-700" />
+                <div className="p-5 bg-gray-50 border-2 border-gray-200 rounded-xl text-center">
+                  <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">Pelamar belum menambahkan data pengalaman kerja</p>
                 </div>
-                <h3 className="text-blue-900">Keahlian & Skills</h3>
-              </div>
-              
-              {skillsList.length > 0 ? (
-                <>
-                  <div className="flex flex-wrap gap-2.5">
-                    {skillsList.map((skill, index) => (
-                      <Badge 
-                        key={index} 
-                        className="bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white px-5 py-2.5 text-sm shadow-md hover:shadow-lg transition-all cursor-default"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <Separator className="my-6" />
-                  
-                  <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-green-900">
-                          Pelamar memiliki <span className="font-semibold">{skillsList.length} skills</span> yang relevan dengan posisi yang dilamar
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm">Informasi skills tidak tersedia</p>
               )}
             </div>
           </Card>

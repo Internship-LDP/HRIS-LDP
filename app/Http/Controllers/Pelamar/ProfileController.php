@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -83,7 +84,7 @@ class ProfileController extends Controller
             'personal.address' => ['required', 'string'],
             'personal.city' => ['required', 'string', 'max:120'],
             'personal.province' => ['required', 'string', 'max:120'],
-            'profile_photo' => ['nullable', 'image', 'max:2048'],
+            'profile_photo' => ['nullable', 'image', 'max:5120'],
         ];
 
         $educationRules = [
@@ -94,6 +95,10 @@ class ProfileController extends Controller
             'educations.*.start_year' => ['required', 'string', 'regex:/^\d{4}$/'],
             'educations.*.end_year' => ['required', 'string', 'regex:/^\d{4}$/'],
             'educations.*.gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+        ];
+
+        $photoRules = [
+            'profile_photo' => ['required', 'image', 'max:5120'],
         ];
 
         $experienceRules = [
@@ -110,6 +115,7 @@ class ProfileController extends Controller
             'personal' => $personalRules,
             'education' => $educationRules,
             'experience' => $experienceRules,
+            'photo' => $photoRules,
             default => array_merge($personalRules, $educationRules),
         };
 
@@ -117,9 +123,39 @@ class ProfileController extends Controller
             $rules = array_merge($rules, $experienceRules);
         }
 
-        $validated = $request->validate($rules);
+        // Check if this is a photo-only update
+        $isPhotoOnly = in_array($section, ['photo'], true)
+            || ($section === 'personal' && $request->hasFile('profile_photo') && ! $request->has('personal'));
 
-        if ($section === 'personal' || $section === 'all') {
+        \Log::info('Profile update request received', [
+            'user_id' => $user->id,
+            'section' => $section,
+            'has_photo' => $request->hasFile('profile_photo'),
+            'has_personal' => $request->has('personal'),
+            'is_photo_only' => $isPhotoOnly,
+            'request_keys' => array_keys($request->all()),
+        ]);
+
+        if ($isPhotoOnly) {
+            // For photo-only updates, only validate the photo
+            $rules = $photoRules;
+            \Log::info('Using photo-only validation rules');
+        }
+
+        try {
+            $validated = $request->validate($rules);
+        } catch (ValidationException $exception) {
+            if ($section === 'photo') {
+                \Log::warning('Profile photo validation failed', [
+                    'user_id' => $user->id,
+                    'errors' => $exception->errors(),
+                ]);
+            }
+
+            throw $exception;
+        }
+
+        if (($section === 'personal' || $section === 'all') && isset($validated['personal'])) {
             $personal = $validated['personal'];
             $profile->fill([
                 'full_name' => $personal['full_name'],
@@ -133,20 +169,38 @@ class ProfileController extends Controller
                 'province' => $personal['province'],
             ]);
 
-            if ($request->hasFile('profile_photo')) {
-                $path = $request->file('profile_photo')->store('applicant-profiles', 'public');
-
-                if ($profile->profile_photo_path) {
-                    Storage::disk('public')->delete($profile->profile_photo_path);
-                }
-
-                $profile->profile_photo_path = $path;
-            }
-
             $user->forceFill([
                 'name' => $personal['full_name'],
                 'email' => $personal['email'],
             ])->save();
+        }
+
+        // Handle photo upload (works for both photo-only and full personal updates)
+        if ($request->hasFile('profile_photo')) {
+            \Log::info('Profile photo upload detected', [
+                'user_id' => $user->id,
+                'file_name' => $request->file('profile_photo')->getClientOriginalName(),
+                'file_size' => $request->file('profile_photo')->getSize(),
+            ]);
+
+            try {
+                $path = $request->file('profile_photo')->store('applicant-profiles', 'public');
+
+                // Delete old photo if exists
+                if ($profile->profile_photo_path && Storage::disk('public')->exists($profile->profile_photo_path)) {
+                    Storage::disk('public')->delete($profile->profile_photo_path);
+                    \Log::info('Old profile photo deleted', ['path' => $profile->profile_photo_path]);
+                }
+
+                $profile->profile_photo_path = $path;
+                \Log::info('New profile photo saved', ['path' => $path]);
+            } catch (\Exception $e) {
+                \Log::error('Profile photo upload failed', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id,
+                ]);
+                throw $e;
+            }
         }
 
         if ($section === 'education' || $section === 'all') {

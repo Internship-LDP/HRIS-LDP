@@ -40,6 +40,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
     const [photoPreview, setPhotoPreview] = useState<string | null>(
         profile.profile_photo_url ?? null,
     );
+    const [photoChanged, setPhotoChanged] = useState(false);
     const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [submittingSection, setSubmittingSection] =
         useState<SectionKey | null>(null);
@@ -90,6 +91,45 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
 
         form.setData('profile_photo', file);
         setPhotoPreview(URL.createObjectURL(file));
+        setPhotoChanged(true);
+    };
+
+    const handlePhotoSave = () => {
+        if (!form.data.profile_photo) {
+            return;
+        }
+
+        setSubmittingSection('photo');
+        form.transform((data) => ({
+            profile_photo: data.profile_photo,
+            section: 'photo',
+        }));
+        form.post(route('pelamar.profile.update'), {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                form.setData('profile_photo', null);
+                setPhotoChanged(false);
+                router.reload({ only: ['profile'] });
+                setFeedback({
+                    type: 'success',
+                    message: 'Foto profil berhasil disimpan.',
+                });
+            },
+            onError: () => {
+                setFeedback({
+                    type: 'error',
+                    message: 'Gagal menyimpan foto profil, silakan coba lagi.',
+                });
+            },
+            onFinish: () => setSubmittingSection(null),
+        });
+    };
+
+    const handlePhotoCancel = () => {
+        form.setData('profile_photo', null);
+        setPhotoPreview(profile.profile_photo_url ?? null);
+        setPhotoChanged(false);
     };
 
     const handleEducationChange = (
@@ -190,12 +230,15 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
     return {
         form,
         photoPreview,
+        photoChanged,
         feedback,
         setFeedback,
         submittingSection,
         completionPercentage,
         setPersonalField,
         handlePhotoChange,
+        handlePhotoSave,
+        handlePhotoCancel,
         handleEducationChange,
         handleExperienceChange,
         addEducation,

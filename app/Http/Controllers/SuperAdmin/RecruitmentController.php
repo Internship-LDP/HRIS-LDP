@@ -21,7 +21,7 @@ class RecruitmentController extends Controller
     {
         $this->ensureAuthorized($request->user());
 
-        $applicationCollection = Application::latest('submitted_at')->get();
+        $applicationCollection = Application::with('user.applicantProfile')->latest('submitted_at')->get();
 
         // ============================
         // LIST SEMUA PELAMAR
@@ -46,6 +46,13 @@ class RecruitmentController extends Controller
                     'cv_file' => $application->cv_file,
                     'cv_url' => $application->cv_file
                         ? '/storage/' . ltrim($application->cv_file, '/')
+                        : null,
+
+                    // =========================
+                    // PROFILE PHOTO (dari ApplicantProfile)
+                    // =========================
+                    'profile_photo_url' => $application->user?->applicantProfile?->profile_photo_path
+                        ? '/storage/' . ltrim($application->user->applicantProfile->profile_photo_path, '/')
                         : null,
                 ];
             });

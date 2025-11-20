@@ -39,12 +39,15 @@ export default function Profile({
     const {
         form,
         photoPreview,
+        photoChanged,
         feedback,
         setFeedback,
         submittingSection,
         completionPercentage,
         setPersonalField,
         handlePhotoChange,
+        handlePhotoSave,
+        handlePhotoCancel,
         handleEducationChange,
         handleExperienceChange,
         addEducation,
@@ -75,10 +78,14 @@ export default function Profile({
                 <ProfileHeader
                     avatarSize={AVATAR_SIZE}
                     photoPreview={photoPreview ?? profile.profile_photo_url ?? null}
+                    photoChanged={photoChanged}
                     onPhotoChange={handlePhotoChange}
+                    onPhotoSave={handlePhotoSave}
+                    onPhotoCancel={handlePhotoCancel}
                     fullName={form.data.personal.full_name}
                     email={form.data.personal.email}
                     completion={completionPercentage}
+                    savingPhoto={form.processing && submittingSection === 'photo'}
                 />
 
                 <Tabs defaultValue="personal" className="space-y-6">

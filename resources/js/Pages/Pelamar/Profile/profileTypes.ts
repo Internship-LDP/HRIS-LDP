@@ -53,7 +53,7 @@ export interface ApplicantProfileForm {
     profile_photo: File | null;
 }
 
-export type SectionKey = 'personal' | 'education' | 'experience';
+export type SectionKey = 'personal' | 'education' | 'experience' | 'photo';
 
 export type RequiredEducationField = Exclude<keyof Education, 'id'>;
 

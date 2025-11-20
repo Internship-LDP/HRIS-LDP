@@ -25,6 +25,7 @@ export interface ApplicantRecord {
     skills?: string | null;
     cv_file?: string | null;
     cv_url?: string | null;
+    profile_photo_url?: string | null;
 }
 
 export interface InterviewSchedule {
