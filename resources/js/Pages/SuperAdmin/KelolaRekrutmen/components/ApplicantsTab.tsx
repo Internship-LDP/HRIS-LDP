@@ -1,6 +1,5 @@
-    // src/Pages/SuperAdmin/Recruitment/components/ApplicantsTab.tsx
+// src/Pages/SuperAdmin/Recruitment/components/ApplicantsTab.tsx
 
-<<<<<<< HEAD
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -20,22 +19,23 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
-import { 
-    Filter, 
-    Search, 
-    Eye, 
-    XCircle, 
-    Loader2, 
+import {
+    Filter,
+    Search,
+    Eye,
+    XCircle,
+    Loader2,
     Calendar,
     Check,
     User,
 } from 'lucide-react';
-import { 
-    ApplicantRecord, 
-    ApplicantStatus, 
-    StatusSummary, 
+import {
+    ApplicantRecord,
+    ApplicantStatus,
+    StatusSummary,
     formatApplicationId,
-    ApplicantActionHandler
+    ApplicantActionHandler,
+    ApplicantRejectHandler,
 } from '../types';
 import { ChangeEvent } from 'react';
 
@@ -51,10 +51,11 @@ interface ApplicantsTabProps {
     onViewDetail: (application: ApplicantRecord) => void;
     onDelete: (application: ApplicantRecord) => void;
     onStatusUpdate: ApplicantActionHandler;
+    onReject: ApplicantRejectHandler;
     isUpdatingStatus: boolean;
     updatingApplicantId: number | null;
     onScheduleInterview: (application: ApplicantRecord) => void;
-    onViewProfile: (application: ApplicantRecord) => void;
+    onViewProfile?: (application: ApplicantRecord) => void;
 }
 
 const statusBadge = (status: ApplicantStatus) => {
@@ -91,64 +92,9 @@ const statusBadge = (status: ApplicantStatus) => {
             );
         default:
             return <Badge variant="outline">{status}</Badge>;
-=======
-    import { Card } from '@/Components/ui/card';
-    import { Button } from '@/Components/ui/button';
-    import { Input } from '@/Components/ui/input';
-    import {
-        Select,
-        SelectContent,
-        SelectItem,
-        SelectTrigger,
-        SelectValue,
-    } from '@/Components/ui/select';
-    import {
-        Table,
-        TableBody,
-        TableCell,
-        TableHead,
-        TableHeader,
-        TableRow,
-    } from '@/Components/ui/table';
-    import { Badge } from '@/Components/ui/badge';
-    import { 
-        Filter, 
-        Search, 
-        Eye, 
-        XCircle, 
-        Loader2, 
-        Calendar,
-        Check,
-    } from 'lucide-react';
-    import { 
-        ApplicantRecord, 
-        ApplicantStatus, 
-        StatusSummary, 
-        formatApplicationId,
-        ApplicantActionHandler
-    } from '../types';
-    import { ChangeEvent } from 'react';
-
-    interface ApplicantsTabProps {
-        statusOptions: string[];
-        searchTerm: string;
-        onSearchTermChange: (value: string) => void;
-        statusFilter: string;
-        onStatusFilterChange: (value: string) => void;
-        statusOrder: ApplicantStatus[];
-        statusSummary: StatusSummary;
-        visibleApplications: ApplicantRecord[];
-        onViewDetail: (application: ApplicantRecord) => void;
-        onDelete: (application: ApplicantRecord) => void;
-        onStatusUpdate: ApplicantActionHandler; 
-        onReject: (id: number, reason: string) => void;
-        isUpdatingStatus: boolean;
-        updatingApplicantId: number | null;
-        onScheduleInterview: (application: ApplicantRecord) => void;
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
     }
+};
 
-<<<<<<< HEAD
 export default function ApplicantsTab({
     statusOptions,
     searchTerm,
@@ -161,6 +107,7 @@ export default function ApplicantsTab({
     onViewDetail,
     onDelete,
     onStatusUpdate,
+    onReject,
     isUpdatingStatus,
     updatingApplicantId,
     onScheduleInterview,
@@ -170,155 +117,119 @@ export default function ApplicantsTab({
         onSearchTermChange(event.target.value);
     };
 
-    // FUNGSI: Terima (Hired)
     const handleHire = (application: ApplicantRecord) => {
-        const confirmed = window.confirm(`Konfirmasi penerimaan (Hired) untuk ${application.name}? Status akan diubah menjadi 'Hired'.`);
+        const confirmed = window.confirm(
+            `Konfirmasi penerimaan (Hired) untuk ${application.name}?`
+        );
         if (confirmed) {
             onStatusUpdate(application.id, 'Hired');
-=======
-    const statusBadge = (status: ApplicantStatus) => {
-        switch (status) {
-            case 'Applied':
-                return (
-                    <Badge variant="outline" className="border-blue-500 bg-blue-50 text-blue-500 hover:bg-blue-50">
-                        Applied
-                    </Badge>
-                );
-            case 'Screening':
-                return (
-                    <Badge variant="outline" className="border-orange-500 bg-orange-50 text-orange-500 hover:bg-orange-50">
-                        Screening
-                    </Badge>
-                );
-            case 'Interview':
-                return (
-                    <Badge variant="outline" className="border-purple-500 bg-purple-50 text-purple-500 hover:bg-purple-50">
-                        Interview
-                    </Badge>
-                );
-            case 'Hired':
-                return (
-                    <Badge variant="outline" className="border-green-500 bg-green-50 text-green-500 hover:bg-green-50">
-                        Hired
-                    </Badge>
-                );
-            case 'Rejected':
-                return (
-                    <Badge variant="outline" className="border-red-500 bg-red-50 text-red-500 hover:bg-red-50">
-                        Rejected
-                    </Badge>
-                );
-            default:
-                return <Badge variant="outline">{status}</Badge>;
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
         }
     };
 
-    export default function ApplicantsTab({
-        statusOptions,
-        searchTerm,
-        onSearchTermChange,
-        statusFilter,
-        onStatusFilterChange,
-        statusOrder,
-        statusSummary,
-        visibleApplications,
-        onViewDetail,
-        onDelete,
-        onStatusUpdate,
-        onReject,        // 
-        isUpdatingStatus,
-        updatingApplicantId,
-        onScheduleInterview,
-    }: ApplicantsTabProps) {
+    const handleReject = (application: ApplicantRecord) => {
+        const reason = window.prompt(`Masukkan alasan penolakan untuk ${application.name}:`);
+        if (!reason || reason.trim() === '') {
+            alert('Alasan penolakan wajib diisi.');
+            return;
+        }
 
-        const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-            onSearchTermChange(event.target.value);
-        };
+        onReject(application.id, reason.trim());
+    };
 
-        // Hired handler (tetap)
-        const handleHire = (application: ApplicantRecord) => {
-            const confirmed = window.confirm(`Konfirmasi penerimaan (Hired) untuk ${application.name}?`);
-            if (confirmed) {
-                onStatusUpdate(application.id, 'Hired');
-            }
-        };
+    return (
+        <Card className="space-y-6 p-6">
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-slate-500" />
+                    <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Semua status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Status</SelectItem>
+                            {statusOrder.map((status) => (
+                                <SelectItem key={status} value={status}>
+                                    {status}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-        // NEW: Reject handler dengan alasan
-        const handleReject = (application: ApplicantRecord) => {
-            const reason = window.prompt(`Masukkan alasan penolakan untuk ${application.name}:`);
-            if (!reason || reason.trim() === '') {
-                alert('Alasan penolakan wajib diisi.');
-                return;
-            }
+                <div className="relative w-full max-w-xs">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        placeholder="Cari pelamar..."
+                        className="pl-9"
+                    />
+                </div>
+            </div>
 
-            onReject(application.id, reason.trim());
-        };
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <Table>
+                    <TableHeader className="bg-slate-50">
+                        <TableRow>
+                            <TableHead>ID Lamaran</TableHead>
+                            <TableHead>Pelamar</TableHead>
+                            <TableHead>Posisi</TableHead>
+                            <TableHead className="w-[120px]">Status</TableHead>
+                            <TableHead className="text-right w-[280px]">Aksi</TableHead>
+                        </TableRow>
+                    </TableHeader>
 
-        return (
-            <Card className="space-y-6 p-6">
-                <div className="overflow-hidden rounded-2xl border border-slate-200">
-                    <Table>
-                        <TableHeader className="bg-slate-50">
-                            <TableRow>
-                                <TableHead>ID Lamaran</TableHead>
-                                <TableHead>Pelamar</TableHead>
-                                <TableHead>Posisi</TableHead>
-                                <TableHead className="w-[120px]">Status</TableHead>
-                                <TableHead className="text-right w-[250px]">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
+                    <TableBody>
+                        {visibleApplications.map((application) => {
+                            const isCurrentlyUpdating =
+                                isUpdatingStatus && updatingApplicantId === application.id;
 
-                        <TableBody>
-                            {visibleApplications.map((application) => {
-                                const isCurrentlyUpdating = isUpdatingStatus && updatingApplicantId === application.id;
+                            return (
+                                <TableRow key={application.id}>
+                                    <TableCell className="font-semibold text-blue-900">
+                                        {formatApplicationId(application.id)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <p className="font-medium text-slate-900">
+                                            {application.name}
+                                        </p>
+                                        <p className="text-sm text-slate-500">
+                                            {application.email}
+                                        </p>
+                                    </TableCell>
+                                    <TableCell>{application.position}</TableCell>
+                                    <TableCell>{statusBadge(application.status)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
+                                            {application.status === 'Screening' && (
+                                                <Button
+                                                    variant="default"
+                                                    size="sm"
+                                                    onClick={() => onScheduleInterview(application)}
+                                                    disabled={isCurrentlyUpdating}
+                                                    className="bg-purple-600 hover:bg-purple-700"
+                                                >
+                                                    <Calendar className="h-4 w-4 mr-2" />
+                                                    Jadwalkan Interview
+                                                </Button>
+                                            )}
 
-                                return (
-                                    <TableRow key={application.id}>
-                                        <TableCell className="font-semibold text-blue-900">
-                                            {formatApplicationId(application.id)}
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <p className="font-medium text-slate-900">{application.name}</p>
-                                            <p className="text-sm text-slate-500">{application.email}</p>
-                                        </TableCell>
-
-                                        <TableCell>{application.position}</TableCell>
-
-                                        <TableCell>
-                                            {statusBadge(application.status)}
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <div className="flex items-center justify-end gap-2">
-
-                                                {/* SCREENING → Jadwalkan Interview */}
-                                                {application.status === 'Screening' && (
+                                            {application.status === 'Interview' && (
+                                                <>
                                                     <Button
                                                         variant="default"
                                                         size="sm"
-                                                        onClick={() => onScheduleInterview(application)}
+                                                        onClick={() => handleHire(application)}
                                                         disabled={isCurrentlyUpdating}
-                                                        className="bg-purple-600 hover:bg-purple-700"
+                                                        className="bg-green-600 hover:bg-green-700"
                                                     >
-                                                        <Calendar className="h-4 w-4 mr-2" />
-                                                        Jadwalkan Interview
+                                                        <Check className="h-4 w-4 mr-2" />
+                                                        Terima (Hired)
                                                     </Button>
-<<<<<<< HEAD
-
-                                                    {/* BUTTON REJECTED */}
                                                     <Button
                                                         variant="default"
                                                         size="sm"
-                                                        onClick={() => {
-                                                            const confirmed = window.confirm(
-                                                                `Tolak pelamar ${application.name}? Status akan berubah menjadi 'Rejected'.`
-                                                            );
-                                                            if (confirmed) {
-                                                                onStatusUpdate(application.id, 'Rejected');
-                                                            }
-                                                        }}
+                                                        onClick={() => handleReject(application)}
                                                         disabled={isCurrentlyUpdating}
                                                         className="bg-red-600 hover:bg-red-700"
                                                     >
@@ -327,19 +238,19 @@ export default function ApplicantsTab({
                                                     </Button>
                                                 </>
                                             )}
-                                            
-                                            {/* 3. ICON PROFIL (VIEW PROFILE) */}
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => onViewProfile(application)}
-                                                disabled={isCurrentlyUpdating}
-                                                title="Lihat Profil Lengkap"
-                                            >
-                                                <User className="h-4 w-4 text-blue-600" />
-                                            </Button>
-                                            
-                                            {/* 4. ICON MATA (VIEW DETAIL/SCREENING) & Loading */}
+
+                                            {onViewProfile && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => onViewProfile(application)}
+                                                    disabled={isCurrentlyUpdating}
+                                                    title="Lihat Profil Lengkap"
+                                                >
+                                                    <User className="h-4 w-4 text-blue-600" />
+                                                </Button>
+                                            )}
+
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -352,8 +263,7 @@ export default function ApplicantsTab({
                                                     <Eye className="h-4 w-4" />
                                                 )}
                                             </Button>
-                                            
-                                            {/* 5. ICON HAPUS */}
+
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -369,75 +279,7 @@ export default function ApplicantsTab({
                         })}
                     </TableBody>
                 </Table>
-                {/* ... (Pesan jika tidak ada pelamar) */}
             </div>
         </Card>
     );
 }
-=======
-                                                )}
-
-                                                {/* INTERVIEW → Hired / Reject */}
-                                                {application.status === 'Interview' && (
-                                                    <>
-                                                        <Button
-                                                            variant="default"
-                                                            size="sm"
-                                                            onClick={() => handleHire(application)}
-                                                            disabled={isCurrentlyUpdating}
-                                                            className="bg-green-600 hover:bg-green-700"
-                                                        >
-                                                            <Check className="h-4 w-4 mr-2" />
-                                                            Terima (Hired)
-                                                        </Button>
-
-                                                        <Button
-                                                            variant="default"
-                                                            size="sm"
-                                                            onClick={() => handleReject(application)}
-                                                            disabled={isCurrentlyUpdating}
-                                                            className="bg-red-600 hover:bg-red-700"
-                                                        >
-                                                            <XCircle className="h-4 w-4 mr-2" />
-                                                            Tolak (Rejected)
-                                                        </Button>
-                                                    </>
-                                                )}
-
-                                                {/* VIEW */}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => onViewDetail(application)}
-                                                    disabled={isCurrentlyUpdating}
-                                                >
-                                                    {isCurrentlyUpdating ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                                    ) : (
-                                                        <Eye className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-
-                                                {/* DELETE */}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => onDelete(application)}
-                                                    disabled={isCurrentlyUpdating}
-                                                >
-                                                    <XCircle className="h-4 w-4 text-red-500" />
-                                                </Button>
-
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-
-                    </Table>
-                </div>
-            </Card>
-        );
-    }
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8

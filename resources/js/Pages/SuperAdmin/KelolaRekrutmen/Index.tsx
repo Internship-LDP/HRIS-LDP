@@ -13,14 +13,13 @@ import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
 import {
     ApplicantRecord,
     ApplicantStatus,
+    ApplicantRejectHandler,
     RecruitmentPageProps,
     StatusSummary,
 } from './types';
 import { Head, router } from '@inertiajs/react';
 
 type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
-type ApplicantRejectHandler = (applicantId: number, reason: string) => void;
-
 const statusOrder: ApplicantStatus[] = [
     'Applied',
     'Screening',
@@ -42,12 +41,7 @@ export default function KelolaRekrutmenIndex({
 
     const [detailOpen, setDetailOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
-<<<<<<< HEAD
     const [profileOpen, setProfileOpen] = useState(false);
-    
-=======
-
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
 
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -97,32 +91,18 @@ export default function KelolaRekrutmenIndex({
         );
     };
 
-<<<<<<< HEAD
-    // FUNGSI 2A: Membuka Dialog Profil Lengkap
-    const handleViewProfile = (application: ApplicantRecord) => {
-        setSelectedApplicant(application);
-        setProfileOpen(true);
-    };
-
-    // FUNGSI 2B: Membuka Dialog Detail (Memicu Screening otomatis)
-=======
-    // -----------------------------------------
-    // REJECT APPLICANT (with reason)
-    // -----------------------------------------
     const handleReject: ApplicantRejectHandler = (id, reason) => {
         router.put(
             route('super-admin.recruitment.update-status', id),
             { status: 'Rejected', rejection_reason: reason },
-            {
-                preserveScroll: true,
-            }
+            { preserveScroll: true }
         );
     };
 
-    // -----------------------------------------
-    // OPEN DETAIL & AUTO-SCREENING
-    // -----------------------------------------
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
+    const handleViewProfile = (application: ApplicantRecord) => {
+        setSelectedApplicant(application);
+        setProfileOpen(true);
+    };
     const handleViewDetail = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setDetailOpen(true);
@@ -150,46 +130,39 @@ export default function KelolaRekrutmenIndex({
         setSelectedApplicant(null);
     };
 
-<<<<<<< HEAD
-    // FUNGSI 5: Handle Accept dari Profile Modal
     const handleAcceptFromProfile = () => {
-        if (selectedApplicant) {
-            const confirmed = window.confirm(
-                `Konfirmasi penerimaan (Hired) untuk ${selectedApplicant.name}? Status akan diubah menjadi 'Hired'.`
-            );
-            if (confirmed) {
-                handleStatusUpdate(selectedApplicant.id, 'Hired');
-                setProfileOpen(false);
-            }
-        }
-    };
+        if (!selectedApplicant) return;
 
-    // FUNGSI 6: Handle Reject dari Profile Modal
-    const handleRejectFromProfile = () => {
-        if (selectedApplicant) {
-            const confirmed = window.confirm(
-                `Tolak pelamar ${selectedApplicant.name}? Status akan berubah menjadi 'Rejected'.`
-            );
-            if (confirmed) {
-                handleStatusUpdate(selectedApplicant.id, 'Rejected');
-                setProfileOpen(false);
-            }
-        }
-    };
-
-    // FUNGSI 7: Handle Schedule Interview dari Profile Modal
-    const handleScheduleFromProfile = () => {
-        if (selectedApplicant) {
+        const confirmed = window.confirm(
+            `Konfirmasi penerimaan (Hired) untuk ${selectedApplicant.name}? Status akan diubah menjadi 'Hired'.`
+        );
+        if (confirmed) {
+            handleStatusUpdate(selectedApplicant.id, 'Hired');
             setProfileOpen(false);
-            setScheduleOpen(true);
         }
     };
 
-=======
-    // -----------------------------------------
-    // DELETE APPLICATION
-    // -----------------------------------------
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
+    const handleRejectFromProfile = () => {
+        if (!selectedApplicant) return;
+
+        const reason = window.prompt(
+            `Masukkan alasan penolakan untuk ${selectedApplicant.name}:`
+        );
+        if (!reason || reason.trim() === '') {
+            alert('Alasan penolakan wajib diisi.');
+            return;
+        }
+
+        handleReject(selectedApplicant.id, reason.trim());
+        setProfileOpen(false);
+    };
+
+    const handleScheduleFromProfile = () => {
+        if (!selectedApplicant) return;
+
+        setProfileOpen(false);
+        setScheduleOpen(true);
+    };
     const handleDelete = (application: ApplicantRecord) => {
         const confirmed = window.confirm(
             `Hapus lamaran ${application.name} untuk posisi ${application.position}?`,
@@ -242,27 +215,6 @@ export default function KelolaRekrutmenIndex({
                         <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
                     </TabsList>
 
-<<<<<<< HEAD
-                <TabsContent value="applicants">
-                    <ApplicantsTab
-                        statusOptions={statusOptions}
-                        searchTerm={searchTerm}
-                        onSearchTermChange={setSearchTerm}
-                        statusFilter={statusFilter}
-                        onStatusFilterChange={setStatusFilter}
-                        statusOrder={statusOrder}
-                        statusSummary={statusSummary}
-                        visibleApplications={visibleApplications}
-                        onViewDetail={handleViewDetail}
-                        onDelete={handleDelete}
-                        onStatusUpdate={handleStatusUpdate}
-                        isUpdatingStatus={isUpdatingStatus}
-                        updatingApplicantId={updatingApplicantId}
-                        onScheduleInterview={handleOpenScheduleDialog}
-                        onViewProfile={handleViewProfile}
-                    />
-                </TabsContent>
-=======
                     <TabsContent value="applicants">
                         <ApplicantsTab
                             statusOptions={statusOptions}
@@ -276,13 +228,13 @@ export default function KelolaRekrutmenIndex({
                             onViewDetail={handleViewDetail}
                             onDelete={handleDelete}
                             onStatusUpdate={handleStatusUpdate}
-                            onReject={handleReject}        
+                            onReject={handleReject}
                             isUpdatingStatus={isUpdatingStatus}
                             updatingApplicantId={updatingApplicantId}
                             onScheduleInterview={handleOpenScheduleDialog}
+                            onViewProfile={handleViewProfile}
                         />
                     </TabsContent>
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
 
                     <TabsContent value="interviews">
                         <InterviewsTab interviews={interviews} />
@@ -293,42 +245,25 @@ export default function KelolaRekrutmenIndex({
                     </TabsContent>
                 </Tabs>
 
-<<<<<<< HEAD
-            <ApplicantDetailDialog
-                open={detailOpen}
-                onOpenChange={setDetailOpen}
-                applicant={selectedApplicant}
-            />
-            
-            <ApplicantProfileDialog
-                open={profileOpen}
-                onOpenChange={setProfileOpen}
-                applicant={selectedApplicant}
-                onAccept={handleAcceptFromProfile}
-                onReject={handleRejectFromProfile}
-                onScheduleInterview={handleScheduleFromProfile}
-            />
-            
-            <ScheduleInterviewDialog
-                open={scheduleOpen}
-                onOpenChange={setScheduleOpen}
-                applicant={selectedApplicant}
-                onSuccessSubmit={handleScheduleSuccess}
-            />
-=======
                 <ApplicantDetailDialog
                     open={detailOpen}
                     onOpenChange={setDetailOpen}
                     applicant={selectedApplicant}
                 />
-
+                <ApplicantProfileDialog
+                    open={profileOpen}
+                    onOpenChange={setProfileOpen}
+                    applicant={selectedApplicant}
+                    onAccept={handleAcceptFromProfile}
+                    onReject={handleRejectFromProfile}
+                    onScheduleInterview={handleScheduleFromProfile}
+                />
                 <ScheduleInterviewDialog
                     open={scheduleOpen}
                     onOpenChange={setScheduleOpen}
                     applicant={selectedApplicant}
                     onSuccessSubmit={handleScheduleSuccess}
                 />
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
             </SuperAdminLayout>
         </>
     );

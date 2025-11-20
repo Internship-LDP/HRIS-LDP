@@ -108,23 +108,14 @@ class RecruitmentController extends Controller
                     'email' => $application->email,
                     'phone' => $application->phone,
                     'skills' => $application->skills,
-
                     'cv_file' => $application->cv_file,
                     'cv_url' => $application->cv_file
                         ? '/storage/' . ltrim($application->cv_file, '/')
                         : null,
-
-<<<<<<< HEAD
-                    // =========================
-                    // PROFILE PHOTO (dari ApplicantProfile)
-                    // =========================
                     'profile_photo_url' => $application->user?->applicantProfile?->profile_photo_path
                         ? '/storage/' . ltrim($application->user->applicantProfile->profile_photo_path, '/')
                         : null,
-=======
-                    // TAMBAHAN — REJECTION REASON
                     'rejection_reason' => $application->rejection_reason,
->>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
                 ];
             });
 

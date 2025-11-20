@@ -7,15 +7,24 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        // Hapus kolom typo jika pernah terbuat
+        if (Schema::hasColumn('applications', 'rejectetion_reason')) {
+            Schema::table('applications', function (Blueprint $table) {
+                $table->dropColumn('rejectetion_reason');
+            });
+        }
+
         Schema::table('applications', function (Blueprint $table) {
-            $table->text('rejectetion_reason')->nullable()->after('status');
+            $table->text('rejection_reason')->nullable()->after('status');
         });
     }
 
     public function down(): void
     {
         Schema::table('applications', function (Blueprint $table) {
-            $table->dropColumn('rejectetion_reason');
+            if (Schema::hasColumn('applications', 'rejection_reason')) {
+                $table->dropColumn('rejection_reason');
+            }
         });
     }
 };
