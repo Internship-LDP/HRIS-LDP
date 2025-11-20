@@ -109,20 +109,22 @@ class RecruitmentController extends Controller
                     'phone' => $application->phone,
                     'skills' => $application->skills,
 
-                    // =========================
-                    // CV FILE (gunakan URL storage public)
-                    // =========================
                     'cv_file' => $application->cv_file,
                     'cv_url' => $application->cv_file
                         ? '/storage/' . ltrim($application->cv_file, '/')
                         : null,
 
+<<<<<<< HEAD
                     // =========================
                     // PROFILE PHOTO (dari ApplicantProfile)
                     // =========================
                     'profile_photo_url' => $application->user?->applicantProfile?->profile_photo_path
                         ? '/storage/' . ltrim($application->user->applicantProfile->profile_photo_path, '/')
                         : null,
+=======
+                    // TAMBAHAN — REJECTION REASON
+                    'rejection_reason' => $application->rejection_reason,
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
                 ];
             });
 
@@ -182,11 +184,28 @@ class RecruitmentController extends Controller
         try {
             $validated = $request->validate([
                 'status' => ['required', 'string', 'in:' . implode(',', Application::STATUSES)],
+                'rejection_reason' => ['nullable', 'string', 'max:500'],
             ]);
 
-            if ($application->status !== $validated['status']) {
-                $application->update(['status' => $validated['status']]);
-                Log::info("Application ID {$application->id} status updated to {$validated['status']}");
+            // Jika status Rejected → alasan wajib
+            if ($validated['status'] === 'Rejected') {
+                if (empty($validated['rejection_reason'])) {
+                    throw ValidationException::withMessages([
+                        'rejection_reason' => 'Alasan penolakan wajib diisi.',
+                    ]);
+                }
+
+                $application->update([
+                    'status' => 'Rejected',
+                    'rejection_reason' => $validated['rejection_reason'],
+                    'rejected_at' => now(),
+                ]);
+            } else {
+                // Jika status lain
+                $application->update([
+                    'status' => $validated['status'],
+                    'rejection_reason' => null, // reset alasan
+                ]);
             }
 
             return redirect()->back()->with('success', 'Status pelamar berhasil diperbarui.');
@@ -194,6 +213,27 @@ class RecruitmentController extends Controller
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors());
         }
+    }
+
+
+    /**
+     * POST: Tolak pelamar DENGAN alasan (opsional, jika tunai)
+     */
+    public function reject(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        $validated = $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $application->update([
+            'status' => 'Rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+            'rejected_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Pelamar berhasil ditolak.');
     }
 
     /**
@@ -219,7 +259,7 @@ class RecruitmentController extends Controller
                 ]);
             }
 
-            // SIMPAN JADWAL INTERVIEW + UPDATE STATUS
+            // Simpan interview
             $application->update([
                 'interview_date' => $validated['date'],
                 'interview_time' => $validated['time'],

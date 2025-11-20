@@ -18,6 +18,9 @@ import {
 } from './types';
 import { Head, router } from '@inertiajs/react';
 
+type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
+type ApplicantRejectHandler = (applicantId: number, reason: string) => void;
+
 const statusOrder: ApplicantStatus[] = [
     'Applied',
     'Screening',
@@ -25,17 +28,6 @@ const statusOrder: ApplicantStatus[] = [
     'Hired',
     'Rejected',
 ];
-
-type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
-
-interface ScheduleData extends Record<string, any> { 
-    date: string;
-    time: string;
-    mode: string;
-    interviewer: string;
-    meeting_link: string;
-    notes: string;
-}
 
 export default function KelolaRekrutmenIndex({
     auth,
@@ -47,23 +39,28 @@ export default function KelolaRekrutmenIndex({
     const [activeTab, setActiveTab] = useState('applicants');
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const [detailOpen, setDetailOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
+<<<<<<< HEAD
     const [profileOpen, setProfileOpen] = useState(false);
     
+=======
+
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
-    
-    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false); 
+
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [updatingApplicantId, setUpdatingApplicantId] = useState<number | null>(null);
 
+    // FILTER DATA
     const filteredApplications =
         statusFilter === 'all'
             ? applications
             : applications.filter((application) => application.status === statusFilter);
 
     const normalizedSearch = searchTerm.trim().toLowerCase();
-    const visibleApplications = normalizedSearch.length
+    const visibleApplications = normalizedSearch
         ? filteredApplications.filter(
               (application) =>
                   application.name.toLowerCase().includes(normalizedSearch) ||
@@ -73,37 +70,34 @@ export default function KelolaRekrutmenIndex({
         : filteredApplications;
 
     const statusSummary: StatusSummary = applications.reduce((acc, application) => {
-        acc[application.status as ApplicantStatus] = (acc[application.status as ApplicantStatus] ?? 0) + 1;
+        acc[application.status as ApplicantStatus] =
+            (acc[application.status as ApplicantStatus] ?? 0) + 1;
         return acc;
     }, {} as StatusSummary);
-    
-    // FUNGSI 1: Update Status
+
+    // -----------------------------------------
+    // UPDATE STATUS
+    // -----------------------------------------
     const handleStatusUpdate: ApplicantActionHandler = (applicantId, newStatus) => {
         if (isUpdatingStatus) return;
-        
+
         setUpdatingApplicantId(applicantId);
         setIsUpdatingStatus(true);
-        
+
         router.put(
-            route('super-admin.recruitment.update-status', applicantId), 
+            route('super-admin.recruitment.update-status', applicantId),
             { status: newStatus },
             {
                 preserveScroll: true,
-                onSuccess: () => {
-                    console.log(`Status ID ${applicantId} berhasil diubah menjadi ${newStatus}.`);
-                },
-                onError: (errors) => {
-                    console.error('Gagal memperbarui status:', errors);
-                    alert('Gagal memperbarui status. Cek konsol untuk detail error.'); 
-                },
                 onFinish: () => {
                     setIsUpdatingStatus(false);
-                    setUpdatingApplicantId(null); 
+                    setUpdatingApplicantId(null);
                 },
             }
         );
     };
 
+<<<<<<< HEAD
     // FUNGSI 2A: Membuka Dialog Profil Lengkap
     const handleViewProfile = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
@@ -111,29 +105,52 @@ export default function KelolaRekrutmenIndex({
     };
 
     // FUNGSI 2B: Membuka Dialog Detail (Memicu Screening otomatis)
+=======
+    // -----------------------------------------
+    // REJECT APPLICANT (with reason)
+    // -----------------------------------------
+    const handleReject: ApplicantRejectHandler = (id, reason) => {
+        router.put(
+            route('super-admin.recruitment.update-status', id),
+            { status: 'Rejected', rejection_reason: reason },
+            {
+                preserveScroll: true,
+            }
+        );
+    };
+
+    // -----------------------------------------
+    // OPEN DETAIL & AUTO-SCREENING
+    // -----------------------------------------
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
     const handleViewDetail = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setDetailOpen(true);
 
         if (application.status === 'Applied' && application.id !== updatingApplicantId) {
-             handleStatusUpdate(application.id, 'Screening');
+            handleStatusUpdate(application.id, 'Screening');
         }
     };
 
-    // FUNGSI 3: Membuka Dialog Penjadwalan Interview
+    // -----------------------------------------
+    // OPEN SCHEDULE INTERVIEW DIALOG
+    // -----------------------------------------
     const handleOpenScheduleDialog = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setScheduleOpen(true);
-        setDetailOpen(false); 
+        setDetailOpen(false);
     };
 
-    // FUNGSI 4: Logika Setelah Submit Jadwal Sukses
+    // -----------------------------------------
+    // AFTER SUCCESS SUBMIT SCHEDULE
+    // -----------------------------------------
     const handleScheduleSuccess = (applicantId: number) => {
         handleStatusUpdate(applicantId, 'Interview');
         setScheduleOpen(false);
         setSelectedApplicant(null);
     };
 
+<<<<<<< HEAD
     // FUNGSI 5: Handle Accept dari Profile Modal
     const handleAcceptFromProfile = () => {
         if (selectedApplicant) {
@@ -168,14 +185,17 @@ export default function KelolaRekrutmenIndex({
         }
     };
 
+=======
+    // -----------------------------------------
+    // DELETE APPLICATION
+    // -----------------------------------------
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
     const handleDelete = (application: ApplicantRecord) => {
         const confirmed = window.confirm(
             `Hapus lamaran ${application.name} untuk posisi ${application.position}?`,
         );
 
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
 
         router.delete(route('super-admin.recruitment.destroy', application.id), {
             preserveScroll: true,
@@ -192,6 +212,7 @@ export default function KelolaRekrutmenIndex({
         auth.user?.role === 'Admin' &&
         typeof auth.user?.division === 'string' &&
         /human\s+(capital|resources)/i.test(auth.user.division ?? '');
+
     const breadcrumbs = isHumanCapitalAdmin
         ? [
               { label: 'Admin', href: route('admin-staff.dashboard') },
@@ -202,6 +223,9 @@ export default function KelolaRekrutmenIndex({
               { label: 'Recruitment & Onboarding' },
           ];
 
+    // -----------------------------------------
+    // RENDER PAGE
+    // -----------------------------------------
     return (
         <>
             <Head title="Kelola Rekrutmen" />
@@ -211,13 +235,14 @@ export default function KelolaRekrutmenIndex({
                 breadcrumbs={breadcrumbs}
                 actions={<AddApplicantDialog />}
             >
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                <TabsList>
-                    <TabsTrigger value="applicants">Daftar Pelamar</TabsTrigger>
-                    <TabsTrigger value="interviews">Jadwal Interview</TabsTrigger>
-                    <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-                </TabsList>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+                    <TabsList>
+                        <TabsTrigger value="applicants">Daftar Pelamar</TabsTrigger>
+                        <TabsTrigger value="interviews">Jadwal Interview</TabsTrigger>
+                        <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
+                    </TabsList>
 
+<<<<<<< HEAD
                 <TabsContent value="applicants">
                     <ApplicantsTab
                         statusOptions={statusOptions}
@@ -237,16 +262,38 @@ export default function KelolaRekrutmenIndex({
                         onViewProfile={handleViewProfile}
                     />
                 </TabsContent>
+=======
+                    <TabsContent value="applicants">
+                        <ApplicantsTab
+                            statusOptions={statusOptions}
+                            searchTerm={searchTerm}
+                            onSearchTermChange={setSearchTerm}
+                            statusFilter={statusFilter}
+                            onStatusFilterChange={setStatusFilter}
+                            statusOrder={statusOrder}
+                            statusSummary={statusSummary}
+                            visibleApplications={visibleApplications}
+                            onViewDetail={handleViewDetail}
+                            onDelete={handleDelete}
+                            onStatusUpdate={handleStatusUpdate}
+                            onReject={handleReject}        
+                            isUpdatingStatus={isUpdatingStatus}
+                            updatingApplicantId={updatingApplicantId}
+                            onScheduleInterview={handleOpenScheduleDialog}
+                        />
+                    </TabsContent>
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
 
-                <TabsContent value="interviews">
-                    <InterviewsTab interviews={interviews} />
-                </TabsContent>
+                    <TabsContent value="interviews">
+                        <InterviewsTab interviews={interviews} />
+                    </TabsContent>
 
-                <TabsContent value="onboarding">
-                    <OnboardingTab items={onboarding} />
-                </TabsContent>
-            </Tabs>
+                    <TabsContent value="onboarding">
+                        <OnboardingTab items={onboarding} />
+                    </TabsContent>
+                </Tabs>
 
+<<<<<<< HEAD
             <ApplicantDetailDialog
                 open={detailOpen}
                 onOpenChange={setDetailOpen}
@@ -268,6 +315,20 @@ export default function KelolaRekrutmenIndex({
                 applicant={selectedApplicant}
                 onSuccessSubmit={handleScheduleSuccess}
             />
+=======
+                <ApplicantDetailDialog
+                    open={detailOpen}
+                    onOpenChange={setDetailOpen}
+                    applicant={selectedApplicant}
+                />
+
+                <ScheduleInterviewDialog
+                    open={scheduleOpen}
+                    onOpenChange={setScheduleOpen}
+                    applicant={selectedApplicant}
+                    onSuccessSubmit={handleScheduleSuccess}
+                />
+>>>>>>> f746606485b0c9e4eb6ef7169795345a5c84f7b8
             </SuperAdminLayout>
         </>
     );

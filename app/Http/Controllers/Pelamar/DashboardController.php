@@ -23,9 +23,19 @@ class DashboardController extends Controller
         $latestApplication = $applications->first();
         $statusOrder = Application::STATUSES;
 
+        // Jika tidak ada lamaran
+        if (!$latestApplication) {
+            return Inertia::render('Pelamar/Dashboard', [
+                'applicationStatus' => ['progress' => 0, 'stages' => []],
+                'documents' => [],
+                'stats' => ['totalApplications' => 0, 'latestStatus' => null],
+                'upcomingInterview' => null,
+            ]);
+        }
+
         // Prepare interview details
         $upcomingInterview = null;
-        if ($latestApplication && $latestApplication->interview_date) {
+        if ($latestApplication->interview_date) {
             $upcomingInterview = [
                 'position'    => $latestApplication->position ?? '-',
                 'date'        => optional($latestApplication->interview_date)->format('d M Y'),
@@ -37,20 +47,19 @@ class DashboardController extends Controller
             ];
         }
 
-        // Determine current status index
-        $statusIndex = $latestApplication
-            ? array_search($latestApplication->status, $statusOrder, true)
-            : null;
+        // Tentukan index status
+        $statusIndex = array_search($latestApplication->status, $statusOrder, true);
 
-        if ($statusIndex === false) {
-            $statusIndex = null;
-        }
-
-        // Build status timeline
-        $stages = collect($statusOrder)->map(function ($status, $index) use ($statusIndex, $latestApplication) {
+        // Build stages
+        $stages = [];
+        foreach ($statusOrder as $index => $status) {
+            // Jika status Rejected, hentikan sebelum Hired
+            if ($latestApplication->status === 'Rejected' && $status === 'Hired') {
+                break;
+            }
 
             $stageStatus = 'pending';
-            if ($statusIndex !== null) {
+            if ($statusIndex !== false) {
                 if ($index < $statusIndex) {
                     $stageStatus = 'completed';
                 } elseif ($index === $statusIndex) {
@@ -58,57 +67,51 @@ class DashboardController extends Controller
                 }
             }
 
-            // Map timestamps per status
             $date = match ($status) {
-                'Applied'   => $latestApplication?->submitted_at,
-                'Screening' => $latestApplication?->screening_at,
-                'Interview' => $latestApplication?->interview_at,
-                'Hired'     => $latestApplication?->hired_at,
-                'Rejected'  => $latestApplication?->rejected_at,
+                'Applied'   => $latestApplication->submitted_at,
+                'Screening' => $latestApplication->screening_at,
+                'Interview' => $latestApplication->interview_at,
+                'Hired'     => $latestApplication->hired_at,
+                'Rejected'  => $latestApplication->rejected_at,
                 default     => null
             };
 
-            return [
+            $stages[] = [
                 'name' => $status,
                 'status' => $stageStatus,
-                'date' => $stageStatus === 'pending'
-                    ? '-'
-                    : optional($date)->format('d M Y') ?? '-',
+                'date' => $stageStatus === 'pending' ? '-' : optional($date)->format('d M Y') ?? '-',
             ];
-        })->all();
-
-        if ($latestApplication === null) {
-            $stages = [];
         }
 
-        // Progress bar (100% if Hired or Rejected)
-        $progress = match ($latestApplication?->status) {
-            'Hired', 'Rejected' => 100,
-            default => ($statusIndex !== null && count($statusOrder) > 1)
-                ? (int) round(($statusIndex / (count($statusOrder) - 1)) * 100)
-                : 0,
-        };
+        // Hitung progress
+        $progress = 0;
+        if ($latestApplication->status === 'Hired') {
+            $progress = 100;
+        } elseif ($latestApplication->status === 'Rejected') {
+            // Progress sampai tahap sebelum Hired
+            $completedStages = array_filter($stages, fn($s) => $s['status'] === 'completed' || $s['status'] === 'current');
+            $progress = count($completedStages) / max(count($stages), 1) * 100;
+        } elseif ($statusIndex !== false && count($statusOrder) > 1) {
+            $progress = (int) round($statusIndex / (count($statusOrder) - 1) * 100);
+        }
 
-        // Documents listing
+        // Dokumen
         $documents = $applications
-            ->filter(fn ($application) => filled($application->cv_file))
-            ->map(function ($application) {
-                return [
-                    'name' => $application->cv_file ?? 'CV',
-                    'status' => $application->status === 'Hired' ? 'approved' : 'pending',
-                    'date' => optional($application->submitted_at)->format('d M Y') ?? '-',
-                ];
-            })->values()->all();
+            ->filter(fn ($app) => filled($app->cv_file))
+            ->map(fn ($app) => [
+                'name' => $app->cv_file ?? 'CV',
+                'status' => $app->status === 'Hired' ? 'approved' : 'pending',
+                'date' => optional($app->submitted_at)->format('d M Y') ?? '-',
+            ])
+            ->values()
+            ->all();
 
         return Inertia::render('Pelamar/Dashboard', [
-            'applicationStatus' => [
-                'progress' => $progress,
-                'stages' => $stages,
-            ],
+            'applicationStatus' => ['progress' => $progress, 'stages' => $stages],
             'documents' => $documents,
             'stats' => [
                 'totalApplications' => $applications->count(),
-                'latestStatus' => $latestApplication?->status,
+                'latestStatus' => $latestApplication->status,
             ],
             'upcomingInterview' => $upcomingInterview,
         ]);
