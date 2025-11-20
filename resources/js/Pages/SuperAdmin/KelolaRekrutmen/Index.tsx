@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import ApplicantsTab from './components/ApplicantsTab';
 import ApplicantDetailDialog from './components/ApplicantDetailDialog';
+import ApplicantProfileDialog from './components/ApplicantProfileDialog';
 import AddApplicantDialog from './components/AddApplicantDialog';
 import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
@@ -49,6 +50,7 @@ export default function KelolaRekrutmenIndex({
     
     const [detailOpen, setDetailOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
     
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
     
@@ -102,8 +104,13 @@ export default function KelolaRekrutmenIndex({
         );
     };
 
+    // FUNGSI 2A: Membuka Dialog Profil Lengkap
+    const handleViewProfile = (application: ApplicantRecord) => {
+        setSelectedApplicant(application);
+        setProfileOpen(true);
+    };
 
-    // FUNGSI 2: Membuka Dialog Detail (Memicu Screening otomatis)
+    // FUNGSI 2B: Membuka Dialog Detail (Memicu Screening otomatis)
     const handleViewDetail = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setDetailOpen(true);
@@ -125,6 +132,40 @@ export default function KelolaRekrutmenIndex({
         handleStatusUpdate(applicantId, 'Interview');
         setScheduleOpen(false);
         setSelectedApplicant(null);
+    };
+
+    // FUNGSI 5: Handle Accept dari Profile Modal
+    const handleAcceptFromProfile = () => {
+        if (selectedApplicant) {
+            const confirmed = window.confirm(
+                `Konfirmasi penerimaan (Hired) untuk ${selectedApplicant.name}? Status akan diubah menjadi 'Hired'.`
+            );
+            if (confirmed) {
+                handleStatusUpdate(selectedApplicant.id, 'Hired');
+                setProfileOpen(false);
+            }
+        }
+    };
+
+    // FUNGSI 6: Handle Reject dari Profile Modal
+    const handleRejectFromProfile = () => {
+        if (selectedApplicant) {
+            const confirmed = window.confirm(
+                `Tolak pelamar ${selectedApplicant.name}? Status akan berubah menjadi 'Rejected'.`
+            );
+            if (confirmed) {
+                handleStatusUpdate(selectedApplicant.id, 'Rejected');
+                setProfileOpen(false);
+            }
+        }
+    };
+
+    // FUNGSI 7: Handle Schedule Interview dari Profile Modal
+    const handleScheduleFromProfile = () => {
+        if (selectedApplicant) {
+            setProfileOpen(false);
+            setScheduleOpen(true);
+        }
     };
 
     const handleDelete = (application: ApplicantRecord) => {
@@ -193,6 +234,7 @@ export default function KelolaRekrutmenIndex({
                         isUpdatingStatus={isUpdatingStatus}
                         updatingApplicantId={updatingApplicantId}
                         onScheduleInterview={handleOpenScheduleDialog}
+                        onViewProfile={handleViewProfile}
                     />
                 </TabsContent>
 
@@ -209,6 +251,15 @@ export default function KelolaRekrutmenIndex({
                 open={detailOpen}
                 onOpenChange={setDetailOpen}
                 applicant={selectedApplicant}
+            />
+            
+            <ApplicantProfileDialog
+                open={profileOpen}
+                onOpenChange={setProfileOpen}
+                applicant={selectedApplicant}
+                onAccept={handleAcceptFromProfile}
+                onReject={handleRejectFromProfile}
+                onScheduleInterview={handleScheduleFromProfile}
             />
             
             <ScheduleInterviewDialog

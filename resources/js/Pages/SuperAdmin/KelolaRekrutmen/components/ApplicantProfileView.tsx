@@ -1,0 +1,335 @@
+import { Card } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Separator } from '@/Components/ui/separator';
+import { 
+  User, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  Award,
+  FileText,
+  Download,
+  CheckCircle,
+  XCircle,
+  Building2,
+  Clock,
+} from 'lucide-react';
+import { ApplicantRecord } from '../types';
+
+interface ApplicantProfileViewProps {
+  applicant: ApplicantRecord;
+  onAccept?: () => void;
+  onReject?: () => void;
+  onScheduleInterview?: () => void;
+}
+
+export function ApplicantProfileView({ 
+  applicant, 
+  onAccept, 
+  onReject, 
+  onScheduleInterview 
+}: ApplicantProfileViewProps) {
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Applied':
+        return <Badge variant="outline" className="border-blue-500 text-blue-500">Applied</Badge>;
+      case 'Screening':
+        return <Badge variant="outline" className="border-orange-500 text-orange-500">Screening</Badge>;
+      case 'Interview':
+        return <Badge variant="outline" className="border-purple-500 text-purple-500">Interview</Badge>;
+      case 'Hired':
+        return <Badge variant="outline" className="border-green-500 text-green-500">Hired</Badge>;
+      case 'Rejected':
+        return <Badge variant="outline" className="border-red-500 text-red-500">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  // Parse skills from comma-separated string
+  const skillsList = applicant.skills 
+    ? applicant.skills.split(',').map(s => s.trim()).filter(s => s.length > 0)
+    : [];
+
+  return (
+    <div className="space-y-6">
+      {/* Modern Profile Header */}
+      <Card className="overflow-hidden border-0 shadow-lg">
+        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 h-32"></div>
+        <div className="px-6 pb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-16 relative">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-4 border-white shadow-xl">
+                <User className="w-16 h-16 text-white" />
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-green-500 border-4 border-white flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            
+            {/* Profile Info */}
+            <div className="flex-1 mt-4 sm:mt-0">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <h2 className="text-gray-900 mb-1">{applicant.name}</h2>
+                    <p className="text-gray-600">{applicant.position}</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="bg-blue-900 hover:bg-blue-800">ID: APL{String(applicant.id).padStart(3, '0')}</Badge>
+                    {getStatusBadge(applicant.status)}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
+                      <Mail className="w-4 h-4" />
+                      <span>{applicant.email}</span>
+                    </div>
+                    {applicant.phone && (
+                      <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
+                        <Phone className="w-4 h-4" />
+                        <span>{applicant.phone}</span>
+                      </div>
+                    )}
+                    {applicant.date && (
+                      <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
+                        <Calendar className="w-4 h-4" />
+                        <span>{applicant.date}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Modern Action Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {onAccept && (
+          <Button 
+            onClick={onAccept} 
+            className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+          >
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Terima Pelamar
+          </Button>
+        )}
+        {onReject && (
+          <Button 
+            onClick={onReject} 
+            variant="outline" 
+            className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 shadow-sm hover:shadow-md transition-all"
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Tolak Pelamar
+          </Button>
+        )}
+        {onScheduleInterview && (
+          <Button 
+            onClick={onScheduleInterview} 
+            variant="outline" 
+            className="border-blue-900 text-blue-900 hover:bg-blue-50 shadow-sm hover:shadow-md transition-all"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Jadwalkan Interview
+          </Button>
+        )}
+        {applicant.cv_url && (
+          <Button 
+            variant="outline"
+            className="shadow-sm hover:shadow-md transition-all hover:bg-gray-50"
+            onClick={() => applicant.cv_url && window.open(applicant.cv_url, '_blank')}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download CV
+          </Button>
+        )}
+      </div>
+
+      {/* Modern Tabbed Content */}
+      <Tabs defaultValue="personal" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto bg-gray-100 p-1 rounded-xl">
+          <TabsTrigger value="personal" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
+            <User className="w-4 h-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Data Pribadi</span>
+            <span className="sm:hidden">Pribadi</span>
+          </TabsTrigger>
+          <TabsTrigger value="education" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
+            <GraduationCap className="w-4 h-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Pendidikan</span>
+            <span className="sm:hidden">Edu</span>
+          </TabsTrigger>
+          <TabsTrigger value="experience" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
+            <Briefcase className="w-4 h-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Pengalaman</span>
+            <span className="sm:hidden">Exp</span>
+          </TabsTrigger>
+          <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg py-3 px-2 sm:px-4">
+            <Award className="w-4 h-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Skills</span>
+            <span className="sm:hidden">Skills</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Personal Information Tab */}
+        <TabsContent value="personal" className="space-y-6">
+          <Card className="border-0 shadow-md">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-900" />
+                </div>
+                <h3 className="text-blue-900">Informasi Pribadi</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Nama Lengkap</p>
+                  <p className="text-gray-900">{applicant.name}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Email</p>
+                  <p className="text-gray-900">{applicant.email}</p>
+                </div>
+                {applicant.phone && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Nomor Telepon</p>
+                    <p className="text-gray-900">{applicant.phone}</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Posisi yang Dilamar</p>
+                  <p className="text-gray-900">{applicant.position}</p>
+                </div>
+                {applicant.date && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Tanggal Melamar</p>
+                    <p className="text-gray-900">{applicant.date}</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Status Lamaran</p>
+                  <div>{getStatusBadge(applicant.status)}</div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Education Tab */}
+        <TabsContent value="education">
+          <Card className="border-0 shadow-md">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-blue-900" />
+                </div>
+                <h3 className="text-blue-900">Riwayat Pendidikan</h3>
+              </div>
+              
+              {applicant.education ? (
+                <div className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-gray-50">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-blue-900 to-blue-700 p-3 rounded-xl shadow-md flex-shrink-0">
+                      <GraduationCap className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-900 font-medium">{applicant.education}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">Informasi pendidikan tidak tersedia</p>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Experience Tab */}
+        <TabsContent value="experience">
+          <Card className="border-0 shadow-md">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-green-700" />
+                </div>
+                <h3 className="text-blue-900">Pengalaman Kerja</h3>
+              </div>
+              
+              {applicant.experience ? (
+                <div className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-green-50/30">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-green-600 to-green-500 p-3 rounded-xl shadow-md flex-shrink-0">
+                      <Briefcase className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-900 font-medium">{applicant.experience}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">Informasi pengalaman tidak tersedia</p>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Skills Tab */}
+        <TabsContent value="skills">
+          <Card className="border-0 shadow-md">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-purple-700" />
+                </div>
+                <h3 className="text-blue-900">Keahlian & Skills</h3>
+              </div>
+              
+              {skillsList.length > 0 ? (
+                <>
+                  <div className="flex flex-wrap gap-2.5">
+                    {skillsList.map((skill, index) => (
+                      <Badge 
+                        key={index} 
+                        className="bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 text-white px-5 py-2.5 text-sm shadow-md hover:shadow-lg transition-all cursor-default"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <Separator className="my-6" />
+                  
+                  <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-green-900">
+                          Pelamar memiliki <span className="font-semibold">{skillsList.length} skills</span> yang relevan dengan posisi yang dilamar
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500 text-sm">Informasi skills tidak tersedia</p>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

@@ -27,6 +27,7 @@ import {
     Loader2, 
     Calendar,
     Check,
+    User,
 } from 'lucide-react';
 import { 
     ApplicantRecord, 
@@ -52,6 +53,7 @@ interface ApplicantsTabProps {
     isUpdatingStatus: boolean;
     updatingApplicantId: number | null;
     onScheduleInterview: (application: ApplicantRecord) => void;
+    onViewProfile: (application: ApplicantRecord) => void;
 }
 
 const statusBadge = (status: ApplicantStatus) => {
@@ -106,6 +108,7 @@ export default function ApplicantsTab({
     isUpdatingStatus,
     updatingApplicantId,
     onScheduleInterview,
+    onViewProfile,
 }: ApplicantsTabProps) {
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         onSearchTermChange(event.target.value);
@@ -207,7 +210,18 @@ export default function ApplicantsTab({
                                                 </>
                                             )}
                                             
-                                            {/* 3. ICON MATA (VIEW DETAIL/SCREENING) & Loading */}
+                                            {/* 3. ICON PROFIL (VIEW PROFILE) */}
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => onViewProfile(application)}
+                                                disabled={isCurrentlyUpdating}
+                                                title="Lihat Profil Lengkap"
+                                            >
+                                                <User className="h-4 w-4 text-blue-600" />
+                                            </Button>
+                                            
+                                            {/* 4. ICON MATA (VIEW DETAIL/SCREENING) & Loading */}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -221,7 +235,7 @@ export default function ApplicantsTab({
                                                 )}
                                             </Button>
                                             
-                                            {/* 4. ICON HAPUS */}
+                                            {/* 5. ICON HAPUS */}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
