@@ -88,7 +88,7 @@ export default function Dashboard({
                         { label: 'Upload Dokumen', onClick: navigateToApplications },
                         {
                             label: 'Update Profile',
-                            onClick: () => router.visit(route('profile.edit')),
+                            onClick: () => router.visit(route('pelamar.profile')),
                         },
                     ]}
                 />

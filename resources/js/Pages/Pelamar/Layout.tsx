@@ -1,13 +1,17 @@
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, useEffect, useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
 import Sidebar from '@/Pages/Pelamar/components/Sidebar';
 import Breadcrumbs from '@/Pages/Pelamar/components/Breadcrumbs';
 import { Toaster } from 'sonner';
+import { PageProps } from '@/types';
+import ProfileReminderDialog from '@/Pages/Pelamar/components/ProfileReminderDialog';
 
 interface PelamarLayoutProps {
     title: string;
     description?: string;
     breadcrumbs?: string[];
     actions?: ReactNode;
+    showProfileReminder?: boolean;
 }
 
 export default function PelamarLayout({
@@ -15,8 +19,21 @@ export default function PelamarLayout({
     description,
     breadcrumbs,
     actions,
+    showProfileReminder = true,
     children,
 }: PropsWithChildren<PelamarLayoutProps>) {
+    const {
+        props: { auth },
+    } = usePage<PageProps>();
+    const shouldPrompt = Boolean(
+        showProfileReminder && auth?.user?.needs_applicant_profile,
+    );
+    const [reminderOpen, setReminderOpen] = useState(shouldPrompt);
+
+    useEffect(() => {
+        setReminderOpen(shouldPrompt);
+    }, [shouldPrompt]);
+
     return (
         <div className="flex min-h-screen bg-slate-50 text-slate-900">
             <Sidebar />
@@ -43,6 +60,11 @@ export default function PelamarLayout({
 
                 <div className="space-y-6">{children}</div>
             </div>
+            <ProfileReminderDialog
+                open={reminderOpen}
+                onOpenChange={setReminderOpen}
+                onNavigate={() => router.visit(route('pelamar.profile'))}
+            />
             <Toaster richColors position="top-right" />
         </div>
     );
