@@ -1,10 +1,6 @@
 import { PageProps } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import {
-    FileText,
-    LayoutDashboard,
-    LogOut,
-} from 'lucide-react';
+import { FileText, LayoutDashboard, LogOut, User } from 'lucide-react';
 
 interface SidebarNavItem {
     label: string;
@@ -17,6 +13,11 @@ const navItems: SidebarNavItem[] = [
         label: 'Dashboard',
         icon: LayoutDashboard,
         routeName: 'pelamar.dashboard',
+    },
+    {
+        label: 'Profil',
+        icon: User,
+        routeName: 'pelamar.profile',
     },
     {
         label: 'Lamaran Saya',

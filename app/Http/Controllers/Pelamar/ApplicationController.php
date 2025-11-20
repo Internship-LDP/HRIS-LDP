@@ -15,10 +15,18 @@ use Inertia\Response;
 
 class ApplicationController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['pelamar'], 403);
+
+        if ($user->needsApplicantProfileCompletion()) {
+            return redirect()
+                ->route('pelamar.profile')
+                ->with('profile_reminder', 'Lengkapi data pribadi dan pendidikan Anda sebelum mengakses halaman lamaran.');
+        }
+
+        $profile = $user->ensureApplicantProfile();
 
         $applications = Application::where('user_id', $user->id)
             ->latest('submitted_at')
@@ -37,9 +45,9 @@ class ApplicationController extends Controller
         return Inertia::render('Pelamar/Applications', [
             'applications' => $applications,
             'defaultForm' => [
-                'full_name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone ?? '',
+                'full_name' => $profile->full_name ?? $user->name,
+                'email' => $profile->email ?? $user->email,
+                'phone' => $profile->phone ?? '',
             ],
             'divisions' => $this->divisionSummaries(),
             'flash' => [
@@ -53,6 +61,12 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['pelamar'], 403);
+
+        if ($user->needsApplicantProfileCompletion()) {
+            return redirect()
+                ->route('pelamar.profile')
+                ->with('error', 'Lengkapi profil Anda sebelum mengirim lamaran.');
+        }
 
         $validated = $request->validate([
             'division_id' => ['required', 'exists:division_profiles,id'],

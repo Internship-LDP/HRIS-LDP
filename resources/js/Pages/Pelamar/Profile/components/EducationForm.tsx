@@ -1,0 +1,179 @@
+import { Button } from '@/Components/ui/button';
+import { Card } from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Badge } from '@/Components/ui/badge';
+import { Plus, Save, Trash2 } from 'lucide-react';
+import { Education, RequiredEducationField } from '../profileTypes';
+
+interface EducationFormProps {
+    educations: Education[];
+    errors: Record<string, string>;
+    onChange: (id: string, key: keyof Education, value: string) => void;
+    onAdd: () => void;
+    onRemove: (id: string) => void;
+    onSave: () => void;
+    processing: boolean;
+    getFieldError: (index: number, field: RequiredEducationField) => string | undefined;
+    baseError?: string;
+}
+
+export default function EducationForm({
+    educations,
+    errors,
+    onChange,
+    onAdd,
+    onRemove,
+    onSave,
+    processing,
+    getFieldError,
+    baseError,
+}: EducationFormProps) {
+    return (
+        <Card className="p-6">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 className="text-lg font-semibold text-blue-900">Riwayat Pendidikan</h3>
+                    <p className="text-sm text-slate-500">
+                        Isi pendidikan formal Anda secara berurutan.
+                    </p>
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onAdd}
+                    className="border-blue-200 text-blue-900 hover:bg-blue-50"
+                >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Tambah Pendidikan
+                </Button>
+            </div>
+            {baseError && <p className="mb-4 text-sm text-red-500">{baseError}</p>}
+
+            <div className="space-y-4">
+                {educations.map((education, index) => (
+                    <div key={education.id} className="rounded-lg border border-slate-200 p-4">
+                        <div className="mb-4 flex items-center justify-between">
+                            <Badge variant="outline">Pendidikan #{index + 1}</Badge>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={educations.length === 1}
+                                onClick={() => onRemove(education.id)}
+                                className="text-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="md:col-span-2">
+                                <Label>Nama Institusi *</Label>
+                                <Input
+                                    value={education.institution ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'institution', event.target.value)
+                                    }
+                                    placeholder="Contoh: Universitas Indonesia"
+                                />
+                                {getFieldError(index, 'institution') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'institution')}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <Label>Jenjang *</Label>
+                                <Input
+                                    value={education.degree ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'degree', event.target.value)
+                                    }
+                                    placeholder="SMA/SMK, D3, S1..."
+                                />
+                                {getFieldError(index, 'degree') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'degree')}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <Label>Program Studi *</Label>
+                                <Input
+                                    value={education.field_of_study ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'field_of_study', event.target.value)
+                                    }
+                                    placeholder="Contoh: Teknik Informatika"
+                                />
+                                {getFieldError(index, 'field_of_study') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'field_of_study')}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <Label>Tahun Mulai *</Label>
+                                <Input
+                                    type="number"
+                                    value={education.start_year ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'start_year', event.target.value)
+                                    }
+                                    placeholder="2019"
+                                />
+                                {getFieldError(index, 'start_year') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'start_year')}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <Label>Tahun Selesai *</Label>
+                                <Input
+                                    type="number"
+                                    value={education.end_year ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'end_year', event.target.value)
+                                    }
+                                    placeholder="2023"
+                                />
+                                {getFieldError(index, 'end_year') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'end_year')}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <Label>IPK *</Label>
+                                <Input
+                                    value={education.gpa ?? ''}
+                                    onChange={(event) =>
+                                        onChange(education.id, 'gpa', event.target.value)
+                                    }
+                                    placeholder="3.50"
+                                />
+                                {getFieldError(index, 'gpa') && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {getFieldError(index, 'gpa')}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-6">
+                <Button
+                    onClick={onSave}
+                    disabled={processing}
+                    className="bg-blue-900 hover:bg-blue-800"
+                >
+                    <Save className="mr-2 h-4 w-4" />
+                    Simpan Pendidikan
+                </Button>
+            </div>
+        </Card>
+    );
+}

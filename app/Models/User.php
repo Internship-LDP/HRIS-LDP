@@ -48,6 +48,11 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $appends = [
+        'has_completed_applicant_profile',
+        'needs_applicant_profile',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -118,6 +123,39 @@ class User extends Authenticatable
     public function staffProfile(): HasOne
     {
         return $this->hasOne(StaffProfile::class);
+    }
+
+    public function applicantProfile(): HasOne
+    {
+        return $this->hasOne(ApplicantProfile::class);
+    }
+
+    public function ensureApplicantProfile(): ApplicantProfile
+    {
+        return $this->applicantProfile()->firstOrCreate([], [
+            'full_name' => $this->name,
+            'email' => $this->email,
+        ]);
+    }
+
+    public function hasCompletedApplicantProfile(): bool
+    {
+        return $this->applicantProfile?->is_complete ?? false;
+    }
+
+    public function getHasCompletedApplicantProfileAttribute(): bool
+    {
+        return $this->hasCompletedApplicantProfile();
+    }
+
+    public function needsApplicantProfileCompletion(): bool
+    {
+        return $this->role === self::ROLES['pelamar'] && ! $this->hasCompletedApplicantProfile();
+    }
+
+    public function getNeedsApplicantProfileAttribute(): bool
+    {
+        return $this->needsApplicantProfileCompletion();
     }
 
     // Relation to applications

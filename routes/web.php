@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminStaff\LetterController as AdminStaffLetterControll
 use App\Http\Controllers\AdminStaff\RecruitmentController as AdminStaffRecruitmentController;
 use App\Http\Controllers\Pelamar\ApplicationController as PelamarApplicationController;
 use App\Http\Controllers\Pelamar\DashboardController as PelamarDashboardController;
+use App\Http\Controllers\Pelamar\ProfileController as PelamarProfileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Staff\ComplaintController as StaffComplaintController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
@@ -79,6 +80,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
     Route::get('/pelamar/dashboard', PelamarDashboardController::class)->name('pelamar.dashboard');
+    Route::get('/pelamar/profil', [PelamarProfileController::class, 'show'])->name('pelamar.profile');
+    Route::post('/pelamar/profil', [PelamarProfileController::class, 'update'])->name('pelamar.profile.update');
 
     Route::get('/pelamar/lamaran-saya', [PelamarApplicationController::class, 'index'])
         ->name('pelamar.applications');

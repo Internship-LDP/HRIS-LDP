@@ -9,6 +9,8 @@ export interface User {
     status?: string;
     registered_at?: string | null;
     last_login_at?: string | null;
+    has_completed_applicant_profile?: boolean;
+    needs_applicant_profile?: boolean;
 }
 
 export type PageProps<
