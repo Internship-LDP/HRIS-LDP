@@ -9,8 +9,14 @@ export type ApplicantStatus =
     | 'Hired'
     | 'Rejected';
 
-// DEFINISI TIPE: Untuk handler aksi perubahan status
-export type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
+// HANDLER: Perubahan status biasa
+export type ApplicantActionHandler = (
+    applicantId: number,
+    newStatus: ApplicantStatus
+) => void;
+
+// HANDLER: Khusus Rejected 
+export type ApplicantRejectHandler = (id: number, reason: string) => void;
 
 export interface ApplicantRecord {
     id: number;
@@ -23,8 +29,13 @@ export interface ApplicantRecord {
     email: string;
     phone?: string | null;
     skills?: string | null;
-    cv_file?: string | null;
-    cv_url?: string | null;
+
+    // CV
+    cv_file?: string | null; 
+    cv_url?: string | null;  
+
+    // REJECTED
+    rejection_reason?: string | null;
 }
 
 export interface InterviewSchedule {
@@ -57,4 +68,6 @@ export type RecruitmentPageProps = PageProps<{
 
 export type StatusSummary = Partial<Record<ApplicantStatus, number>>;
 
-export const formatApplicationId = (id: number) => `APL${String(id).padStart(3, '0')}`;
+export const formatApplicationId = (id: number) =>
+    `APL${String(id).padStart(3, '0')}`;
+

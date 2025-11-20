@@ -103,6 +103,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/recruitment/{application}/update-status', 
             [RecruitmentController::class, 'updateStatus'])
             ->name('recruitment.update-status');
+            
+        Route::post('/recruitment/{application}/reject',
+            [RecruitmentController::class, 'reject'])
+            ->name('recruitment.reject');
+
         Route::post('/recruitment/{application}/schedule-interview',
             [RecruitmentController::class, 'scheduleInterview'])
             ->name('recruitment.schedule-interview');

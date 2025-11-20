@@ -40,6 +40,8 @@ class Application extends Model
         'interviewer_name',
         'meeting_link',
         'interview_notes',
+
+        'rejection_reason',//
     ];
 
     protected $casts = [
