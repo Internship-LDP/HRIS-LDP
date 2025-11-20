@@ -28,12 +28,81 @@ class RecruitmentController extends Controller
         // ============================
         $applications = $applicationCollection
             ->map(function (Application $application) {
+                $profile = $application->user?->applicantProfile;
+
+                $profileFullName = $profile?->full_name ?: $application->full_name;
+                $profileEmail = $profile?->email ?: $application->email;
+                $profilePhone = $profile?->phone ?: $application->phone;
+                $profileAddress = $profile?->address;
+                $profileCity = $profile?->city;
+                $profileProvince = $profile?->province;
+                $profileGender = $profile?->gender;
+                $profileReligion = $profile?->religion;
+                $profileDateOfBirth = optional($profile?->date_of_birth)->format('Y-m-d');
+
+                $educations = collect($profile?->educations ?? [])
+                    ->map(function ($education) {
+                        return [
+                            'institution' => $education['institution'] ?? null,
+                            'degree' => $education['degree'] ?? null,
+                            'field_of_study' => $education['field_of_study'] ?? null,
+                            'start_year' => $education['start_year'] ?? null,
+                            'end_year' => $education['end_year'] ?? null,
+                            'gpa' => $education['gpa'] ?? null,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                $experiences = collect($profile?->experiences ?? [])
+                    ->map(function ($experience) {
+                        return [
+                            'company' => $experience['company'] ?? null,
+                            'position' => $experience['position'] ?? null,
+                            'start_date' => $experience['start_date'] ?? null,
+                            'end_date' => $experience['end_date'] ?? null,
+                            'description' => $experience['description'] ?? null,
+                            'is_current' => $experience['is_current'] ?? false,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                $primaryEducation = collect($educations)->first();
+                $primaryExperience = collect($experiences)->first();
+
+                $educationSummary = $primaryEducation
+                    ? trim(collect([
+                        $primaryEducation['degree'] ?? null,
+                        $primaryEducation['field_of_study'] ?? null,
+                        $primaryEducation['institution'] ?? null,
+                    ])->filter()->implode(' - '))
+                    : null;
+
+                $experienceSummary = $primaryExperience
+                    ? trim(collect([
+                        $primaryExperience['position'] ?? null,
+                        $primaryExperience['company'] ?? null,
+                    ])->filter()->implode(' @ '))
+                    : null;
+
                 return [
                     'id' => $application->id,
                     'name' => $application->full_name,
                     'position' => $application->position,
-                    'education' => $application->education,
-                    'experience' => $application->experience,
+                    'education' => $educationSummary ?: $application->education,
+                    'experience' => $experienceSummary ?: $application->experience,
+                    'profile_name' => $profileFullName,
+                    'profile_email' => $profileEmail,
+                    'profile_phone' => $profilePhone,
+                    'profile_address' => $profileAddress,
+                    'profile_city' => $profileCity,
+                    'profile_province' => $profileProvince,
+                    'profile_gender' => $profileGender,
+                    'profile_religion' => $profileReligion,
+                    'profile_date_of_birth' => $profileDateOfBirth,
+                    'educations' => $educations,
+                    'experiences' => $experiences,
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
                     'email' => $application->email,

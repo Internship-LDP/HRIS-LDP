@@ -34,6 +34,17 @@ export function ApplicantProfileView({
   onReject, 
   onScheduleInterview 
 }: ApplicantProfileViewProps) {
+  const educations = applicant.educations ?? [];
+  const experiences = applicant.experiences ?? [];
+  const profileName = applicant.profile_name ?? applicant.name;
+  const profileEmail = applicant.profile_email ?? applicant.email;
+  const profilePhone = applicant.profile_phone ?? applicant.phone;
+  const profileAddress = applicant.profile_address;
+  const profileCity = applicant.profile_city;
+  const profileProvince = applicant.profile_province;
+  const profileGender = applicant.profile_gender;
+  const profileReligion = applicant.profile_religion;
+  const profileBirthDate = applicant.profile_date_of_birth;
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -84,7 +95,7 @@ export function ApplicantProfileView({
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="space-y-3">
                   <div>
-                    <h2 className="text-gray-900 mb-1">{applicant.name}</h2>
+                    <h2 className="text-gray-900 mb-1">{profileName}</h2>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-2">
@@ -98,12 +109,12 @@ export function ApplicantProfileView({
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
                       <Mail className="w-4 h-4" />
-                      <span>{applicant.email}</span>
+                      <span>{profileEmail}</span>
                     </div>
-                    {applicant.phone && (
+                    {profilePhone && (
                       <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
                         <Phone className="w-4 h-4" />
-                        <span>{applicant.phone}</span>
+                        <span>{profilePhone}</span>
                       </div>
                     )}
                     {applicant.date && (
@@ -197,22 +208,40 @@ export function ApplicantProfileView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">Nama Lengkap</p>
-                  <p className="text-gray-900">{applicant.name}</p>
+                  <p className="text-gray-900">{profileName}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-gray-900">{applicant.email}</p>
+                  <p className="text-gray-900">{profileEmail}</p>
                 </div>
-                {applicant.phone && (
+                {profilePhone && (
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500">Nomor Telepon</p>
-                    <p className="text-gray-900">{applicant.phone}</p>
+                    <p className="text-gray-900">{profilePhone}</p>
                   </div>
                 )}
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">Posisi yang Dilamar</p>
                   <p className="text-gray-900">{applicant.position}</p>
                 </div>
+                {profileGender && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Jenis Kelamin</p>
+                    <p className="text-gray-900">{profileGender}</p>
+                  </div>
+                )}
+                {profileReligion && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Agama</p>
+                    <p className="text-gray-900">{profileReligion}</p>
+                  </div>
+                )}
+                {profileBirthDate && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Tanggal Lahir</p>
+                    <p className="text-gray-900">{profileBirthDate}</p>
+                  </div>
+                )}
                 {applicant.date && (
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500">Tanggal Melamar</p>
@@ -223,6 +252,15 @@ export function ApplicantProfileView({
                   <p className="text-xs text-gray-500">Status Lamaran</p>
                   <div>{getStatusBadge(applicant.status)}</div>
                 </div>
+                {profileAddress && (
+                  <div className="space-y-1 md:col-span-2">
+                    <p className="text-xs text-gray-500">Alamat</p>
+                    <p className="text-gray-900">{profileAddress}</p>
+                    <p className="text-sm text-gray-600">
+                      {[profileCity, profileProvince].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -238,8 +276,36 @@ export function ApplicantProfileView({
                 </div>
                 <h3 className="text-blue-900">Riwayat Pendidikan</h3>
               </div>
-              
-              {applicant.education ? (
+              {educations.length > 0 ? (
+                <div className="grid gap-4">
+                  {educations.map((education, index) => (
+                    <div
+                      key={`${education.institution ?? 'edu'}-${index}`}
+                      className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-gray-50"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="bg-gradient-to-br from-blue-900 to-blue-700 p-3 rounded-xl shadow-md flex-shrink-0">
+                          <GraduationCap className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-gray-900 font-medium">
+                            {education.institution || 'Institusi tidak tersedia'}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {[education.degree, education.field_of_study].filter(Boolean).join(' • ') || 'Program tidak tersedia'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {[education.start_year, education.end_year].filter(Boolean).join(' - ') || 'Tahun tidak tersedia'}
+                          </p>
+                          {education.gpa && (
+                            <p className="text-xs text-gray-500">IPK: {education.gpa}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : applicant.education ? (
                 <div className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-gray-50">
                   <div className="flex items-start gap-4">
                     <div className="bg-gradient-to-br from-blue-900 to-blue-700 p-3 rounded-xl shadow-md flex-shrink-0">
@@ -267,8 +333,36 @@ export function ApplicantProfileView({
                 </div>
                 <h3 className="text-blue-900">Pengalaman Kerja</h3>
               </div>
-              
-              {applicant.experience ? (
+              {experiences.length > 0 ? (
+                <div className="grid gap-4">
+                  {experiences.map((experience, index) => (
+                    <div
+                      key={`${experience.company ?? 'exp'}-${index}`}
+                      className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-green-50/30"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="bg-gradient-to-br from-green-600 to-green-500 p-3 rounded-xl shadow-md flex-shrink-0">
+                          <Briefcase className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-gray-900 font-medium">
+                            {experience.position || 'Posisi tidak tersedia'}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {experience.company || 'Perusahaan tidak tersedia'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {[experience.start_date, experience.end_date].filter(Boolean).join(' - ') || 'Periode tidak tersedia'}
+                          </p>
+                          {experience.description && (
+                            <p className="text-xs text-gray-500">{experience.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : applicant.experience ? (
                 <div className="p-5 border-2 border-gray-100 rounded-xl bg-gradient-to-r from-white to-green-50/30">
                   <div className="flex items-start gap-4">
                     <div className="bg-gradient-to-br from-green-600 to-green-500 p-3 rounded-xl shadow-md flex-shrink-0">

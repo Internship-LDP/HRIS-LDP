@@ -18,6 +18,17 @@ export interface ApplicantRecord {
     position: string;
     education?: string | null;
     experience?: string | null;
+    profile_name?: string | null;
+    profile_email?: string | null;
+    profile_phone?: string | null;
+    profile_address?: string | null;
+    profile_city?: string | null;
+    profile_province?: string | null;
+    profile_gender?: string | null;
+    profile_religion?: string | null;
+    profile_date_of_birth?: string | null;
+    educations?: ApplicantEducation[];
+    experiences?: ApplicantExperience[];
     status: ApplicantStatus;
     date?: string | null;
     email: string;
@@ -26,6 +37,24 @@ export interface ApplicantRecord {
     cv_file?: string | null;
     cv_url?: string | null;
     profile_photo_url?: string | null;
+}
+
+export interface ApplicantEducation {
+    institution?: string | null;
+    degree?: string | null;
+    field_of_study?: string | null;
+    start_year?: string | null;
+    end_year?: string | null;
+    gpa?: string | null;
+}
+
+export interface ApplicantExperience {
+    company?: string | null;
+    position?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    description?: string | null;
+    is_current?: boolean;
 }
 
 export interface InterviewSchedule {

@@ -13,8 +13,6 @@ export interface ApplicationFormData {
     email: string;
     phone: string;
     position: string;
-    education: string;
-    experience: string;
     skills: string;
     cv: File | null;
 }
@@ -52,8 +50,6 @@ export default function ApplicationForm({
         Boolean(data.full_name?.trim()) &&
         Boolean(data.email?.trim()) &&
         Boolean(data.phone?.trim()) &&
-        Boolean(data.education?.trim()) &&
-        Boolean(data.experience?.trim()) &&
         Boolean(data.skills?.trim()) &&
         Boolean(data.cv);
 
@@ -165,36 +161,7 @@ export default function ApplicationForm({
                         className="bg-slate-50"
                     />
                 </div>
-                <div>
-                    <Label htmlFor="education">Pendidikan Terakhir</Label>
-                    <Input
-                        id="education"
-                        required
-                        value={data.education}
-                        onChange={(event) => setData('education', event.target.value)}
-                        placeholder="S1 Informatika"
-                    />
-                    {errors.education && (
-                        <p className="mt-1 text-xs text-red-500">
-                            {errors.education}
-                        </p>
-                    )}
-                </div>
-                <div>
-                    <Label htmlFor="experience">Pengalaman Kerja</Label>
-                    <Input
-                        id="experience"
-                        required
-                        value={data.experience}
-                        onChange={(event) => setData('experience', event.target.value)}
-                        placeholder="3 tahun"
-                    />
-                    {errors.experience && (
-                        <p className="mt-1 text-xs text-red-500">
-                            {errors.experience}
-                        </p>
-                    )}
-                </div>
+                
                 <div className="md:col-span-2">
                     <Label htmlFor="skills">Keahlian</Label>
                     <Textarea

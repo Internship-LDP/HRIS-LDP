@@ -73,8 +73,6 @@ class ApplicationController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'education' => ['nullable', 'string', 'max:255'],
-            'experience' => ['nullable', 'string', 'max:255'],
             'skills' => ['nullable', 'string'],
             'cv' => ['required', 'file', 'mimes:pdf', 'max:5120'],
         ]);
@@ -95,8 +93,6 @@ class ApplicationController extends Controller
             'full_name' => $validated['full_name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
-            'education' => $validated['education'] ?? null,
-            'experience' => $validated['experience'] ?? null,
             'skills' => $validated['skills'] ?? null,
             'division' => $division->name,
             'position' => $division->job_title,

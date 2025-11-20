@@ -81,8 +81,6 @@ export default function Applications({
         email: defaultForm.email ?? '',
         phone: defaultForm.phone ?? '',
         position: formDivision?.job_title ?? '',
-        education: '',
-        experience: '',
         skills: '',
         cv: null,
     });
@@ -154,8 +152,6 @@ export default function Applications({
             ...previous,
             division_id: null,
             position: '',
-            education: '',
-            experience: '',
             skills: '',
             cv: null,
         }));
