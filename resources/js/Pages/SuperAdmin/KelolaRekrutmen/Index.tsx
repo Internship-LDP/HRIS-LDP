@@ -4,7 +4,6 @@ import SuperAdminLayout from '@/Pages/SuperAdmin/Layout';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import ApplicantsTab from './components/ApplicantsTab';
-import ApplicantDetailDialog from './components/ApplicantDetailDialog';
 import ApplicantProfileDialog from './components/ApplicantProfileDialog';
 import AddApplicantDialog from './components/AddApplicantDialog';
 import InterviewsTab from './components/InterviewsTab';
@@ -39,7 +38,6 @@ export default function KelolaRekrutmenIndex({
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const [detailOpen, setDetailOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
@@ -102,11 +100,8 @@ export default function KelolaRekrutmenIndex({
     const handleViewProfile = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setProfileOpen(true);
-    };
-    const handleViewDetail = (application: ApplicantRecord) => {
-        setSelectedApplicant(application);
-        setDetailOpen(true);
 
+        // Auto-screening: if status is 'Applied', update to 'Screening'
         if (application.status === 'Applied' && application.id !== updatingApplicantId) {
             handleStatusUpdate(application.id, 'Screening');
         }
@@ -118,7 +113,6 @@ export default function KelolaRekrutmenIndex({
     const handleOpenScheduleDialog = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setScheduleOpen(true);
-        setDetailOpen(false);
     };
 
     // -----------------------------------------
@@ -133,27 +127,14 @@ export default function KelolaRekrutmenIndex({
     const handleAcceptFromProfile = () => {
         if (!selectedApplicant) return;
 
-        const confirmed = window.confirm(
-            `Konfirmasi penerimaan (Hired) untuk ${selectedApplicant.name}? Status akan diubah menjadi 'Hired'.`
-        );
-        if (confirmed) {
-            handleStatusUpdate(selectedApplicant.id, 'Hired');
-            setProfileOpen(false);
-        }
+        handleStatusUpdate(selectedApplicant.id, 'Hired');
+        setProfileOpen(false);
     };
 
-    const handleRejectFromProfile = () => {
+    const handleRejectFromProfile = (reason: string) => {
         if (!selectedApplicant) return;
 
-        const reason = window.prompt(
-            `Masukkan alasan penolakan untuk ${selectedApplicant.name}:`
-        );
-        if (!reason || reason.trim() === '') {
-            alert('Alasan penolakan wajib diisi.');
-            return;
-        }
-
-        handleReject(selectedApplicant.id, reason.trim());
+        handleReject(selectedApplicant.id, reason);
         setProfileOpen(false);
     };
 
@@ -174,7 +155,6 @@ export default function KelolaRekrutmenIndex({
             preserveScroll: true,
             onSuccess: () => {
                 if (selectedApplicant?.id === application.id) {
-                    setDetailOpen(false);
                     setSelectedApplicant(null);
                 }
             },
@@ -225,7 +205,6 @@ export default function KelolaRekrutmenIndex({
                             statusOrder={statusOrder}
                             statusSummary={statusSummary}
                             visibleApplications={visibleApplications}
-                            onViewDetail={handleViewDetail}
                             onDelete={handleDelete}
                             onStatusUpdate={handleStatusUpdate}
                             onReject={handleReject}
@@ -245,11 +224,7 @@ export default function KelolaRekrutmenIndex({
                     </TabsContent>
                 </Tabs>
 
-                <ApplicantDetailDialog
-                    open={detailOpen}
-                    onOpenChange={setDetailOpen}
-                    applicant={selectedApplicant}
-                />
+
                 <ApplicantProfileDialog
                     open={profileOpen}
                     onOpenChange={setProfileOpen}
@@ -257,6 +232,7 @@ export default function KelolaRekrutmenIndex({
                     onAccept={handleAcceptFromProfile}
                     onReject={handleRejectFromProfile}
                     onScheduleInterview={handleScheduleFromProfile}
+                    isUpdatingStatus={isUpdatingStatus}
                 />
                 <ScheduleInterviewDialog
                     open={scheduleOpen}

@@ -12,8 +12,9 @@ interface ApplicantProfileDialogProps {
     onOpenChange: (open: boolean) => void;
     applicant: ApplicantRecord | null;
     onAccept?: () => void;
-    onReject?: () => void;
+    onReject?: (reason: string) => void;
     onScheduleInterview?: () => void;
+    isUpdatingStatus?: boolean;
 }
 
 export default function ApplicantProfileDialog({
@@ -23,6 +24,7 @@ export default function ApplicantProfileDialog({
     onAccept,
     onReject,
     onScheduleInterview,
+    isUpdatingStatus = false,
 }: ApplicantProfileDialogProps) {
     
     if (!applicant) return null;
@@ -39,6 +41,7 @@ export default function ApplicantProfileDialog({
                         onAccept={onAccept}
                         onReject={onReject}
                         onScheduleInterview={onScheduleInterview}
+                        isUpdatingStatus={isUpdatingStatus}
                     />
                 </div>
             </DialogContent>

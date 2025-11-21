@@ -22,7 +22,6 @@ import { Badge } from '@/Components/ui/badge';
 import {
     Filter,
     Search,
-    Eye,
     XCircle,
     Loader2,
     Calendar,
@@ -49,7 +48,6 @@ interface ApplicantsTabProps {
     statusOrder: ApplicantStatus[];
     statusSummary: StatusSummary;
     visibleApplications: ApplicantRecord[];
-    onViewDetail: (application: ApplicantRecord) => void;
     onDelete: (application: ApplicantRecord) => void;
     onStatusUpdate: ApplicantActionHandler;
     onReject: ApplicantRejectHandler;
@@ -105,7 +103,6 @@ export default function ApplicantsTab({
     statusOrder,
     statusSummary,
     visibleApplications,
-    onViewDetail,
     onDelete,
     onStatusUpdate,
     onReject,
@@ -207,76 +204,28 @@ export default function ApplicantsTab({
                                     <TableCell>{statusBadge(application.status)}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-wrap items-center justify-end gap-2">
-                                            {application.status === 'Screening' && (
-                                                <Button
-                                                    variant="default"
-                                                    size="sm"
-                                                    onClick={() => onScheduleInterview(application)}
-                                                    disabled={isCurrentlyUpdating}
-                                                    className="bg-purple-600 hover:bg-purple-700"
-                                                >
-                                                    <Calendar className="h-4 w-4 mr-2" />
-                                                    Jadwalkan Interview
-                                                </Button>
-                                            )}
-
-                                            {application.status === 'Interview' && (
-                                                <>
-                                                    <Button
-                                                        variant="default"
-                                                        size="sm"
-                                                        onClick={() => handleHire(application)}
-                                                        disabled={isCurrentlyUpdating}
-                                                        className="bg-green-600 hover:bg-green-700"
-                                                    >
-                                                        <Check className="h-4 w-4 mr-2" />
-                                                        Terima
-                                                    </Button>
-                                                    <Button
-                                                        variant="default"
-                                                        size="sm"
-                                                        onClick={() => handleReject(application)}
-                                                        disabled={isCurrentlyUpdating}
-                                                        className="bg-red-600 hover:bg-red-700"
-                                                    >
-                                                        <XCircle className="h-4 w-4 mr-2" />
-                                                        Tolak
-                                                    </Button>
-                                                </>
-                                            )}
-
                                             {onViewProfile && (
                                                 <Button
                                                     variant="ghost"
-                                                    size="icon"
+                                                    size="sm"
                                                     onClick={() => onViewProfile(application)}
                                                     disabled={isCurrentlyUpdating}
                                                     title="Lihat Profil Lengkap"
                                                 >
-                                                    <User className="h-4 w-4 text-blue-600" />
+                                                    <User className="h-4 w-4 mr-2 text-blue-600" />
+                                                    Profil
                                                 </Button>
                                             )}
 
                                             <Button
                                                 variant="ghost"
-                                                size="icon"
-                                                onClick={() => onViewDetail(application)}
-                                                disabled={isCurrentlyUpdating}
-                                            >
-                                                {isCurrentlyUpdating && updatingApplicantId === application.id ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                                ) : (
-                                                    <Eye className="h-4 w-4" />
-                                                )}
-                                            </Button>
-
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
+                                                size="sm"
                                                 onClick={() => onDelete(application)}
                                                 disabled={isCurrentlyUpdating}
+                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
                                             >
-                                                <XCircle className="h-4 w-4 text-red-500" />
+                                                <XCircle className="h-4 w-4 mr-2" />
+                                                Hapus
                                             </Button>
                                         </div>
                                     </TableCell>
