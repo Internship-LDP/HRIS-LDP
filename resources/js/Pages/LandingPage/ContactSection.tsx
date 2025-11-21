@@ -10,21 +10,20 @@ export function ContactSection() {
   useEffect(() => {
     AOS.init({
       duration: 1000,
-      once: false,
-      mirror: true,
+      once: true,
       offset: 100,
     });
   }, []);
 
   return (
-    <footer id="contact" className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    <footer id="contact" className="bg-black/40 backdrop-blur-sm text-white border-t border-white/10">
       {/* Newsletter Section */}
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center" data-aos="fade-up">
             <div>
-              <h3 className="text-2xl md:text-3xl mb-2">Tetap Terhubung</h3>
-              <p className="text-purple-200">
+              <h3 className="text-2xl md:text-3xl mb-2 text-white">Tetap Terhubung</h3>
+              <p className="text-white/80">
                 Berlangganan newsletter kami untuk pembaruan terbaru dan penawaran eksklusif.
               </p>
             </div>
@@ -32,9 +31,9 @@ export function ContactSection() {
               <Input
                 type="email"
                 placeholder="Masukkan email Anda"
-                className="bg-white/10 border-white/20 text-white placeholder:text-purple-200 focus:border-purple-400"
+                className="bg-white/15 border-white/30 text-white placeholder:text-white/60 focus:border-cyan-400/50 backdrop-blur-sm rounded-[16px]"
               />
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap">
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white whitespace-nowrap backdrop-blur-sm border border-cyan-400/30 rounded-[16px] shadow-[0_4px_16px_rgba(34,211,238,0.4)]">
                 Berlangganan
               </Button>
             </div>
@@ -49,9 +48,9 @@ export function ContactSection() {
           <div data-aos="fade-up" data-aos-delay="0">
             <div className="flex items-center gap-2 mb-6">
               <img src={logo} alt="Lintas Data Prima" className="w-10 h-10" />
-              <span className="text-xl">Lintas Data Prima</span>
+              <span className="text-xl text-white">Lintas Data Prima</span>
             </div>
-            <p className="text-purple-200 mb-6">
+            <p className="text-white/80 mb-6">
               Memberikan internet cepat dan andal kepada jutaan pelanggan di seluruh Indonesia.
             </p>
             <div className="flex gap-4">
@@ -66,9 +65,9 @@ export function ContactSection() {
                   <a
                     key={index}
                     href={social.href}
-                    className="w-10 h-10 bg-white/10 hover:bg-purple-600 rounded-lg flex items-center justify-center transition-colors"
+                    className="w-10 h-10 bg-white/15 hover:bg-cyan-500/30 border border-white/20 hover:border-cyan-400/50 rounded-[12px] flex items-center justify-center transition-all backdrop-blur-sm"
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5 text-white" />
                   </a>
                 );
               })}
@@ -77,11 +76,11 @@ export function ContactSection() {
 
           {/* Quick Links */}
           <div data-aos="fade-up" data-aos-delay="100">
-            <h4 className="mb-6">Tautan Cepat</h4>
+            <h4 className="mb-6 text-white">Tautan Cepat</h4>
             <ul className="space-y-3">
               {['Tentang Kami', 'Layanan', 'Harga', 'Karir', 'Blog', 'FAQ'].map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-purple-200 hover:text-white transition-colors">
+                  <a href="#" className="text-white/80 hover:text-cyan-400 transition-colors">
                     {link}
                   </a>
                 </li>
@@ -91,11 +90,11 @@ export function ContactSection() {
 
           {/* Services */}
           <div data-aos="fade-up" data-aos-delay="200">
-            <h4 className="mb-6">Layanan</h4>
+            <h4 className="mb-6 text-white">Layanan</h4>
             <ul className="space-y-3">
               {['Internet Residensial', 'Solusi Bisnis', 'Fiber Optik', 'TV & Streaming', 'Layanan Telepon', 'Dukungan Teknis'].map((service) => (
                 <li key={service}>
-                  <a href="#" className="text-purple-200 hover:text-white transition-colors">
+                  <a href="#" className="text-white/80 hover:text-cyan-400 transition-colors">
                     {service}
                   </a>
                 </li>
@@ -105,22 +104,22 @@ export function ContactSection() {
 
           {/* Contact Info */}
           <div data-aos="fade-up" data-aos-delay="300">
-            <h4 className="mb-6">Hubungi Kami</h4>
+            <h4 className="mb-6 text-white">Hubungi Kami</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
-                <span className="text-purple-200 text-sm">
+                <MapPin className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                <span className="text-white/80 text-sm">
                   Jl. Sudirman No. 123<br />
                   Jakarta 12190, Indonesia
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                <span className="text-purple-200 text-sm">021-555-0123</span>
+                <Phone className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                <span className="text-white/80 text-sm">021-555-0123</span>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                <span className="text-purple-200 text-sm">info@lintasdataprima.com</span>
+                <Mail className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                <span className="text-white/80 text-sm">info@lintasdataprima.com</span>
               </li>
             </ul>
           </div>
@@ -130,12 +129,12 @@ export function ContactSection() {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-purple-200 text-sm">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-sm">
             <p>&copy; 2025 Lintas Data Prima. Hak cipta dilindungi.</p>
             <div className="flex flex-wrap gap-4 md:gap-6 justify-center">
-              <a href="#" className="hover:text-white transition-colors">Kebijakan Privasi</a>
-              <a href="#" className="hover:text-white transition-colors">Syarat Layanan</a>
-              <a href="#" className="hover:text-white transition-colors">Kebijakan Cookie</a>
+              <a href="#" className="hover:text-cyan-400 transition-colors">Kebijakan Privasi</a>
+              <a href="#" className="hover:text-cyan-400 transition-colors">Syarat Layanan</a>
+              <a href="#" className="hover:text-cyan-400 transition-colors">Kebijakan Cookie</a>
             </div>
           </div>
         </div>

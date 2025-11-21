@@ -1,12 +1,10 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/Components/ui/button';
-import BlurText from '@/Components/BlurText';
-import ShinyText from '@/Components/ShinyText';
 import { ArrowRight, MapPin, Wifi, Zap, Globe } from 'lucide-react';
 
 export function HeroSection() {
-  const headingRef = useRef<HTMLDivElement>(null);       // ⬅️ div, bukan h1
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const subtextRef = useRef<HTMLParagraphElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -65,54 +63,34 @@ export function HeroSection() {
       id="home"
       className="relative pt-24 md:pt-32 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-screen flex items-center"
     >
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50 -z-10" />
-
       {/* Animated Background Elements */}
-      <div className="absolute top-20 right-10 w-48 h-48 md:w-72 md:h-72 bg-purple-400/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-20 right-10 w-48 h-48 md:w-72 md:h-72 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" />
       <div
-        className="absolute bottom-20 left-10 w-64 h-64 md:w-96 md:h-96 bg-purple-300/20 rounded-full blur-3xl animate-pulse"
+        className="absolute bottom-20 left-10 w-64 h-64 md:w-96 md:h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
         style={{ animationDelay: '1s' }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"
+        style={{ animationDelay: '0.5s' }}
       />
 
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
-            <div ref={headingRef} className="space-y-2">
-  <BlurText
-    as="h1"
-    text="Internet Cepat & Terpercaya untuk"
-    animateBy="words"
-    direction="top"
-    delay={120}
-    className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-gray-900 font-bold leading-tight"
-  />
-
-  {/* Blur + Gradient + Shiny */}
-  <ShinyText
-    as="h1"
-    className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight inline-block"
-    speed={3}
-  >
-    <BlurText
-      as="span"
-      text="Semua Orang"
-      animateBy="words"
-      direction="top"
-      delay={140}
-      className="
-        inline-flex flex-wrap justify-center lg:justify-start
-        bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-400
-        bg-clip-text text-purple-700
-      "
-    />
-  </ShinyText>
-            </div>
+            <h1
+              ref={headingRef}
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+            >
+              Internet Cepat &amp; Terpercaya untuk{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(34,211,238,0.3)]">
+                Semua Orang
+              </span>
+            </h1>
 
             <p
               ref={subtextRef}
-              className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0"
+              className="text-lg sm:text-xl text-white/90 max-w-xl mx-auto lg:mx-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
             >
               Menghubungkan Anda ke dunia dengan kecepatan kilat.
             </p>
@@ -121,9 +99,9 @@ export function HeroSection() {
               ref={buttonsRef}
               className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start"
             >
-              <Button
+              {/* <Button
                 size="lg"
-                className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-xl shadow-purple-200 group w-full sm:w-auto"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-[0_8px_32px_rgba(34,211,238,0.5)] border border-cyan-400/30 backdrop-blur-sm group w-full sm:w-auto rounded-2xl"
               >
                 Mulai Sekarang
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -131,11 +109,11 @@ export function HeroSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-purple-300 text-purple-600 hover:bg-purple-50 group w-full sm:w-auto"
+                className="border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm group w-full sm:w-auto rounded-2xl shadow-[0_4px_16px_rgba(255,255,255,0.1)]"
               >
                 <MapPin className="mr-2 w-5 h-5" />
                 Cek Jangkauan
-              </Button>
+              </Button> */}
             </div>
 
             {/* Stats */}
@@ -143,25 +121,25 @@ export function HeroSection() {
               ref={statsRef}
               className="grid grid-cols-3 gap-4 md:gap-6 pt-8"
             >
-              <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">
+              <div className="space-y-1 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl md:text-3xl bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   1J+
                 </div>
-                <div className="text-xs md:text-sm text-gray-600">
+                <div className="text-xs md:text-sm text-white/80">
                   Pengguna Aktif
                 </div>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">
+              <div className="space-y-1 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl md:text-3xl bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   99.9%
                 </div>
-                <div className="text-xs md:text-sm text-gray-600">Uptime</div>
+                <div className="text-xs md:text-sm text-white/80">Uptime</div>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl md:text-3xl text-purple-600">
+              <div className="space-y-1 bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                <div className="text-2xl md:text-3xl bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   24/7
                 </div>
-                <div className="text-xs md:text-sm text-gray-600">
+                <div className="text-xs md:text-sm text-white/80">
                   Dukungan
                 </div>
               </div>
@@ -170,38 +148,36 @@ export function HeroSection() {
 
           {/* Right Content - Illustration */}
           <div ref={illustrationRef} className="relative">
-            <div className="relative bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-8 md:p-12 shadow-2xl">
+            <div className="relative bg-white/15 backdrop-blur-[30px] rounded-[28px] p-8 md:p-12 shadow-[0_8px_32px_rgba(139,92,246,0.4)] border border-white/30">
               {/* Network Illustration */}
               <div className="relative">
                 {/* Center Node */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center shadow-2xl z-10">
-                  <Wifi className="w-10 h-10 md:w-12 md:h-12 text-purple-600" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-cyan-500/30 to-blue-600/30 backdrop-blur-sm rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(34,211,238,0.5)] z-10 border border-cyan-400/50">
+                  <Wifi className="w-10 h-10 md:w-12 md:h-12 text-cyan-300" />
                 </div>
 
                 {/* Orbiting Nodes */}
                 <div className="relative w-full aspect-square">
                   {[0, 60, 120, 180, 240, 300].map((angle, index) => {
                     const radius = 100;
-                    const x =
-                      Math.cos((angle * Math.PI) / 180) * radius;
-                    const y =
-                      Math.sin((angle * Math.PI) / 180) * radius;
+                    const x = Math.cos((angle * Math.PI) / 180) * radius;
+                    const y = Math.sin((angle * Math.PI) / 180) * radius;
 
                     return (
                       <div
                         key={index}
-                        className="absolute top-1/2 left-1/2 w-12 h-12 md:w-16 md:h-16 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center shadow-lg animate-pulse"
+                        className="absolute top-1/2 left-1/2 w-12 h-12 md:w-16 md:h-16 bg-white/15 backdrop-blur-lg rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(139,92,246,0.3)] animate-pulse border border-white/30"
                         style={{
                           transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                           animationDelay: `${index * 0.2}s`,
                         }}
                       >
                         {index % 3 === 0 ? (
-                          <Zap className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                          <Zap className="w-6 h-6 md:w-8 md:h-8 text-cyan-400" />
                         ) : index % 3 === 1 ? (
-                          <Globe className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                          <Globe className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
                         ) : (
-                          <Wifi className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                          <Wifi className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
                         )}
                       </div>
                     );
@@ -224,14 +200,14 @@ export function HeroSection() {
                       <stop
                         offset="0%"
                         style={{
-                          stopColor: 'rgba(255,255,255,0.3)',
+                          stopColor: 'rgba(34,211,238,0.6)',
                           stopOpacity: 1,
                         }}
                       />
                       <stop
                         offset="100%"
                         style={{
-                          stopColor: 'rgba(255,255,255,0)',
+                          stopColor: 'rgba(139,92,246,0.2)',
                           stopOpacity: 1,
                         }}
                       />
@@ -239,10 +215,8 @@ export function HeroSection() {
                   </defs>
                   {[0, 60, 120, 180, 240, 300].map((angle, index) => {
                     const radius = 100;
-                    const x =
-                      Math.cos((angle * Math.PI) / 180) * radius;
-                    const y =
-                      Math.sin((angle * Math.PI) / 180) * radius;
+                    const x = Math.cos((angle * Math.PI) / 180) * radius;
+                    const y = Math.sin((angle * Math.PI) / 180) * radius;
 
                     return (
                       <line
@@ -263,16 +237,16 @@ export function HeroSection() {
             </div>
 
             {/* Floating Card */}
-            <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 bg-white/90 backdrop-blur-lg rounded-xl p-4 md:p-6 shadow-xl border border-purple-100">
+            <div className="absolute -bottom-4 md:-bottom-6 -left-4 md:-left-6 bg-white/20 backdrop-blur-[30px] rounded-[24px] p-4 md:p-6 shadow-[0_8px_32px_rgba(34,211,238,0.4)] border border-cyan-400/40">
               <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-600 to-purple-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-[16px] flex items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(34,211,238,0.6)]">
                   <span className="text-lg md:text-xl">⚡</span>
                 </div>
                 <div>
-                  <div className="text-xl md:text-2xl text-purple-600">
+                  <div className="text-xl md:text-2xl bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                     1000 Mbps
                   </div>
-                  <div className="text-xs md:text-sm text-gray-600">
+                  <div className="text-xs md:text-sm text-white/80">
                     Max Speed
                   </div>
                 </div>

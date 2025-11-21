@@ -30,20 +30,20 @@ type CSSVars = React.CSSProperties & {
 
 const GooeyNav: React.FC<GooeyNavProps> = ({
   items,
-  animationTime = 600,
+  // defaults dibuat lebih ringan
+  animationTime = 450,
   particleCount = 15,
-  particleDistances = [90, 10],
-  particleR = 100,
-  timeVariance = 300,
+  particleDistances = [70, 8],
+  particleR = 80,
+  timeVariance = 150,
   colors = [1, 2, 3, 1, 2, 3, 1, 4],
   initialActiveIndex = 0,
   className = '',
-  // default untuk navbar background putih
-  textColor = '#6b7280',           // gray-500
-  activeTextColor = '#ffffff',     // putih
-  pillColor = '#7c3aed',           // ungu
-  filterColor = '#9d6dff',         // ungu glow
-  bubbleColor = '#a78bfa',         // ungu soft
+  textColor = '#6b7280',
+  activeTextColor = '#ffffff',
+  pillColor = '#7c3aed',
+  filterColor = '#9d6dff',
+  bubbleColor = '#a78bfa',
   textShadowColor = 'rgba(0,0,0,0.12)',
   colorPalette
 }) => {
@@ -62,7 +62,15 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
     '--gooey-text-shadow': textShadowColor
   };
 
-  colorPalette?.slice(0, 4).forEach((value, index) => {
+  // default palette kalau colorPalette tidak diisi
+  const palette = colorPalette ?? [
+    '#38bdf8', // biru
+    '#22c55e', // hijau
+    '#f97316', // oranye
+    '#e11d48'  // pink
+  ];
+
+  palette.slice(0, 4).forEach((value, index) => {
     cssVars[`--color-${index + 1}` as '--color-1'] = value;
   });
 
@@ -73,7 +81,7 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
     pointIndex: number,
     totalPoints: number
   ): [number, number] => {
-    const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180);
+    const angle = ((360 + noise(4)) / totalPoints) * pointIndex * (Math.PI / 180);
     return [distance * Math.cos(angle), distance * Math.sin(angle)];
   };
 
@@ -83,57 +91,68 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
     d: [number, number],
     r: number
   ) => {
-    let rotate = noise(r / 10);
+    let rotate = noise(r / 12);
     return {
       start: getXY(d[0], particleCount - i, particleCount),
-      end: getXY(d[1] + noise(7), particleCount - i, particleCount),
+      end: getXY(d[1] + noise(5), particleCount - i, particleCount),
       time: t,
-      scale: 1 + noise(0.2),
+      scale: 1 + noise(0.15),
       color: colors[Math.floor(Math.random() * colors.length)],
-      rotate: rotate > 0 ? (rotate + r / 20) * 10 : (rotate - r / 20) * 10
+      rotate: rotate > 0 ? (rotate + r / 25) * 10 : (rotate - r / 25) * 10
     };
   };
 
   const makeParticles = (element: HTMLElement): void => {
+    if (particleCount <= 0) return;
+
     const d: [number, number] = particleDistances;
     const r = particleR;
     const bubbleTime = animationTime * 2 + timeVariance;
     element.style.setProperty('--time', `${bubbleTime}ms`);
 
+    const fragment = document.createDocumentFragment();
+
     for (let i = 0; i < particleCount; i++) {
-      const t = animationTime * 2 + noise(timeVariance * 2);
+      const t = animationTime * 2 + noise(timeVariance);
       const p = createParticle(i, t, d, r);
-      element.classList.remove('active');
 
-      setTimeout(() => {
-        const particle = document.createElement('span');
-        const point = document.createElement('span');
+      const particle = document.createElement('span');
+      const point = document.createElement('span');
 
-        particle.classList.add('particle');
-        particle.style.setProperty('--start-x', `${p.start[0]}px`);
-        particle.style.setProperty('--start-y', `${p.start[1]}px`);
-        particle.style.setProperty('--end-x', `${p.end[0]}px`);
-        particle.style.setProperty('--end-y', `${p.end[1]}px`);
-        particle.style.setProperty('--time', `${p.time}ms`);
-        particle.style.setProperty('--scale', `${p.scale}`);
-        particle.style.setProperty('--color', `var(--color-${p.color}, white)`);
-        particle.style.setProperty('--rotate', `${p.rotate}deg`);
+      particle.classList.add('particle');
+      particle.style.setProperty('--start-x', `${p.start[0]}px`);
+      particle.style.setProperty('--start-y', `${p.start[1]}px`);
+      particle.style.setProperty('--end-x', `${p.end[0]}px`);
+      particle.style.setProperty('--end-y', `${p.end[1]}px`);
+      particle.style.setProperty('--time', `${t}ms`);
+      particle.style.setProperty('--scale', `${p.scale}`);
+      // fallback warna bukan putih lagi, tapi bubbleColor
+      particle.style.setProperty(
+        '--color',
+        `var(--color-${p.color}, ${bubbleColor})`
+      );
+      particle.style.setProperty('--rotate', `${p.rotate}deg`);
 
-        point.classList.add('point');
-        particle.appendChild(point);
-        element.appendChild(particle);
+      particle.addEventListener('animationend', () => {
+        particle.remove();
+      });
 
-        requestAnimationFrame(() => {
-          element.classList.add('active');
-        });
-
-        setTimeout(() => {
-          try {
-            element.removeChild(particle);
-          } catch {}
-        }, t);
-      }, 30);
+      point.classList.add('point');
+      particle.appendChild(point);
+      fragment.appendChild(particle);
     }
+
+    // clear sebelumnya biar nggak numpuk
+    const existing = element.querySelectorAll('.particle');
+    existing.forEach((p) => p.remove());
+
+    element.classList.remove('active');
+    element.appendChild(fragment);
+
+    // trigger di frame berikutnya supaya animasi smooth
+    requestAnimationFrame(() => {
+      element.classList.add('active');
+    });
   };
 
   const updateEffectPosition = (element: HTMLElement): void => {
@@ -154,7 +173,6 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
     textRef.current.innerText = element.innerText;
   };
 
-  // supaya bisa dipanggil dari click dan keyboard
   const activateItem = (el: HTMLElement, index: number): void => {
     if (activeIndex === index) return;
 
@@ -162,20 +180,17 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
     updateEffectPosition(el);
 
     if (filterRef.current) {
-      const particles = filterRef.current.querySelectorAll('.particle');
-      particles.forEach((p) => p.remove());
       makeParticles(filterRef.current);
     }
 
     if (textRef.current) {
       textRef.current.classList.remove('active');
-      void textRef.current.offsetWidth;
+      void textRef.current.offsetWidth; // reflow kecil, tapi jarang
       textRef.current.classList.add('active');
     }
   };
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number): void => {
-    // gunakan LI sebagai anchor posisi efek, bukan <a>-nya
     const liEl = e.currentTarget.parentElement as HTMLElement;
     if (!liEl) return;
     activateItem(liEl, index);
@@ -213,7 +228,6 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
 
   return (
     <>
-      {/* Style internal: sudah disesuaikan agar tidak nge-bleed & teks tetap kelihatan */}
       <style>
         {`
           :root {
@@ -227,11 +241,12 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
             display: grid;
             place-items: center;
             z-index: 1;
+            will-change: transform, opacity;
           }
 
           .effect.text {
             color: var(--gooey-text);
-            transition: color 0.3s ease;
+            transition: color 0.25s ease;
             z-index: 3;
           }
 
@@ -240,27 +255,25 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
           }
 
           .effect.filter {
-            /* sebelumnya: blur(7px) contrast(100) blur(0); mix-blend-mode: lighten; */
-            filter: blur(2px);
+            filter: blur(1.5px);
             mix-blend-mode: normal;
           }
 
           .effect.filter::before {
             content: "";
             position: absolute;
-            /* sebelumnya: inset: -75px; bikin glow bocor kemana-mana */
-            inset: -6px;
+            inset: -4px;
             z-index: -2;
             border-radius: 9999px;
             background: var(--gooey-filter);
-            opacity: 0.3;
+            opacity: 0.28;
           }
 
           .effect.filter::after {
             content: "";
             position: absolute;
             inset: 0;
-            transform: scale(0.85);
+            transform: scale(0.9);
             opacity: 0;
             z-index: -1;
             border-radius: 9999px;
@@ -277,44 +290,38 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
           .point {
             display: block;
             opacity: 0;
-            width: 20px;
-            height: 20px;
+            width: 24px;   /* particle lebih besar */
+            height: 24px;
             border-radius: 9999px;
             transform-origin: center;
+            will-change: transform, opacity;
           }
 
           .particle {
-            --time: 5s;
+            --time: 400ms;
             position: absolute;
-            top: calc(50% - 8px);
-            left: calc(50% - 8px);
-            animation: particle calc(var(--time)) ease 1 -350ms;
+            top: 50%;
+            left: 50%;
+            animation: particle var(--time) ease-out 1;
           }
 
           .point {
             background: var(--color);
             opacity: 1;
-            animation: point calc(var(--time)) ease 1 -350ms;
+            animation: point var(--time) ease-out 1;
           }
 
           @keyframes particle {
             0% {
-              transform: rotate(0deg) translate(calc(var(--start-x)), calc(var(--start-y)));
-              opacity: 1;
-              animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+              transform: translate(calc(var(--start-x)), calc(var(--start-y))) scale(0.8) rotate(0deg);
+              opacity: 0;
             }
-            70% {
-              transform: rotate(calc(var(--rotate) * 0.5)) translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2));
-              opacity: 1;
-              animation-timing-function: ease;
-            }
-            85% {
-              transform: rotate(calc(var(--rotate) * 0.66)) translate(calc(var(--end-x)), calc(var(--end-y)));
+            40% {
               opacity: 1;
             }
             100% {
-              transform: rotate(calc(var(--rotate) * 1.2)) translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5));
-              opacity: 1;
+              transform: translate(calc(var(--end-x)), calc(var(--end-y))) scale(0.2) rotate(var(--rotate));
+              opacity: 0;
             }
           }
 
@@ -322,21 +329,9 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
             0% {
               transform: scale(0);
               opacity: 0;
-              animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
             }
-            25% {
-              transform: scale(calc(var(--scale) * 0.25));
-            }
-            38% {
-              opacity: 1;
-            }
-            65% {
-              transform: scale(var(--scale));
-              opacity: 1;
-              animation-timing-function: ease;
-            }
-            85% {
-              transform: scale(var(--scale));
+            30% {
+              transform: scale(calc(var(--scale) * 0.6));
               opacity: 1;
             }
             100% {
@@ -345,7 +340,6 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
             }
           }
 
-          /* pastikan teks di atas pill */
           li,
           li a {
             position: relative;
@@ -369,8 +363,8 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
             border-radius: 9999px;
             background: var(--gooey-pill);
             opacity: 0;
-            transform: scale(0.8);
-            transition: all 0.3s ease;
+            transform: scale(0.85);
+            transition: all 0.25s ease;
             z-index: -1;
           }
         `}
@@ -396,7 +390,7 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
             {items.map((item, index) => (
               <li
                 key={index}
-                className={`rounded-full relative cursor-pointer transition-[background-color_color_box-shadow] duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] ${
+                className={`rounded-full relative cursor-pointer transition-[background-color_color_box-shadow] duration-200 ease-out shadow-[0_0_0.5px_1.5px_transparent] ${
                   activeIndex === index ? 'active' : ''
                 }`}
               >
@@ -404,7 +398,7 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
                   href={item.href}
                   onClick={(e) => handleClick(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
-                  className="outline-none py-[0.6em] px-[1em] inline-block"
+                  className="outline-none py-[0.6em] px-[1em] inline-block select-none"
                 >
                   {item.label}
                 </a>
