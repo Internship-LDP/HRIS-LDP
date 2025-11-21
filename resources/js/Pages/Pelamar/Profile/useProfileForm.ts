@@ -14,7 +14,7 @@ import {
 } from './profileTypes';
 
 export function useProfileForm(profile: ApplicantProfilePayload) {
-    const form = useForm<ApplicantProfileForm>({
+    const initialData: ApplicantProfileForm = {
         personal: {
             full_name: profile.full_name ?? '',
             email: profile.email ?? '',
@@ -35,7 +35,9 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                 ? profile.experiences.map((item) => ({ ...item }))
                 : [],
         profile_photo: null,
-    });
+    };
+    
+    const form = useForm<ApplicantProfileForm>(initialData);
 
     const [photoPreview, setPhotoPreview] = useState<string | null>(
         profile.profile_photo_url ?? null,
@@ -77,9 +79,12 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         key: keyof ApplicantProfileForm['personal'],
         value: string,
     ) => {
-        form.setData('personal', {
-            ...form.data.personal,
-            [key]: value,
+        form.setData({
+            ...form.data,
+            personal: {
+                ...form.data.personal,
+                [key]: value,
+            },
         });
     };
 
@@ -89,7 +94,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
             return;
         }
 
-        form.setData('profile_photo', file);
+        (form.setData as any)('profile_photo', file);
         setPhotoPreview(URL.createObjectURL(file));
         setPhotoChanged(true);
     };
@@ -108,7 +113,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                form.setData('profile_photo', null);
+                (form.setData as any)('profile_photo', null);
                 setPhotoChanged(false);
                 router.reload({ only: ['profile'] });
                 setFeedback({
@@ -127,7 +132,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
     };
 
     const handlePhotoCancel = () => {
-        form.setData('profile_photo', null);
+        (form.setData as any)('profile_photo', null);
         setPhotoPreview(profile.profile_photo_url ?? null);
         setPhotoChanged(false);
     };
@@ -140,7 +145,10 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         const updated = form.data.educations.map((item) =>
             item.id === id ? { ...item, [key]: value } : item,
         );
-        form.setData('educations', updated);
+        form.setData({
+            ...form.data,
+            educations: updated,
+        });
     };
 
     const handleExperienceChange = (
@@ -151,36 +159,45 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         const updated = form.data.experiences.map((item) =>
             item.id === id ? { ...item, [key]: value } : item,
         );
-        form.setData('experiences', updated);
+        form.setData({
+            ...form.data,
+            experiences: updated,
+        });
     };
 
     const addEducation = () => {
-        form.setData('educations', [
-            ...form.data.educations,
-            createEmptyEducation(),
-        ]);
+        form.setData({
+            ...form.data,
+            educations: [
+                ...form.data.educations,
+                createEmptyEducation(),
+            ],
+        });
     };
 
     const removeEducation = (id: string) => {
         const updated = form.data.educations.filter((item) => item.id !== id);
-        form.setData(
-            'educations',
-            updated.length === 0 ? [createEmptyEducation()] : updated,
-        );
+        form.setData({
+            ...form.data,
+            educations: updated.length === 0 ? [createEmptyEducation()] : updated,
+        });
     };
 
     const addExperience = () => {
-        form.setData('experiences', [
-            ...form.data.experiences,
-            createEmptyExperience(),
-        ]);
+        form.setData({
+            ...form.data,
+            experiences: [
+                ...form.data.experiences,
+                createEmptyExperience(),
+            ],
+        });
     };
 
     const removeExperience = (id: string) => {
-        form.setData(
-            'experiences',
-            form.data.experiences.filter((item) => item.id !== id),
-        );
+        form.setData({
+            ...form.data,
+            experiences: form.data.experiences.filter((item) => item.id !== id),
+        });
     };
 
     const submitSection = (section: SectionKey) => {
@@ -191,7 +208,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
             preserveScroll: true,
             onSuccess: () => {
                 if (section === 'personal') {
-                    form.setData('profile_photo', null);
+                    (form.setData as any)('profile_photo', null);
                     router.reload({ only: ['profile'] });
                 }
                 setFeedback({
@@ -220,7 +237,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
     const getEducationError = (
         index: number,
         field: RequiredEducationField,
-    ) => form.errors[`educations.${index}.${field}`];
+    ) => (form.errors as any)[`educations.${index}.${field}`];
 
     const handleReset = () => {
         form.reset();
