@@ -112,6 +112,7 @@ class DashboardController extends Controller
             'stats' => [
                 'totalApplications' => $applications->count(),
                 'latestStatus' => $latestApplication->status,
+                'rejectionReason' => $latestApplication->rejection_reason,
             ],
             'upcomingInterview' => $upcomingInterview,
         ]);
