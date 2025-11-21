@@ -37,7 +37,8 @@ import {
     ApplicantActionHandler,
     ApplicantRejectHandler,
 } from '../types';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
+import RejectionModal from './RejectionModal';
 
 interface ApplicantsTabProps {
     statusOptions: string[];
@@ -113,6 +114,9 @@ export default function ApplicantsTab({
     onScheduleInterview,
     onViewProfile,
 }: ApplicantsTabProps) {
+    const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+    const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
+
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         onSearchTermChange(event.target.value);
     };
@@ -127,16 +131,18 @@ export default function ApplicantsTab({
     };
 
     const handleReject = (application: ApplicantRecord) => {
-        const reason = window.prompt(`Masukkan alasan penolakan untuk ${application.name}:`);
-        if (!reason || reason.trim() === '') {
-            alert('Alasan penolakan wajib diisi.');
-            return;
-        }
+        setSelectedApplicant(application);
+        setIsRejectionModalOpen(true);
+    };
 
-        onReject(application.id, reason.trim());
+    const handleConfirmReject = (reason: string) => {
+        if (selectedApplicant) {
+            onReject(selectedApplicant.id, reason);
+        }
     };
 
     return (
+        <>
         <Card className="space-y-6 p-6">
             <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -224,7 +230,7 @@ export default function ApplicantsTab({
                                                         className="bg-green-600 hover:bg-green-700"
                                                     >
                                                         <Check className="h-4 w-4 mr-2" />
-                                                        Terima (Hired)
+                                                        Terima
                                                     </Button>
                                                     <Button
                                                         variant="default"
@@ -234,7 +240,7 @@ export default function ApplicantsTab({
                                                         className="bg-red-600 hover:bg-red-700"
                                                     >
                                                         <XCircle className="h-4 w-4 mr-2" />
-                                                        Tolak (Rejected)
+                                                        Tolak
                                                     </Button>
                                                 </>
                                             )}
@@ -281,5 +287,17 @@ export default function ApplicantsTab({
                 </Table>
             </div>
         </Card>
+
+        <RejectionModal
+            isOpen={isRejectionModalOpen}
+            onClose={() => {
+                setIsRejectionModalOpen(false);
+                setSelectedApplicant(null);
+            }}
+            onConfirm={handleConfirmReject}
+            applicant={selectedApplicant}
+            isSubmitting={isUpdatingStatus}
+        />
+        </>
     );
 }
