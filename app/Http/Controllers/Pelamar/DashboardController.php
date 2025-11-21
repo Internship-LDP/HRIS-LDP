@@ -27,7 +27,7 @@ class DashboardController extends Controller
         if (!$latestApplication) {
             return Inertia::render('Pelamar/Dashboard', [
                 'applicationStatus' => ['progress' => 0, 'stages' => []],
-                'documents' => [],
+                'applications' => [],
                 'stats' => ['totalApplications' => 0, 'latestStatus' => null],
                 'upcomingInterview' => null,
             ]);
@@ -95,20 +95,28 @@ class DashboardController extends Controller
             $progress = (int) round($statusIndex / (count($statusOrder) - 1) * 100);
         }
 
-        // Dokumen
-        $documents = $applications
-            ->filter(fn ($app) => filled($app->cv_file))
+        // Prepare applications data with all details
+        $applicationsData = $applications
             ->map(fn ($app) => [
-                'name' => $app->cv_file ?? 'CV',
-                'status' => $app->status === 'Hired' ? 'approved' : 'pending',
-                'date' => optional($app->submitted_at)->format('d M Y') ?? '-',
+                'id' => $app->id,
+                'position' => $app->position,
+                'division' => $app->division,
+                'status' => $app->status,
+                'submitted_at' => optional($app->submitted_at)->format('d M Y') ?? '-',
+                'full_name' => $app->full_name,
+                'email' => $app->email,
+                'phone' => $app->phone,
+                'education' => $app->education,
+                'experience' => $app->experience,
+                'skills' => $app->skills,
+                'cv_file' => $app->cv_file,
+                'notes' => $app->notes,
             ])
-            ->values()
             ->all();
 
         return Inertia::render('Pelamar/Dashboard', [
             'applicationStatus' => ['progress' => $progress, 'stages' => $stages],
-            'documents' => $documents,
+            'applications' => $applicationsData,
             'stats' => [
                 'totalApplications' => $applications->count(),
                 'latestStatus' => $latestApplication->status,
