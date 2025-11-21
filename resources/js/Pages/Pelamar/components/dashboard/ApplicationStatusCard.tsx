@@ -26,6 +26,7 @@ export default function ApplicationStatusCard({
                 Status Lamaran Anda
             </h3>
 
+            {/* Progress Bar */}
             <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between text-sm">
                     <span className="text-slate-500">Progress:</span>
@@ -36,6 +37,7 @@ export default function ApplicationStatusCard({
                 <Progress value={progress} className="h-3" />
             </div>
 
+            {/* Rejection Reason */}
             {rejectionReason && (
                 <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4">
                     <h4 className="mb-1 font-semibold text-red-700">
@@ -47,6 +49,7 @@ export default function ApplicationStatusCard({
                 </div>
             )}
 
+            {/* If no stages */}
             {stages.length === 0 ? (
                 <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
                     Belum ada lamaran yang dikirim. Ajukan lamaran untuk melihat
@@ -54,52 +57,84 @@ export default function ApplicationStatusCard({
                 </p>
             ) : (
                 <div className="space-y-4">
-                    {stages.map((stage) => (
-                        <div key={stage.name} className="flex items-center gap-4">
+                    {stages.map((stage) => {
+                        const isRejected = stage.name === 'Rejected';
+
+                        return (
                             <div
-                                className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                                    stage.status === 'completed'
-                                        ? 'bg-green-500'
-                                        : stage.status === 'current'
-                                          ? 'bg-blue-500'
-                                          : 'bg-slate-200'
-                                }`}
+                                key={stage.name}
+                                className="flex items-center gap-4"
                             >
-                                {stage.status === 'completed' ? (
-                                    <CheckCircle className="h-6 w-6 text-white" />
-                                ) : stage.status === 'current' ? (
-                                    <Clock className="h-6 w-6 text-white" />
-                                ) : (
-                                    <div className="h-3 w-3 rounded-full bg-white" />
-                                )}
-                            </div>
-                            <div className="flex-1">
-                                <p
-                                    className={`text-sm font-medium ${
-                                        stage.status === 'current'
-                                            ? 'text-blue-900'
-                                            : 'text-slate-700'
+                                {/* Stage Icon */}
+                                <div
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                        stage.status === 'completed'
+                                            ? 'bg-green-500'
+                                            : stage.status === 'current'
+                                            ? isRejected
+                                                ? 'bg-red-500'
+                                                : 'bg-blue-500'
+                                            : 'bg-slate-200'
                                     }`}
                                 >
-                                    {stage.name}
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                    {stage.date}
-                                </p>
+                                    {stage.status === 'completed' ? (
+                                        <CheckCircle className="h-6 w-6 text-white" />
+                                    ) : stage.status === 'current' ? (
+                                        isRejected ? (
+                                            <CheckCircle className="h-6 w-6 text-white" />
+                                        ) : (
+                                            <Clock className="h-6 w-6 text-white" />
+                                        )
+                                    ) : (
+                                        <div className="h-3 w-3 rounded-full bg-white" />
+                                    )}
+                                </div>
+
+                                {/* Stage Text */}
+                                <div className="flex-1">
+                                    <p
+                                        className={`text-sm font-medium ${
+                                            stage.status === 'current'
+                                                ? isRejected
+                                                    ? 'text-red-600'
+                                                    : 'text-blue-900'
+                                                : 'text-slate-700'
+                                        }`}
+                                    >
+                                        {stage.name}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                        {stage.date}
+                                    </p>
+                                </div>
+
+                                {/* Badges */}
+                                {stage.status === 'current' &&
+                                    stage.name === 'Rejected' && (
+                                        <Badge className="bg-red-500 text-white">
+                                            Ditolak
+                                        </Badge>
+                                    )}
+
+                                {stage.status === 'current' &&
+                                    stage.name !== 'Rejected' && (
+                                        <Badge className="bg-blue-500 text-white">
+                                            Tahap Saat Ini
+                                        </Badge>
+                                    )}
+
+                                {stage.status === 'completed' &&
+                                    stage.name !== 'Rejected' && (
+                                        <Badge
+                                            variant="outline"
+                                            className="border-green-500 text-green-500"
+                                        >
+                                            Selesai
+                                        </Badge>
+                                    )}
                             </div>
-                            {stage.status === 'current' && (
-                                <Badge className="bg-blue-500">Tahap Saat Ini</Badge>
-                            )}
-                            {stage.status === 'completed' && (
-                                <Badge
-                                    variant="outline"
-                                    className="border-green-500 text-green-500"
-                                >
-                                    Selesai
-                                </Badge>
-                            )}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </Card>

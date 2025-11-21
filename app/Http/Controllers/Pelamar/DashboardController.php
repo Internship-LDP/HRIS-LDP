@@ -23,7 +23,6 @@ class DashboardController extends Controller
         $latestApplication = $applications->first();
         $statusOrder = Application::STATUSES;
 
-        // Jika tidak ada lamaran
         if (!$latestApplication) {
             return Inertia::render('Pelamar/Dashboard', [
                 'applicationStatus' => ['progress' => 0, 'stages' => []],
@@ -33,30 +32,39 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Prepare interview details
-        $upcomingInterview = null;
-        if ($latestApplication->interview_date) {
-            $upcomingInterview = [
-                'position'    => $latestApplication->position ?? '-',
-                'date'        => optional($latestApplication->interview_date)->format('d M Y'),
-                'time'        => $latestApplication->interview_time ?? '-',
-                'mode'        => $latestApplication->interview_mode ?? '-',
-                'interviewer' => $latestApplication->interviewer_name ?? '-',
-                'link'        => $latestApplication->meeting_link ?? null,
-                'notes'       => $latestApplication->interview_notes,
-            ];
-        }
+        // Interview
+        $upcomingInterview = $latestApplication->interview_date ? [
+            'position'    => $latestApplication->position ?? '-',
+            'date'        => optional($latestApplication->interview_date)->format('d M Y'),
+            'time'        => $latestApplication->interview_time ?? '-',
+            'mode'        => $latestApplication->interview_mode ?? '-',
+            'interviewer' => $latestApplication->interviewer_name ?? '-',
+            'link'        => $latestApplication->meeting_link ?? null,
+            'notes'       => $latestApplication->interview_notes,
+        ] : null;
 
-        // Tentukan index status
+        // Status index
         $statusIndex = array_search($latestApplication->status, $statusOrder, true);
 
         // Build stages
         $stages = [];
+
         foreach ($statusOrder as $index => $status) {
-            // Jika status Rejected, hentikan sebelum Hired
-            if ($latestApplication->status === 'Rejected' && $status === 'Hired') {
-                break;
+
+            //
+            if ($latestApplication->status === 'Rejected') {
+
+                $completed = array_filter($stages, fn($s) =>
+                    $s['status'] === 'completed'
+                );
+
+                // Hindari pembagian dengan nol
+                $totalStages = max(count($stages) - 1, 1);
+
+                $progress = round(count($completed) / $totalStages * 100);
             }
+
+
 
             $stageStatus = 'pending';
             if ($statusIndex !== false) {
@@ -71,31 +79,30 @@ class DashboardController extends Controller
                 'Applied'   => $latestApplication->submitted_at,
                 'Screening' => $latestApplication->screening_at,
                 'Interview' => $latestApplication->interview_at,
-                'Hired'     => $latestApplication->hired_at,
                 'Rejected'  => $latestApplication->rejected_at,
+                'Hired'     => $latestApplication->hired_at,
                 default     => null
             };
 
             $stages[] = [
                 'name' => $status,
                 'status' => $stageStatus,
-                'date' => $stageStatus === 'pending' ? '-' : optional($date)->format('d M Y') ?? '-',
+                'date' => $stageStatus === 'pending'
+                    ? '-'
+                    : optional($date)->format('d M Y') ?? '-',
             ];
         }
 
-        // Hitung progress
-        $progress = 0;
+        // Progress
         if ($latestApplication->status === 'Hired') {
             $progress = 100;
-        } elseif ($latestApplication->status === 'Rejected') {
-            // Progress sampai tahap sebelum Hired
-            $completedStages = array_filter($stages, fn($s) => $s['status'] === 'completed' || $s['status'] === 'current');
-            $progress = count($completedStages) / max(count($stages), 1) * 100;
         } elseif ($statusIndex !== false && count($statusOrder) > 1) {
-            $progress = (int) round($statusIndex / (count($statusOrder) - 1) * 100);
+            $progress = round($statusIndex / (count($statusOrder) - 1) * 100);
+        } else {
+            $progress = 0;
         }
 
-        // Prepare applications data with all details
+        // Applications render
         $applicationsData = $applications
             ->map(fn ($app) => [
                 'id' => $app->id,
@@ -115,7 +122,10 @@ class DashboardController extends Controller
             ->all();
 
         return Inertia::render('Pelamar/Dashboard', [
-            'applicationStatus' => ['progress' => $progress, 'stages' => $stages],
+            'applicationStatus' => [
+                'progress' => $progress,
+                'stages' => $stages
+            ],
             'applications' => $applicationsData,
             'stats' => [
                 'totalApplications' => $applications->count(),
