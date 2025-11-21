@@ -8,7 +8,7 @@ import UpcomingInterviewCard, {
     UpcomingInterview,
 } from '@/Pages/Pelamar/components/dashboard/UpcomingInterviewCard';
 import DocumentsCard, {
-    DocumentItem,
+    ApplicationItem,
 } from '@/Pages/Pelamar/components/dashboard/DocumentsCard';
 import InfoHighlights from '@/Pages/Pelamar/components/dashboard/InfoHighlights';
 import QuickActions from '@/Pages/Pelamar/components/dashboard/QuickActions';
@@ -23,14 +23,16 @@ type DashboardPageProps = PageProps<{
         progress: number;
         stages: ApplicationStage[];
     };
-    documents: DocumentItem[];
+    applications: ApplicationItem[];
     stats: DashboardStats;
     upcomingInterview?: UpcomingInterview | null;
 }>;
 
+
+
 export default function Dashboard({
     applicationStatus,
-    documents,
+    applications,
     stats,
     upcomingInterview,
 }: DashboardPageProps) {
@@ -53,8 +55,8 @@ export default function Dashboard({
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <UpcomingInterviewCard interview={upcomingInterview} />
                     <DocumentsCard
-                        documents={documents}
-                        onUpload={navigateToApplications}
+                        applications={applications}
+                        onNewApplication={navigateToApplications}
                     />
                 </div>
 
