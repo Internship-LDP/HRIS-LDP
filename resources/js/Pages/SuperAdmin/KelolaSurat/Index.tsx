@@ -8,6 +8,7 @@ import LettersTabsPanel from '@/Pages/SuperAdmin/KelolaSurat/components/LettersT
 import DispositionDialog from '@/Pages/SuperAdmin/KelolaSurat/components/DispositionDialog';
 import { PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
+import { useCallback, useEffect, useState } from 'react';
 import { useKelolaSuratState } from '@/Pages/SuperAdmin/KelolaSurat/hooks/useKelolaSuratState';
 
 interface KelolaSuratPageProps extends Record<string, unknown> {
@@ -37,6 +38,19 @@ interface KelolaSuratPageProps extends Record<string, unknown> {
     nextLetterNumber: string;
 }
 
+type LettersCollection = {
+    inbox: LetterRecord[];
+    outbox: LetterRecord[];
+    archive: LetterRecord[];
+};
+
+type LetterEventPayload = {
+    action: string;
+    letter: LetterRecord;
+};
+
+const pendingStatuses = ['Menunggu HR', 'Diajukan', 'Diproses'];
+
 export default function KelolaSuratIndex() {
     const {
         props: { auth, stats, filters, letters, options, nextLetterNumber, pendingDisposition },
@@ -64,6 +78,101 @@ export default function KelolaSuratIndex() {
                 : 'inbox'
         ) as 'inbox' | 'outbox' | 'archive' | 'history',
     };
+
+    const [liveData, setLiveData] = useState<{
+        letters: LettersCollection;
+        pending: LetterRecord[];
+        stats: KelolaSuratPageProps['stats'];
+    }>({
+        letters,
+        pending: pendingDisposition,
+        stats,
+    });
+
+    useEffect(() => {
+        setLiveData({
+            letters,
+            pending: pendingDisposition,
+            stats,
+        });
+    }, [letters, pendingDisposition, stats]);
+
+    const sortLetters = useCallback((items: LetterRecord[]) => {
+        return [...items].sort((a, b) => b.id - a.id);
+    }, []);
+
+    const resolveBucket = useCallback((letter: LetterRecord) => {
+        if (letter.status === 'Diarsipkan' || letter.currentRecipient === 'archive') {
+            return 'archive';
+        }
+        if (letter.currentRecipient === 'division') {
+            return 'outbox';
+        }
+        return 'inbox';
+    }, []);
+
+    const recomputeStats = useCallback(
+        (lettersState: LettersCollection, pending: LetterRecord[]) => ({
+            inbox: lettersState.inbox.length,
+            outbox: lettersState.outbox.length,
+            pending: pending.length,
+            archived: lettersState.archive.length,
+        }),
+        []
+    );
+
+    const upsertLetter = useCallback(
+        (letter: LetterRecord) => {
+            setLiveData((prev) => {
+                const removeExisting = (list: LetterRecord[]) =>
+                    list.filter((item) => item.id !== letter.id);
+
+                const nextLetters: LettersCollection = {
+                    inbox: removeExisting(prev.letters.inbox),
+                    outbox: removeExisting(prev.letters.outbox),
+                    archive: removeExisting(prev.letters.archive),
+                };
+
+                const bucket = resolveBucket(letter);
+                nextLetters[bucket] = sortLetters([...nextLetters[bucket], letter]);
+
+                const nextPendingBase = removeExisting(prev.pending);
+                const shouldBePending = pendingStatuses.includes(letter.status);
+                const nextPending = shouldBePending
+                    ? sortLetters([...nextPendingBase, letter])
+                    : nextPendingBase;
+
+                return {
+                    letters: nextLetters,
+                    pending: nextPending,
+                    stats: recomputeStats(nextLetters, nextPending),
+                };
+            });
+        },
+        [resolveBucket, sortLetters, recomputeStats]
+    );
+
+    useEffect(() => {
+        if (!window.Echo) {
+            return;
+        }
+
+        const channel = window.Echo.private('super-admin.letters');
+        const handleLetterUpdated = (payload: LetterEventPayload) => {
+            if (payload?.letter) {
+                upsertLetter(payload.letter);
+            }
+        };
+
+        channel
+            .listen('LetterUpdated', handleLetterUpdated)
+            .listen('.LetterUpdated', handleLetterUpdated);
+
+        return () => {
+            channel.stopListening('LetterUpdated');
+            window.Echo?.leave('super-admin.letters');
+        };
+    }, [upsertLetter]);
 
     const {
         searchQuery,
@@ -102,8 +211,8 @@ export default function KelolaSuratIndex() {
         handleUnarchiveLetter,
         unarchivingLetterId,
     } = useKelolaSuratState({
-        letters,
-        pendingDisposition,
+        letters: liveData.letters,
+        pendingDisposition: liveData.pending,
         appliedFilters,
     });
 
@@ -133,10 +242,10 @@ export default function KelolaSuratIndex() {
         >
             <Head title="Kelola Surat" />
 
-            <StatsCards stats={stats} />
+            <StatsCards stats={liveData.stats} />
 
             <PendingDispositionPanel
-                pendingDisposition={pendingDisposition}
+                pendingDisposition={liveData.pending}
                 selectedIds={selectedDispositionIds}
                 selectedCount={selectedPendingCount}
                 headerCheckboxState={headerCheckboxState}

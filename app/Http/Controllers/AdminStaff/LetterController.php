@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminStaff;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminStaff\StoreLetterRequest;
 use App\Http\Controllers\SuperAdmin\LetterController as SuperAdminLetterController;
+use App\Events\LetterUpdated;
 use App\Models\Application;
 use App\Models\Departemen;
 use App\Models\Surat;
@@ -163,7 +164,8 @@ class LetterController extends Controller
             $payload = $data;
             $payload['target_division'] = $divisionName;
             $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
-            Surat::create($payload);
+            $surat = Surat::create($payload);
+            LetterUpdated::dispatch($surat, 'created');
         }
 
         return redirect()

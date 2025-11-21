@@ -9,6 +9,7 @@ import {
     Mail,
     Building2,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { ComponentType, SVGProps } from 'react';
 
 interface NavItem {
@@ -74,6 +75,47 @@ export default function Sidebar() {
     const {
         props: { auth, sidebarNotifications = {} },
     } = usePage<PageProps<{ sidebarNotifications?: Record<string, number> }>>();
+    const [liveBadges, setLiveBadges] = useState<Record<string, number>>(
+        sidebarNotifications,
+    );
+    const pendingStatuses = ['Menunggu HR', 'Diajukan', 'Diproses'];
+    const lettersBadgeKey = 'super-admin.letters.index';
+
+    useEffect(() => {
+        setLiveBadges(sidebarNotifications);
+    }, [sidebarNotifications]);
+
+    useEffect(() => {
+        if (!window.Echo) {
+            return;
+        }
+
+        const channel = window.Echo.private('super-admin.letters');
+        const handleLetterUpdated = (payload: { letter?: { status?: string; currentRecipient?: string } }) => {
+            const letter = payload?.letter;
+            if (!letter) {
+                return;
+            }
+
+            const shouldCount =
+                pendingStatuses.includes(letter.status ?? '') &&
+                letter.currentRecipient === 'hr';
+
+            setLiveBadges((prev) => {
+                const current = prev[lettersBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [lettersBadgeKey]: next };
+            });
+        };
+
+        channel.listen('LetterUpdated', handleLetterUpdated).listen('.LetterUpdated', handleLetterUpdated);
+
+        return () => {
+            channel.stopListening('LetterUpdated');
+            window.Echo?.leave('super-admin.letters');
+        };
+    }, []);
+
     const user = auth?.user;
     const isSuperAdmin = user?.role === 'Super Admin';
     const isHumanCapitalAdmin =
@@ -135,7 +177,7 @@ export default function Sidebar() {
                                 <span>{item.label}</span>
                                 {(() => {
                                     const rawCount = item.badgeKey
-                                        ? sidebarNotifications[item.badgeKey] ?? 0
+                                        ? liveBadges[item.badgeKey] ?? 0
                                         : 0;
                                     if (!rawCount || rawCount <= 0) {
                                         return null;
