@@ -29,7 +29,12 @@ export function CareersSection({ jobs }: CareersSectionProps) {
     });
   }, []);
 
-  const hasJobs = jobs.length > 0;
+  const availableJobs = jobs.filter((job) => {
+    const hasSlots =
+      typeof job.availableSlots === 'number' ? job.availableSlots > 0 : true;
+    return job.isHiring && hasSlots;
+  });
+  const hasJobs = availableJobs.length > 0;
 
   return (
     <section id="careers" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8">
@@ -64,16 +69,16 @@ export function CareersSection({ jobs }: CareersSectionProps) {
         {/* Job Listings */}
         {hasJobs ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job, index) => {
-              const canApply = job.isHiring;
-              const title = canApply
-                ? job.title ?? `Lowongan ${job.division}`
-                : `Belum ada lowongan di ${job.division}`;
-              const location = job.location ?? job.division;
-              const type = job.type ?? 'Full-time';
-              const slots =
-                typeof job.availableSlots === 'number' && job.availableSlots > 0
-                  ? `${job.availableSlots} posisi tersedia`
+          {availableJobs.map((job, index) => {
+            const canApply = job.isHiring;
+            const title = canApply
+              ? job.title ?? `Lowongan ${job.division}`
+              : `Belum ada lowongan di ${job.division}`;
+            const location = job.location ?? job.division;
+            const type = job.type ?? 'Full-time';
+            const slots =
+              typeof job.availableSlots === 'number' && job.availableSlots > 0
+                ? `${job.availableSlots} posisi tersedia`
                   : null;
 
               return (
