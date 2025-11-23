@@ -13,6 +13,9 @@ import {
 import type { InertiaFormProps } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
 import type { DivisionRecord } from './types';
+import type { FormEvent } from 'react';
+
+const MAX_REQUIREMENTS = 5;
 
 export type JobFormFields = {
     job_title: string;
@@ -24,11 +27,13 @@ type JobDialogProps = {
     division: DivisionRecord | null;
     form: InertiaFormProps<JobFormFields>;
     onClose: () => void;
-    onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+    onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
 export default function JobDialog({ division, form, onClose, onSubmit }: JobDialogProps) {
     const addRequirement = () => {
+        if (form.data.job_requirements.length >= MAX_REQUIREMENTS) return;
+
         form.setData('job_requirements', [...form.data.job_requirements, '']);
     };
 
@@ -36,6 +41,7 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
         const requirements = [...form.data.job_requirements];
         requirements[index] = value;
         form.setData('job_requirements', requirements);
+        form.clearErrors('job_requirements');
     };
 
     const removeRequirement = (index: number) => {
@@ -45,6 +51,30 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
             'job_requirements',
             form.data.job_requirements.filter((_, idx) => idx !== index),
         );
+    };
+
+    const validateRequirements = () => {
+        const hasEmptyRequirement = form.data.job_requirements.some(
+            (requirement) => !requirement.trim(),
+        );
+
+        if (hasEmptyRequirement) {
+            form.setError('job_requirements', 'Semua persyaratan wajib diisi.');
+            window.alert('Semua persyaratan wajib diisi sebelum menyimpan.');
+            return false;
+        }
+
+        form.clearErrors('job_requirements');
+        return true;
+    };
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        if (!validateRequirements()) {
+            event.preventDefault();
+            return;
+        }
+
+        onSubmit(event);
     };
 
     return (
@@ -58,7 +88,7 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                 </DialogHeader>
 
                 {division && (
-                    <form onSubmit={onSubmit} className="space-y-6 mt-4">
+                    <form onSubmit={handleSubmit} className="space-y-6 mt-4">
                         <div className="max-h-[65vh] space-y-6 overflow-y-auto pr-1">
                             <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
                                 Kapasitas {division.current_staff}/{division.capacity} • Slot tersedia {division.available_slots}
@@ -110,10 +140,19 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <Label>Persyaratan Kandidat</Label>
-                                    <Button type="button" size="sm" variant="outline" onClick={addRequirement}>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={addRequirement}
+                                        disabled={form.data.job_requirements.length >= MAX_REQUIREMENTS}
+                                    >
                                         <Plus className="mr-2 h-4 w-4" /> Tambah
                                     </Button>
                                 </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Maksimal {MAX_REQUIREMENTS} persyaratan kandidat.
+                                </p>
 
                                 <div className="space-y-3">
                                     {form.data.job_requirements.map((requirement, index) => (
@@ -122,6 +161,7 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                                 value={requirement}
                                                 onChange={(e) => updateRequirement(index, e.target.value)}
                                                 placeholder={`Persyaratan ${index + 1}`}
+                                                required
                                             />
                                             {form.data.job_requirements.length > 1 && (
                                                 <Button
