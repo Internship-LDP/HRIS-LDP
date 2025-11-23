@@ -43,7 +43,7 @@ export function useKelolaSuratState({
         jenis_surat: '',
         kategori: '',
         prioritas: '',
-        target_division: '',
+        target_divisions: [] as string[],
         lampiran: null as File | null,
     });
 

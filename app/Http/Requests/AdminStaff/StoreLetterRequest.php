@@ -28,7 +28,8 @@ class StoreLetterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'target_division' => ['required', 'string', 'max:255'],
+            'target_divisions' => ['required', 'array', 'min:1'],
+            'target_divisions.*' => ['required', 'string', 'max:255'],
             'penerima' => ['nullable', 'string', 'max:255'],
             'perihal' => ['required', 'string', 'max:255'],
             'isi_surat' => ['nullable', 'string'],

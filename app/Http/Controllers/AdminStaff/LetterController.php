@@ -136,7 +136,6 @@ class LetterController extends Controller
             'kategori' => $request->input('kategori'),
             'prioritas' => $request->input('prioritas'),
             'penerima' => $request->input('penerima') ?: 'Admin HR',
-            'target_division' => $request->input('target_division'),
             'previous_division' => $user->division ?? $departemen?->nama,
             'current_recipient' => 'hr',
         ];
@@ -150,9 +149,10 @@ class LetterController extends Controller
             $data['lampiran_size'] = $file->getSize();
         }
 
-        $targetDivisions = $data['target_division'] === self::ALL_DIVISIONS_VALUE
-            ? $this->divisionOptions()
-            : collect([$data['target_division']])->filter();
+        $targetDivisions = collect($request->input('target_divisions', []))
+            ->filter()
+            ->unique()
+            ->reject(fn ($division) => $user->division && $division === $user->division);
 
         if ($targetDivisions->isEmpty()) {
             return redirect()
@@ -163,6 +163,7 @@ class LetterController extends Controller
         foreach ($targetDivisions as $divisionName) {
             $payload = $data;
             $payload['target_division'] = $divisionName;
+            unset($payload['target_divisions']);
             $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
             $surat = Surat::create($payload);
             LetterUpdated::dispatch($surat, 'created');
