@@ -43,6 +43,7 @@ export interface ApplicantRecord {
     has_interview_schedule?: boolean;
     status: ApplicantStatus;
     date?: string | null;
+    submitted_date?: string | null;
     email: string;
     phone?: string | null;
     skills?: string | null;

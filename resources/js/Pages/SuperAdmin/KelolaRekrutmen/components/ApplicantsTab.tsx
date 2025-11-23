@@ -4,12 +4,18 @@ import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import { Calendar as CalendarIcon, X, Filter, Search, User } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -19,15 +25,8 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
-import {
-    Filter,
-    Search,
-    XCircle,
-    Loader2,
-    Calendar,
-    Check,
-    User,
-} from 'lucide-react';
+import { Calendar } from '@/Components/ui/calendar';
+import { DateRange } from 'react-day-picker';
 import {
     ApplicantRecord,
     ApplicantStatus,
@@ -36,7 +35,8 @@ import {
     ApplicantActionHandler,
     ApplicantRejectHandler,
 } from '../types';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import RejectionModal from './RejectionModal';
 
 interface ApplicantsTabProps {
@@ -45,10 +45,11 @@ interface ApplicantsTabProps {
     onSearchTermChange: (value: string) => void;
     statusFilter: string;
     onStatusFilterChange: (value: string) => void;
+    dateRange: { from: Date | null; to: Date | null };
+    onDateRangeChange: (range: { from: Date | null; to: Date | null }) => void;
     statusOrder: ApplicantStatus[];
     statusSummary: StatusSummary;
     visibleApplications: ApplicantRecord[];
-    onDelete: (application: ApplicantRecord) => void;
     onStatusUpdate: ApplicantActionHandler;
     onReject: ApplicantRejectHandler;
     isUpdatingStatus: boolean;
@@ -100,10 +101,11 @@ export default function ApplicantsTab({
     onSearchTermChange,
     statusFilter,
     onStatusFilterChange,
+    dateRange,
+    onDateRangeChange,
     statusOrder,
     statusSummary,
     visibleApplications,
-    onDelete,
     onStatusUpdate,
     onReject,
     isUpdatingStatus,
@@ -113,6 +115,16 @@ export default function ApplicantsTab({
 }: ApplicantsTabProps) {
     const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
+    const [datePickerMonth, setDatePickerMonth] = useState<Date | undefined>(
+        dateRange.from ?? dateRange.to ?? new Date(),
+    );
+    const displayDateRange = useMemo(() => {
+        const { from, to } = dateRange;
+        const formatDate = (date: Date) => format(date, 'd MMM yyyy');
+        if (from && to) return `${formatDate(from)} - ${formatDate(to)}`;
+        if (from) return `${formatDate(from)} - Pilih akhir`;
+        return 'Pilih rentang tanggal';
+    }, [dateRange]);
 
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         onSearchTermChange(event.target.value);
@@ -138,6 +150,14 @@ export default function ApplicantsTab({
         }
     };
 
+    useEffect(() => {
+        if (dateRange.from) {
+            setDatePickerMonth(dateRange.from);
+        } else if (dateRange.to) {
+            setDatePickerMonth(dateRange.to);
+        }
+    }, [dateRange.from, dateRange.to]);
+
     return (
         <>
         <Card className="space-y-6 p-6">
@@ -157,6 +177,49 @@ export default function ApplicantsTab({
                             ))}
                         </SelectContent>
                     </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                <CalendarIcon className="h-4 w-4" />
+                                <span>{displayDateRange}</span>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-3">
+                            <Calendar
+                                mode="range"
+                                numberOfMonths={2}
+                                month={datePickerMonth}
+                                onMonthChange={setDatePickerMonth}
+                                selected={dateRange as DateRange}
+                                onSelect={(range: DateRange | undefined) => {
+                                    if (!range) {
+                                        onDateRangeChange({ from: null, to: null });
+                                        return;
+                                    }
+                                    onDateRangeChange({
+                                        from: range.from ?? null,
+                                        to: range.to ?? null,
+                                    });
+                                }}
+                            />
+                            <div className="mt-3 flex justify-end">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-1"
+                                    onClick={() => onDateRangeChange({ from: null, to: null })}
+                                >
+                                    <X className="h-4 w-4" /> Reset
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 <div className="relative w-full max-w-xs">
@@ -216,17 +279,6 @@ export default function ApplicantsTab({
                                                     Profil
                                                 </Button>
                                             )}
-
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onDelete(application)}
-                                                disabled={isCurrentlyUpdating}
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                            >
-                                                <XCircle className="h-4 w-4 mr-2" />
-                                                Hapus
-                                            </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>

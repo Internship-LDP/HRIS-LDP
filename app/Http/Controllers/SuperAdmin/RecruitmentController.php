@@ -121,6 +121,7 @@ class RecruitmentController extends Controller
                     'has_interview_schedule' => $hasInterview,
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
+                    'submitted_date' => optional($application->submitted_at)->format('Y-m-d'),
                     'email' => $application->email,
                     'phone' => $application->phone,
                     'skills' => $application->skills,
