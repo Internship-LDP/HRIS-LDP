@@ -53,6 +53,13 @@ export function ApplicantProfileView({
   const profileGender = applicant.profile_gender;
   const profileReligion = applicant.profile_religion;
   const profileBirthDate = applicant.profile_date_of_birth;
+  const isHired = applicant.status === 'Hired';
+  const isRejected = applicant.status === 'Rejected';
+  const hasInterviewSchedule =
+    applicant.has_interview_schedule ||
+    applicant.status === 'Interview' ||
+    Boolean(applicant.interview_date || applicant.interview_time || applicant.interview_mode);
+  const scheduleButtonLabel = hasInterviewSchedule ? 'Edit Jadwal Interview' : 'Jadwalkan Interview';
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -173,17 +180,18 @@ export function ApplicantProfileView({
             Lihat CV
           </Button>
         )}
-        {onScheduleInterview && (
+        {onScheduleInterview && !isHired && !isRejected && (
           <Button 
             onClick={onScheduleInterview} 
             variant="outline" 
             className="border-blue-900 text-blue-900 hover:bg-blue-50 shadow-sm hover:shadow-md transition-all"
+            title={hasInterviewSchedule ? 'Edit jadwal interview yang sudah dibuat' : 'Buat jadwal interview'}
           >
             <Calendar className="w-4 h-4 mr-2" />
-            Jadwalkan Interview
+            {scheduleButtonLabel}
           </Button>
         )}
-        {onAccept && (
+        {onAccept && !isHired && !isRejected && (
           <Button 
             onClick={handleAcceptClick} 
             className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
@@ -193,7 +201,7 @@ export function ApplicantProfileView({
             Terima Pelamar
           </Button>
         )}
-        {onReject && (
+        {onReject && !isHired && !isRejected && (
           <Button 
             onClick={handleRejectClick} 
             variant="outline" 
@@ -284,6 +292,14 @@ export function ApplicantProfileView({
                   <p className="text-xs text-gray-500">Status Lamaran</p>
                   <div>{getStatusBadge(applicant.status)}</div>
                 </div>
+                {isRejected && applicant.rejection_reason && (
+                  <div className="space-y-2 md:col-span-2 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                      Catatan Penolakan
+                    </p>
+                    <p className="text-sm text-red-800 leading-relaxed">{applicant.rejection_reason}</p>
+                  </div>
+                )}
                 {profileAddress && (
                   <div className="space-y-1 md:col-span-2">
                     <p className="text-xs text-gray-500">Alamat</p>

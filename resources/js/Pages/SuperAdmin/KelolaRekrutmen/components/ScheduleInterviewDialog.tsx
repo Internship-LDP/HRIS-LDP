@@ -50,17 +50,24 @@ export default function ScheduleInterviewDialog({
     });
 
     useEffect(() => {
-        if (open) {
-            setData(prev => ({ 
-                ...prev, 
-                date: new Date().toISOString().split('T')[0],
-                interviewer: 'Tim HR',
-                meeting_link: '',
-                notes: ''
-            }));
-        } else {
+        if (!open || !applicant) {
             reset();
+            return;
         }
+
+        const today = new Date().toISOString().split('T')[0];
+        const normalizedTime = applicant.interview_time
+            ? applicant.interview_time.slice(0, 5)
+            : '09:00';
+
+        setData(() => ({
+            date: applicant.interview_date ?? today,
+            time: normalizedTime,
+            mode: applicant.interview_mode ?? 'Online',
+            interviewer: applicant.interviewer_name ?? 'Tim HR',
+            meeting_link: applicant.meeting_link ?? '',
+            notes: applicant.interview_notes ?? '',
+        }));
     }, [open, applicant, reset, setData]);
 
 
@@ -83,6 +90,13 @@ export default function ScheduleInterviewDialog({
 
     if (!applicant) return null;
 
+    const isEditing = Boolean(
+        applicant.has_interview_schedule ||
+        applicant.interview_date ||
+        applicant.interview_time ||
+        applicant.interview_mode
+    );
+
     return (
         <Dialog 
             open={open} 
@@ -90,7 +104,7 @@ export default function ScheduleInterviewDialog({
         >
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Jadwalkan Wawancara</DialogTitle>
+                    <DialogTitle>{isEditing ? 'Edit Jadwal Wawancara' : 'Jadwalkan Wawancara'}</DialogTitle>
                     <DialogDescription>
                         Atur detail waktu wawancara untuk **{applicant.name}** ({applicant.position}).
                     </DialogDescription>
@@ -156,7 +170,7 @@ export default function ScheduleInterviewDialog({
                                 onChange={(e) => setData('meeting_link', e.target.value)}
                                 className="col-span-3"
                                 placeholder="https://meet.google.com/..."
-                                required 
+                                required
                             />
                             {errors['meeting_link'] && <p className="col-span-4 text-xs text-red-500 text-right">{errors['meeting_link']}</p>}
                         </div>
@@ -165,15 +179,16 @@ export default function ScheduleInterviewDialog({
                     {/* PEWAWANCARA */}
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="interviewer" className="text-right">Pewawancara</Label>
-                        <Input
-                            id="interviewer"
-                            value={data.interviewer}
-                            onChange={(e) => setData('interviewer', e.target.value)}
-                            className="col-span-3"
-                            disabled={processing}
-                        />
-                        {errors['interviewer'] && <p className="col-span-4 text-xs text-red-500 text-right">{errors['interviewer']}</p>}
-                    </div>
+                            <Input
+                                id="interviewer"
+                                value={data.interviewer}
+                                onChange={(e) => setData('interviewer', e.target.value)}
+                                className="col-span-3"
+                                required
+                                disabled={processing}
+                            />
+                            {errors['interviewer'] && <p className="col-span-4 text-xs text-red-500 text-right">{errors['interviewer']}</p>}
+                        </div>
                     
                     {/* CATATAN TAMBAHAN */}
                     <div className="grid grid-cols-4 gap-4">
@@ -184,6 +199,7 @@ export default function ScheduleInterviewDialog({
                             onChange={(e) => setData('notes', e.target.value)}
                             placeholder="Contoh: Harap siapkan portofolio Anda."
                             className="col-span-3"
+                            required
                         />
                         {errors['notes'] && <p className="col-span-4 text-xs text-red-500 text-right">{errors['notes']}</p>}
                     </div>

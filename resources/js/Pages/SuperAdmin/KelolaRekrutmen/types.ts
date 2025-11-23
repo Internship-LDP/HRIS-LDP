@@ -33,6 +33,13 @@ export interface ApplicantRecord {
     profile_date_of_birth?: string | null;
     educations?: ApplicantEducation[];
     experiences?: ApplicantExperience[];
+    interview_date?: string | null;
+    interview_time?: string | null;
+    interview_mode?: 'Online' | 'Offline' | null;
+    interviewer_name?: string | null;
+    meeting_link?: string | null;
+    interview_notes?: string | null;
+    has_interview_schedule?: boolean;
     status: ApplicantStatus;
     date?: string | null;
     email: string;

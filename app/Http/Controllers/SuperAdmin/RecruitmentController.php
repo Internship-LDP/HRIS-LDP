@@ -29,6 +29,10 @@ class RecruitmentController extends Controller
         $applications = $applicationCollection
             ->map(function (Application $application) {
                 $profile = $application->user?->applicantProfile;
+                $interviewTime = $application->interview_time
+                    ? substr((string) $application->interview_time, 0, 5)
+                    : null;
+                $hasInterview = (bool) ($application->interview_date || $interviewTime || $application->interview_mode);
 
                 $profileFullName = $profile?->full_name ?: $application->full_name;
                 $profileEmail = $profile?->email ?: $application->email;
@@ -103,6 +107,13 @@ class RecruitmentController extends Controller
                     'profile_date_of_birth' => $profileDateOfBirth,
                     'educations' => $educations,
                     'experiences' => $experiences,
+                    'interview_date' => optional($application->interview_date)->format('Y-m-d'),
+                    'interview_time' => $interviewTime,
+                    'interview_mode' => $application->interview_mode,
+                    'interviewer_name' => $application->interviewer_name,
+                    'meeting_link' => $application->meeting_link,
+                    'interview_notes' => $application->interview_notes,
+                    'has_interview_schedule' => $hasInterview,
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
                     'email' => $application->email,
@@ -125,11 +136,15 @@ class RecruitmentController extends Controller
         $interviews = $applicationCollection
             ->where('status', 'Interview')
             ->map(function (Application $application) {
+                $interviewTime = $application->interview_time
+                    ? substr((string) $application->interview_time, 0, 5)
+                    : '-';
+
                 return [
                     'candidate' => $application->full_name,
                     'position' => $application->position,
                     'date' => optional($application->interview_date)->format('d M Y') ?? '-',
-                    'time' => $application->interview_time ?? '-',
+                    'time' => $interviewTime,
                     'mode' => $application->interview_mode ?? '-',
                     'interviewer' => $application->interviewer_name ?? '-',
                     'meeting_link' => $application->meeting_link,
