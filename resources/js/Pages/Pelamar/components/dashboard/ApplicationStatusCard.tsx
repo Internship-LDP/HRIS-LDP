@@ -15,11 +15,39 @@ interface ApplicationStatusCardProps {
     rejectionReason?: string | null;
 }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Komponen untuk menampilkan status lamaran pelamar.
+ *
+ * Komponen ini akan menampilkan progress bar dan status lamaran yang sedang berlangsung.
+ *
+ * Jika status lamaran adalah 'Rejected', maka akan menampilkan alasan penolakan.
+ *
+ * Jika tidak ada stage lamaran, maka akan menampilkan pesan untuk mengajukan lamaran.
+ *
+ * @param {number} progress - Progress lamaran dalam persen.
+ * @param {ApplicationStage[]} stages - Daftar stage lamaran.
+ * @param {string | null} rejectionReason - Alasan penolakan jika status lamaran adalah 'Rejected'.
+ */
+/*******  a3a73eaa-232e-4af1-9890-648a32fbeb86  *******/
 export default function ApplicationStatusCard({
     progress,
     stages,
     rejectionReason,
 }: ApplicationStatusCardProps) {
+    const currentStageName =
+        stages.find((stage) => stage.status === 'current')?.name || null;
+
+    const visibleStages = stages.filter((stage) => {
+        if (currentStageName === 'Rejected') {
+            return stage.name !== 'Hired';
+        }
+        if (currentStageName === 'Hired') {
+            return stage.name !== 'Rejected';
+        }
+        return true;
+    });
+
     return (
         <Card className="p-6">
             <h3 className="mb-4 text-lg font-semibold text-blue-900">
@@ -50,14 +78,14 @@ export default function ApplicationStatusCard({
             )}
 
             {/* If no stages */}
-            {stages.length === 0 ? (
+            {visibleStages.length === 0 ? (
                 <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
                     Belum ada lamaran yang dikirim. Ajukan lamaran untuk melihat
                     perkembangan proses rekrutmen Anda.
                 </p>
             ) : (
                 <div className="space-y-4">
-                    {stages.map((stage) => {
+                    {visibleStages.map((stage) => {
                         const isRejected = stage.name === 'Rejected';
 
                         return (
@@ -104,7 +132,7 @@ export default function ApplicationStatusCard({
                                         {stage.name}
                                     </p>
                                     <p className="text-xs text-slate-500">
-                                        {stage.date}
+                                         {stage.date}
                                     </p>
                                 </div>
 

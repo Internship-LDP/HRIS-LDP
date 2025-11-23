@@ -18,6 +18,7 @@ export interface ApplicationItem {
     skills: string | null;
     cv_file: string | null;
     notes: string | null;
+    rejection_reason?: string | null;
 }
 
 interface DocumentsCardProps {
@@ -168,6 +169,18 @@ export default function DocumentsCard({
                                                 <p className="text-xs font-medium text-slate-500">Keterampilan</p>
                                                 <p className="text-sm text-slate-900">{app.skills}</p>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* Rejection Reason */}
+                                    {app.status === 'Rejected' && app.rejection_reason && (
+                                        <div className="pt-2 border-t border-red-200">
+                                            <p className="text-xs font-medium text-red-700 mb-1">
+                                                Alasan Penolakan
+                                            </p>
+                                            <p className="text-sm text-red-800 bg-red-50 rounded p-2 border border-red-200">
+                                                {app.rejection_reason}
+                                            </p>
                                         </div>
                                     )}
 

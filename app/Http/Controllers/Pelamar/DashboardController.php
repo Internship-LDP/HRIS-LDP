@@ -48,6 +48,7 @@ class DashboardController extends Controller
 
         // Build stages
         $stages = [];
+        $fallbackDate = $latestApplication->updated_at ?? $latestApplication->submitted_at;
 
         foreach ($statusOrder as $index => $status) {
 
@@ -77,11 +78,13 @@ class DashboardController extends Controller
 
             $date = match ($status) {
                 'Applied'   => $latestApplication->submitted_at,
-                'Screening' => $latestApplication->screening_at,
-                'Interview' => $latestApplication->interview_at,
-                'Rejected'  => $latestApplication->rejected_at,
-                'Hired'     => $latestApplication->hired_at,
-                default     => null
+                'Screening' => $latestApplication->screening_at ?? $fallbackDate,
+                'Interview' => $latestApplication->interview_date
+                    ?? $latestApplication->interview_at
+                    ?? $fallbackDate,
+                'Rejected'  => $latestApplication->rejected_at ?? $fallbackDate,
+                'Hired'     => $latestApplication->hired_at ?? $fallbackDate,
+                default     => null,
             };
 
             $stages[] = [
@@ -89,7 +92,7 @@ class DashboardController extends Controller
                 'status' => $stageStatus,
                 'date' => $stageStatus === 'pending'
                     ? '-'
-                    : optional($date)->format('d M Y') ?? '-',
+                    : optional($date ?? $fallbackDate)->format('d M Y') ?? '-',
             ];
         }
 
@@ -118,6 +121,7 @@ class DashboardController extends Controller
                 'skills' => $app->skills,
                 'cv_file' => $app->cv_file,
                 'notes' => $app->notes,
+                'rejection_reason' => $app->rejection_reason,
             ])
             ->all();
 
