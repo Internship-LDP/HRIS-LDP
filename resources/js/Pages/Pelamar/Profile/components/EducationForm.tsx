@@ -4,7 +4,16 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Plus, Save, Trash2 } from 'lucide-react';
-import { Education, RequiredEducationField } from '../profileTypes';
+import { Education, RequiredEducationField, GPA_REQUIRED_DEGREES } from '../profileTypes';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+
+const DEGREE_OPTIONS = ['SD', 'SMP', 'SMA/SMK', 'D3', 'D4', 'S1', 'S2', 'S3'];
 
 interface EducationFormProps {
     educations: Education[];
@@ -84,13 +93,23 @@ export default function EducationForm({
                             </div>
                             <div>
                                 <Label>Jenjang *</Label>
-                                <Input
+                                <Select
                                     value={education.degree ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'degree', event.target.value)
+                                    onValueChange={(value) =>
+                                        onChange(education.id, 'degree', value)
                                     }
-                                    placeholder="SMA/SMK, D3, S1..."
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Jenjang" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {DEGREE_OPTIONS.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 {getFieldError(index, 'degree') && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {getFieldError(index, 'degree')}
@@ -144,21 +163,64 @@ export default function EducationForm({
                                     </p>
                                 )}
                             </div>
-                            <div>
-                                <Label>IPK *</Label>
-                                <Input
-                                    value={education.gpa ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'gpa', event.target.value)
-                                    }
-                                    placeholder="3.50"
-                                />
-                                {getFieldError(index, 'gpa') && (
-                                    <p className="mt-1 text-sm text-red-500">
-                                        {getFieldError(index, 'gpa')}
-                                    </p>
+                            {education.degree &&
+                                GPA_REQUIRED_DEGREES.includes(education.degree) && (
+                                    <div>
+                                        <Label>IPK *</Label>
+                                        <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            maxLength={4}
+                                            value={education.gpa ?? ''}
+                                            onChange={(e) => {
+                                                const event = e as React.ChangeEvent<HTMLInputElement> & {
+                                                    nativeEvent: InputEvent;
+                                                };
+                                                let val = event.target.value;
+                                                const inputType = event.nativeEvent.inputType;
+
+                                                // Allow only numbers and dot
+                                                if (!/^[0-9.]*$/.test(val)) return;
+
+                                                // Auto-add dot if typing first digit
+                                                if (
+                                                    inputType === 'insertText' &&
+                                                    val.length === 1 &&
+                                                    /^[0-9]$/.test(val)
+                                                ) {
+                                                    val = val + '.';
+                                                }
+
+                                                // Prevent multiple dots
+                                                if ((val.match(/\./g) || []).length > 1) return;
+
+                                                // Enforce max 4.00
+                                                if (val !== '' && val !== '.') {
+                                                    const num = parseFloat(val);
+                                                    if (!isNaN(num) && num > 4.0) return;
+                                                }
+
+                                                // Limit decimal places to 2
+                                                if (val.includes('.')) {
+                                                    const parts = val.split('.');
+                                                    if (parts[1].length > 2) return;
+                                                }
+
+                                                onChange(
+                                                    education.id,
+                                                    'gpa',
+                                                    val,
+                                                );
+                                            }}
+                                            placeholder="3.50"
+                                        />
+                                        {getFieldError(index, 'gpa') && (
+                                            <p className="mt-1 text-sm text-red-500">
+                                                {getFieldError(index, 'gpa')}
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
-                            </div>
                         </div>
                     </div>
                 ))}

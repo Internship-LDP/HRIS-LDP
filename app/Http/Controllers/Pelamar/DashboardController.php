@@ -19,21 +19,11 @@ class DashboardController extends Controller
         $applications = Application::where('user_id', $user->id)
             ->latest('submitted_at')
             ->get();
-
         $latestApplication = $applications->first();
         $statusOrder = Application::STATUSES;
 
-        if (!$latestApplication) {
-            return Inertia::render('Pelamar/Dashboard', [
-                'applicationStatus' => ['progress' => 0, 'stages' => []],
-                'applications' => [],
-                'stats' => ['totalApplications' => 0, 'latestStatus' => null],
-                'upcomingInterview' => null,
-            ]);
-        }
-
         // Interview
-        $upcomingInterview = $latestApplication->interview_date ? [
+        $upcomingInterview = ($latestApplication && $latestApplication->interview_date) ? [
             'position'    => $latestApplication->position ?? '-',
             'date'        => optional($latestApplication->interview_date)->format('d M Y'),
             'time'        => $latestApplication->interview_time ?? '-',
@@ -43,67 +33,65 @@ class DashboardController extends Controller
             'notes'       => $latestApplication->interview_notes,
         ] : null;
 
-        // Status index
-        $statusIndex = array_search($latestApplication->status, $statusOrder, true);
+        $applicationsStatus = $applications->map(function ($application) use ($statusOrder) {
+            $statusIndex = array_search($application->status, $statusOrder, true);
+            $stages = [];
+            $fallbackDate = $application->updated_at ?? $application->submitted_at;
 
-        // Build stages
-        $stages = [];
-        $fallbackDate = $latestApplication->updated_at ?? $latestApplication->submitted_at;
-
-        foreach ($statusOrder as $index => $status) {
-
-            //
-            if ($latestApplication->status === 'Rejected') {
-
-                $completed = array_filter($stages, fn($s) =>
-                    $s['status'] === 'completed'
-                );
-
-                // Hindari pembagian dengan nol
-                $totalStages = max(count($stages) - 1, 1);
-
-                $progress = round(count($completed) / $totalStages * 100);
-            }
-
-
-
-            $stageStatus = 'pending';
-            if ($statusIndex !== false) {
-                if ($index < $statusIndex) {
-                    $stageStatus = 'completed';
-                } elseif ($index === $statusIndex) {
-                    $stageStatus = 'current';
+            foreach ($statusOrder as $index => $status) {
+                $stageStatus = 'pending';
+                if ($statusIndex !== false) {
+                    if ($index < $statusIndex) {
+                        $stageStatus = 'completed';
+                    } elseif ($index === $statusIndex) {
+                        $stageStatus = 'current';
+                    }
                 }
+
+                $date = match ($status) {
+                    'Applied'   => $application->submitted_at,
+                    'Screening' => $application->screening_at ?? $fallbackDate,
+                    'Interview' => $application->interview_date
+                        ?? $application->interview_at
+                        ?? $fallbackDate,
+                    'Rejected'  => $application->rejected_at ?? $fallbackDate,
+                    'Hired'     => $application->hired_at ?? $fallbackDate,
+                    default     => null,
+                };
+
+                $stages[] = [
+                    'name' => $status,
+                    'status' => $stageStatus,
+                    'date' => $stageStatus === 'pending'
+                        ? '-'
+                        : optional($date ?? $fallbackDate)->format('d M Y') ?? '-',
+                ];
             }
 
-            $date = match ($status) {
-                'Applied'   => $latestApplication->submitted_at,
-                'Screening' => $latestApplication->screening_at ?? $fallbackDate,
-                'Interview' => $latestApplication->interview_date
-                    ?? $latestApplication->interview_at
-                    ?? $fallbackDate,
-                'Rejected'  => $latestApplication->rejected_at ?? $fallbackDate,
-                'Hired'     => $latestApplication->hired_at ?? $fallbackDate,
-                default     => null,
-            };
-
-            $stages[] = [
-                'name' => $status,
-                'status' => $stageStatus,
-                'date' => $stageStatus === 'pending'
-                    ? '-'
-                    : optional($date ?? $fallbackDate)->format('d M Y') ?? '-',
-            ];
-        }
-
-        // Progress
-        if ($latestApplication->status === 'Hired') {
-            $progress = 100;
-        } elseif ($statusIndex !== false && count($statusOrder) > 1) {
-            $progress = round($statusIndex / (count($statusOrder) - 1) * 100);
-        } else {
+            // Progress Calculation
             $progress = 0;
-        }
+            if ($application->status === 'Hired') {
+                $progress = 100;
+            } elseif ($application->status === 'Rejected') {
+                // Calculate progress based on completed stages excluding 'Rejected' itself
+                $completed = array_filter($stages, fn($s) => $s['status'] === 'completed');
+                // Total stages excluding Rejected (assuming Rejected is last)
+                $totalStages = max(count($statusOrder) - 1, 1); 
+                $progress = round(count($completed) / $totalStages * 100);
+            } elseif ($statusIndex !== false && count($statusOrder) > 1) {
+                $progress = round($statusIndex / (count($statusOrder) - 1) * 100);
+            }
+
+            return [
+                'id' => $application->id,
+                'position' => $application->position,
+                'division' => $application->division,
+                'status' => $application->status,
+                'progress' => $progress,
+                'stages' => $stages,
+                'rejection_reason' => $application->rejection_reason,
+            ];
+        });
 
         // Applications render
         $applicationsData = $applications
@@ -126,15 +114,12 @@ class DashboardController extends Controller
             ->all();
 
         return Inertia::render('Pelamar/Dashboard', [
-            'applicationStatus' => [
-                'progress' => $progress,
-                'stages' => $stages
-            ],
+            'applicationsStatus' => $applicationsStatus,
             'applications' => $applicationsData,
             'stats' => [
                 'totalApplications' => $applications->count(),
-                'latestStatus' => $latestApplication->status,
-                'rejectionReason' => $latestApplication->rejection_reason,
+                'latestStatus' => $latestApplication->status ?? null,
+                'rejectionReason' => $latestApplication->rejection_reason ?? null,
             ],
             'upcomingInterview' => $upcomingInterview,
         ]);

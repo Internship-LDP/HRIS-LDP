@@ -12,30 +12,52 @@ import DocumentsCard, {
 } from '@/Pages/Pelamar/components/dashboard/DocumentsCard';
 import InfoHighlights from '@/Pages/Pelamar/components/dashboard/InfoHighlights';
 import QuickActions from '@/Pages/Pelamar/components/dashboard/QuickActions';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import { useState } from 'react';
+import { Card } from '@/Components/ui/card';
 
 interface DashboardStats {
     totalApplications: number;
     latestStatus?: string | null;
 }
 
+interface ApplicationStatus {
+    id: number;
+    position: string;
+    division: string;
+    status: string;
+    progress: number;
+    stages: ApplicationStage[];
+    rejection_reason?: string | null;
+}
+
 type DashboardPageProps = PageProps<{
-    applicationStatus: {
-        progress: number;
-        stages: ApplicationStage[];
-    };
+    applicationsStatus: ApplicationStatus[];
     applications: ApplicationItem[];
     stats: DashboardStats;
     upcomingInterview?: UpcomingInterview | null;
 }>;
 
-
-
 export default function Dashboard({
-    applicationStatus,
+    applicationsStatus,
     applications,
     stats,
     upcomingInterview,
 }: DashboardPageProps) {
+    const [selectedAppId, setSelectedAppId] = useState<string>(
+        applicationsStatus.length > 0 ? String(applicationsStatus[0].id) : ''
+    );
+
+    const selectedStatus = applicationsStatus.find(
+        (app) => String(app.id) === selectedAppId
+    );
+
     const navigateToApplications = () =>
         router.visit(route('pelamar.applications'));
 
@@ -47,12 +69,45 @@ export default function Dashboard({
                 description="Selamat datang di portal rekrutmen PT. Lintas Data Prima"
                 breadcrumbs={['Dashboard']}
             >
-                <ApplicationStatusCard
-                    progress={applicationStatus.progress}
-                    stages={applicationStatus.stages}
-                />
+                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-lg font-semibold text-slate-900">
+                        Status Lamaran
+                    </h2>
+                    {applicationsStatus.length > 0 && (
+                        <Select
+                            value={selectedAppId}
+                            onValueChange={setSelectedAppId}
+                        >
+                            <SelectTrigger className="w-full sm:w-[300px]">
+                                <SelectValue placeholder="Pilih Lamaran" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {applicationsStatus.map((app) => (
+                                    <SelectItem key={app.id} value={String(app.id)}>
+                                        <span className="font-medium">{app.position}</span>
+                                        <span className="ml-2 text-xs text-slate-500">
+                                            ({app.division})
+                                        </span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {selectedStatus ? (
+                    <ApplicationStatusCard
+                        progress={selectedStatus.progress}
+                        stages={selectedStatus.stages}
+                        rejectionReason={selectedStatus.rejection_reason}
+                    />
+                ) : (
+                    <Card className="p-6 text-center text-slate-500">
+                        Belum ada lamaran yang diajukan.
+                    </Card>
+                )}
+
+                <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <UpcomingInterviewCard interview={upcomingInterview} />
                     <DocumentsCard
                         applications={applications}
