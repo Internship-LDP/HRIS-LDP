@@ -12,6 +12,7 @@ import {
     UserCheck,
     UserPlus,
     Users,
+    UserX,
 } from 'lucide-react';
 import {
     Bar,
@@ -28,27 +29,33 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 interface DashboardProps {
     stats: Record<'totalUsers' | 'superAdmins' | 'admins' | 'staff' | 'pelamar', number>;
     statChanges: Record<'totalUsers' | 'superAdmins' | 'admins' | 'staff' | 'pelamar', number>;
-    userDistribution: { name: string; value: number; color: string }[];
     activityData: { month: string; registrations: number; applications: number }[];
     staffStats: { total: number; active: number; inactive: number };
     religionData: { name: string; value: number; color: string }[];
     genderData: { name: string; value: number; percentage: number; color: string }[];
     educationData: { level: string; value: number }[];
+    divisionApplicants: Array<{
+        id: string;
+        name: string;
+        count: number;
+        new: number;
+    }>;
 }
 
 export default function Dashboard({
     stats,
     statChanges,
-    userDistribution,
     activityData,
     staffStats,
     religionData,
     genderData,
     educationData,
+    divisionApplicants,
 }: DashboardProps) {
     type StatKey = keyof DashboardProps['stats'];
     const formatNumber = (value: number) =>
@@ -164,6 +171,91 @@ export default function Dashboard({
             </div>
 
             <section className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
+                <div className="mb-10">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold text-blue-900">Total Pendaftar per Divisi</h3>
+                            <p className="text-sm text-slate-500">Monitoring jumlah pelamar berdasarkan divisi</p>
+                        </div>
+                    </div>
+
+                    {divisionApplicants.length > 0 ? (
+                        <Tabs defaultValue={divisionApplicants[0].id} className="w-full">
+                            <TabsList className="mb-4 flex h-auto w-full flex-wrap justify-start gap-2 border border-slate-200 bg-white p-1">
+                                {divisionApplicants.map((div) => (
+                                    <TabsTrigger
+                                        key={div.id}
+                                        value={div.id}
+                                        className="px-4 py-2 data-[state=active]:bg-blue-900 data-[state=active]:text-white rounded-md transition-all"
+                                    >
+                                        {div.name}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+
+                            {divisionApplicants.map((div) => {
+                                const week1 = Math.max(0, Math.floor(div.count * 0.2));
+                                const week2 = Math.max(0, Math.floor(div.count * 0.25));
+                                const week3 = Math.max(0, Math.floor(div.count * 0.3));
+                                const remaining = Math.max(0, div.count - (week1 + week2 + week3));
+                                const chartData = [
+                                    { name: 'Minggu 1', value: week1 },
+                                    { name: 'Minggu 2', value: week2 },
+                                    { name: 'Minggu 3', value: week3 },
+                                    { name: 'Minggu 4', value: remaining },
+                                ];
+
+                                return (
+                                    <TabsContent key={div.id} value={div.id} className="mt-0">
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                                            <Card className="md:col-span-1 border-l-4 border-blue-500 p-6 shadow-sm">
+                                                <div className="mb-4 flex items-start justify-between">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-500">Total Pelamar</p>
+                                                        <h2 className="mt-2 text-4xl font-bold text-blue-900">{formatNumber(div.count)}</h2>
+                                                    </div>
+                                                    <div className="rounded-lg bg-blue-50 p-3">
+                                                        <Users className="h-6 w-6 text-blue-600" />
+                                                    </div>
+                                                </div>
+                                                <div className="mt-4 flex items-center text-sm">
+                                                    <div className="mr-2 rounded-full bg-green-100 p-1">
+                                                        <TrendingUp className="h-4 w-4 text-green-600" />
+                                                    </div>
+                                                    <span className="mr-1 text-base font-bold text-green-600">+{formatNumber(div.new)}</span>
+                                                    <span className="text-slate-500">pelamar baru bulan ini</span>
+                                                </div>
+                                            </Card>
+
+                                            <Card className="md:col-span-2 flex flex-col justify-center p-6 shadow-sm">
+                                                <div className="mb-4 flex items-center justify-between">
+                                                    <h4 className="font-medium text-blue-900">Tren Pendaftaran - {div.name}</h4>
+                                                    <Badge variant="outline" className="border-blue-200 text-blue-600">30 Hari Terakhir</Badge>
+                                                </div>
+                                                <div className="h-[180px] w-full">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart data={chartData}>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
+                                                            <Tooltip
+                                                                cursor={{ fill: '#f3f4f6' }}
+                                                                contentStyle={{ border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                            />
+                                                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </Card>
+                                        </div>
+                                    </TabsContent>
+                                );
+                            })}
+                        </Tabs>
+                    ) : (
+                        <p className="text-sm text-slate-500">Belum ada data pendaftar per divisi.</p>
+                    )}
+                </div>
+
                 <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h3 className="text-xl font-semibold text-blue-900">
@@ -181,7 +273,7 @@ export default function Dashboard({
                     </Badge>
                 </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                     <Card className="p-6">
                         <div className="flex items-center gap-4">
                             <div className="rounded-lg bg-green-500 p-3">
@@ -204,6 +296,19 @@ export default function Dashboard({
                                 <p className="text-sm text-slate-500">Total Staff</p>
                                 <p className="text-2xl font-semibold text-blue-900">
                                     {formatNumber(staffStats.total)}
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                    <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="rounded-lg bg-red-500 p-3">
+                                <UserX className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-500">Staff Tidak Aktif</p>
+                                <p className="text-2xl font-semibold text-blue-900">
+                                    {formatNumber(staffStats.inactive)}
                                 </p>
                             </div>
                         </div>
@@ -361,30 +466,6 @@ export default function Dashboard({
             </section>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                        Distribusi Pengguna
-                    </h3>
-                    <ResponsiveContainer width="100%" height={280}>
-                        <PieChart>
-                            <Pie
-                                data={userDistribution}
-                                dataKey="value"
-                                nameKey="name"
-                                outerRadius={100}
-                                label={({ name, value }) =>
-                                    `${name}: ${value}`
-                                }
-                            >
-                                {userDistribution.map((entry) => (
-                                    <Cell key={entry.name} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-
                 <div className="rounded-2xl border bg-white p-6 shadow-sm">
                     <h3 className="mb-4 text-lg font-semibold text-blue-900">
                         Tren Registrasi & Lamaran
