@@ -25,6 +25,7 @@ interface EducationFormProps {
     processing: boolean;
     getFieldError: (index: number, field: RequiredEducationField) => string | undefined;
     baseError?: string;
+    disabled?: boolean;
 }
 
 export default function EducationForm({
@@ -37,6 +38,7 @@ export default function EducationForm({
     processing,
     getFieldError,
     baseError,
+    disabled = false,
 }: EducationFormProps) {
     return (
         <Card className="p-6">
@@ -52,6 +54,7 @@ export default function EducationForm({
                     variant="outline"
                     onClick={onAdd}
                     className="border-blue-200 text-blue-900 hover:bg-blue-50"
+                    disabled={disabled}
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     Tambah Pendidikan
@@ -68,7 +71,7 @@ export default function EducationForm({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                disabled={educations.length === 1}
+                                disabled={educations.length === 1 || disabled}
                                 onClick={() => onRemove(education.id)}
                                 className="text-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
                             >
@@ -84,6 +87,7 @@ export default function EducationForm({
                                         onChange(education.id, 'institution', event.target.value)
                                     }
                                     placeholder="Contoh: Universitas Indonesia"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'institution') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -98,6 +102,7 @@ export default function EducationForm({
                                     onValueChange={(value) =>
                                         onChange(education.id, 'degree', value)
                                     }
+                                    disabled={disabled}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Jenjang" />
@@ -124,6 +129,7 @@ export default function EducationForm({
                                         onChange(education.id, 'field_of_study', event.target.value)
                                     }
                                     placeholder="Contoh: Teknik Informatika"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'field_of_study') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -140,6 +146,7 @@ export default function EducationForm({
                                         onChange(education.id, 'start_year', event.target.value)
                                     }
                                     placeholder="2019"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'start_year') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -156,6 +163,7 @@ export default function EducationForm({
                                         onChange(education.id, 'end_year', event.target.value)
                                     }
                                     placeholder="2023"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'end_year') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -213,6 +221,7 @@ export default function EducationForm({
                                                 );
                                             }}
                                             placeholder="3.50"
+                                            disabled={disabled}
                                         />
                                         {getFieldError(index, 'gpa') && (
                                             <p className="mt-1 text-sm text-red-500">
@@ -229,7 +238,7 @@ export default function EducationForm({
             <div className="mt-6">
                 <Button
                     onClick={onSave}
-                    disabled={processing}
+                    disabled={processing || disabled}
                     className="bg-blue-900 hover:bg-blue-800"
                 >
                     <Save className="mr-2 h-4 w-4" />
