@@ -9,10 +9,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use Carbon\Carbon;
+
 class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
+        Carbon::setLocale('id');
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['pelamar'], 403);
 
@@ -90,6 +93,16 @@ class DashboardController extends Controller
                 'progress' => $progress,
                 'stages' => $stages,
                 'rejection_reason' => $application->rejection_reason,
+                'updated_at_diff' => $application->updated_at ? $application->updated_at->diffForHumans() : $application->submitted_at->diffForHumans(),
+                'submitted_at_formatted' => $application->submitted_at->format('d M Y'),
+                'interview' => $application->status === 'Interview' ? [
+                    'date' => optional($application->interview_date)->format('d M Y'),
+                    'time' => $application->interview_time,
+                    'mode' => $application->interview_mode,
+                    'link' => $application->meeting_link,
+                    'interviewer' => $application->interviewer_name,
+                    'notes' => $application->interview_notes,
+                ] : null,
             ];
         });
 

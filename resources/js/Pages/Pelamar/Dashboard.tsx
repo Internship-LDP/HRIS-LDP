@@ -1,9 +1,6 @@
-﻿import { Head, router } from '@inertiajs/react';
+﻿import { Head, router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import PelamarLayout from '@/Pages/Pelamar/Layout';
-import ApplicationStatusCard, {
-    ApplicationStage,
-} from '@/Pages/Pelamar/components/dashboard/ApplicationStatusCard';
 import UpcomingInterviewCard, {
     UpcomingInterview,
 } from '@/Pages/Pelamar/components/dashboard/UpcomingInterviewCard';
@@ -12,19 +9,22 @@ import DocumentsCard, {
 } from '@/Pages/Pelamar/components/dashboard/DocumentsCard';
 import InfoHighlights from '@/Pages/Pelamar/components/dashboard/InfoHighlights';
 import QuickActions from '@/Pages/Pelamar/components/dashboard/QuickActions';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
+import DashboardStatsCards from '@/Pages/Pelamar/components/DashboardStatsCards';
+import ApplicationStatusSection from '@/Pages/Pelamar/components/ApplicationStatusSection';
+import ApplicationDetailDialog from '@/Pages/Pelamar/components/ApplicationDetailDialog';
+import InterviewScheduleDialog from '@/Pages/Pelamar/components/InterviewScheduleDialog';
+import { Badge } from '@/Components/ui/badge';
 import { useState } from 'react';
-import { Card } from '@/Components/ui/card';
 
 interface DashboardStats {
     totalApplications: number;
     latestStatus?: string | null;
+}
+
+interface ApplicationStage {
+    name: string;
+    status: 'pending' | 'current' | 'completed';
+    date: string;
 }
 
 interface ApplicationStatus {
@@ -35,6 +35,16 @@ interface ApplicationStatus {
     progress: number;
     stages: ApplicationStage[];
     rejection_reason?: string | null;
+    updated_at_diff: string;
+    submitted_at_formatted: string;
+    interview?: {
+        date: string;
+        time: string;
+        mode: string;
+        link?: string | null;
+        interviewer: string;
+        notes?: string | null;
+    } | null;
 }
 
 type DashboardPageProps = PageProps<{
@@ -50,16 +60,45 @@ export default function Dashboard({
     stats,
     upcomingInterview,
 }: DashboardPageProps) {
-    const [selectedAppId, setSelectedAppId] = useState<string>(
-        applicationsStatus.length > 0 ? String(applicationsStatus[0].id) : ''
-    );
-
-    const selectedStatus = applicationsStatus.find(
-        (app) => String(app.id) === selectedAppId
-    );
+    const { auth } = usePage<PageProps>().props;
+    const user = auth.user;
 
     const navigateToApplications = () =>
         router.visit(route('pelamar.applications'));
+
+    const [detailApp, setDetailApp] = useState<ApplicationStatus | null>(null);
+    const [interviewApp, setInterviewApp] = useState<ApplicationStatus | null>(null);
+
+    // Calculate Stats
+    const totalApplications = applicationsStatus.length;
+    const inProgress = applicationsStatus.filter(
+        (app) => !['Rejected', 'Hired'].includes(app.status)
+    ).length;
+    const rejected = applicationsStatus.filter(
+        (app) => app.status === 'Rejected'
+    ).length;
+    const hired = applicationsStatus.filter(
+        (app) => app.status === 'Hired'
+    ).length;
+
+    const getStatusBadge = (status: string) => {
+        const styles: Record<string, string> = {
+            Interview: 'bg-purple-100 text-purple-700 border-purple-200',
+            Screening: 'bg-orange-100 text-orange-700 border-orange-200',
+            Offering: 'bg-green-100 text-green-700 border-green-200',
+            Rejected: 'bg-red-100 text-red-700 border-red-200',
+            Applied: 'bg-blue-100 text-blue-700 border-blue-200',
+            Hired: 'bg-green-100 text-green-700 border-green-200',
+        };
+        return (
+            <Badge
+                variant="outline"
+                className={`${styles[status] || 'bg-gray-100 text-gray-700'} px-3 py-1`}
+            >
+                {status}
+            </Badge>
+        );
+    };
 
     return (
         <>
@@ -69,44 +108,35 @@ export default function Dashboard({
                 description="Selamat datang di portal rekrutmen PT. Lintas Data Prima"
                 breadcrumbs={['Dashboard']}
             >
-                <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-semibold text-slate-900">
-                        Status Lamaran
-                    </h2>
-                    {applicationsStatus.length > 0 && (
-                        <Select
-                            value={selectedAppId}
-                            onValueChange={setSelectedAppId}
-                        >
-                            <SelectTrigger className="w-full sm:w-[300px]">
-                                <SelectValue placeholder="Pilih Lamaran" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {applicationsStatus.map((app) => (
-                                    <SelectItem key={app.id} value={String(app.id)}>
-                                        <span className="font-medium">{app.position}</span>
-                                        <span className="ml-2 text-xs text-slate-500">
-                                            ({app.division})
-                                        </span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                {/* Header Section */}
+                <div className="mb-8">
+                    <p className="text-gray-600">
+                        Pantau progres lamaran dan lanjutkan perjalanan karirmu.
+                    </p>
                 </div>
 
-                {selectedStatus ? (
-                    <ApplicationStatusCard
-                        progress={selectedStatus.progress}
-                        stages={selectedStatus.stages}
-                        rejectionReason={selectedStatus.rejection_reason}
-                    />
-                ) : (
-                    <Card className="p-6 text-center text-slate-500">
-                        Belum ada lamaran yang diajukan.
-                    </Card>
-                )}
+                {/* Stats Cards */}
+                <DashboardStatsCards
+                    totalApplications={totalApplications}
+                    inProgress={inProgress}
+                    rejected={rejected}
+                    hired={hired}
+                />
 
+                {/* Application Status Section */}
+                <ApplicationStatusSection
+                    applicationsStatus={applicationsStatus}
+                    totalApplications={totalApplications}
+                    inProgress={inProgress}
+                    rejected={rejected}
+                    hired={hired}
+                    onNavigateToApplications={navigateToApplications}
+                    onShowDetail={setDetailApp}
+                    onShowInterview={setInterviewApp}
+                    getStatusBadge={getStatusBadge}
+                />
+
+                {/* Bottom Section */}
                 <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <UpcomingInterviewCard interview={upcomingInterview} />
                     <DocumentsCard
@@ -148,6 +178,18 @@ export default function Dashboard({
                             onClick: () => router.visit(route('pelamar.profile')),
                         },
                     ]}
+                />
+
+                {/* Dialogs */}
+                <ApplicationDetailDialog
+                    application={detailApp}
+                    onClose={() => setDetailApp(null)}
+                    getStatusBadge={getStatusBadge}
+                />
+
+                <InterviewScheduleDialog
+                    application={interviewApp}
+                    onClose={() => setInterviewApp(null)}
                 />
             </PelamarLayout>
         </>
