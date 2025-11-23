@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import ApplicantsTab from './components/ApplicantsTab';
 import ApplicantProfileDialog from './components/ApplicantProfileDialog';
-import AddApplicantDialog from './components/AddApplicantDialog';
 import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
 import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
@@ -186,7 +185,6 @@ export default function KelolaRekrutmenIndex({
                 title="Recruitment & Onboarding"
                 description="Kelola pelamar dan proses rekrutmen"
                 breadcrumbs={breadcrumbs}
-                actions={<AddApplicantDialog />}
             >
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
                     <TabsList>

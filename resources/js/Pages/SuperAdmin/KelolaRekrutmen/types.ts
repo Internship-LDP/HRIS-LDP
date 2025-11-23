@@ -84,6 +84,7 @@ export interface InterviewSchedule {
 }
 
 export interface OnboardingItem {
+    application_id: number;
     name: string;
     position: string;
     startedAt: string;

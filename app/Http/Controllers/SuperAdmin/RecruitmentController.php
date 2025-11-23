@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\OnboardingChecklist;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -171,15 +172,26 @@ class RecruitmentController extends Controller
         $onboarding = $applicationCollection
             ->where('status', 'Hired')
             ->map(function (Application $application) {
+                // Load checklist dari database
+                $checklist = OnboardingChecklist::where('application_id', $application->id)->first();
+                
+                $contractDone = $checklist?->contract_signed ?? false;
+                $inventoryDone = $checklist?->inventory_handover ?? false;
+                $trainingDone = $checklist?->training_orientation ?? false;
+                
+                // Hitung status: jika semua selesai, status = Selesai
+                $allComplete = $contractDone && $inventoryDone && $trainingDone;
+                
                 return [
+                    'application_id' => $application->id,
                     'name' => $application->full_name,
                     'position' => $application->position ?? '-',
                     'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
-                    'status' => 'In Progress',
+                    'status' => $allComplete ? 'Selesai' : 'In Progress',
                     'steps' => [
-                        ['label' => 'Kontrak ditandatangani', 'complete' => false],
-                        ['label' => 'Serah terima inventaris', 'complete' => false, 'pending' => true],
-                        ['label' => 'Training & orientasi', 'complete' => false, 'pending' => true],
+                        ['label' => 'Kontrak ditandatangani', 'complete' => $contractDone],
+                        ['label' => 'Serah terima inventaris', 'complete' => $inventoryDone, 'pending' => !$inventoryDone && $contractDone],
+                        ['label' => 'Training & orientasi', 'complete' => $trainingDone, 'pending' => !$trainingDone && $inventoryDone],
                     ],
                 ];
             })
@@ -318,6 +330,31 @@ class RecruitmentController extends Controller
             ->route('super-admin.recruitment')
             ->with('success', 'Lamaran berhasil dihapus.');
     }
+
+    /**
+     * POST: Update onboarding checklist
+     */
+    public function updateOnboardingChecklist(Request $request, $id): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        $validated = $request->validate([
+            'contract_signed' => ['required', 'boolean'],
+            'inventory_handover' => ['required', 'boolean'],
+            'training_orientation' => ['required', 'boolean'],
+        ]);
+
+        // Simpan ke database
+        OnboardingChecklist::updateOrCreate(
+            ['application_id' => $id],
+            $validated
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Progress onboarding berhasil disimpan.');
+    }
+
 
     /**
      * Pastikan user berhak mengakses

@@ -119,6 +119,11 @@ Route::middleware('auth')->group(function () {
             [RecruitmentController::class, 'destroy'])
             ->name('recruitment.destroy');
 
+        Route::post('/onboarding/{id}/update-checklist',
+            [RecruitmentController::class, 'updateOnboardingChecklist'])
+            ->name('onboarding.update-checklist');
+
+
         Route::get('/kelola-divisi', [DivisionController::class, 'index'])->name('divisions.index');
         Route::patch('/kelola-divisi/{division}', [DivisionController::class, 'update'])->name('divisions.update');
         Route::post('/kelola-divisi/{division}/open-job', [DivisionController::class, 'openJob'])->name('divisions.open-job');
