@@ -239,6 +239,7 @@ export default function KelolaRekrutmenIndex({
                     onOpenChange={setScheduleOpen}
                     applicant={selectedApplicant}
                     onSuccessSubmit={handleScheduleSuccess}
+                    existingInterviews={interviews}
                 />
             </SuperAdminLayout>
         </>

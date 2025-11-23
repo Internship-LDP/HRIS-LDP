@@ -15,21 +15,6 @@ interface ApplicationStatusCardProps {
     rejectionReason?: string | null;
 }
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * Komponen untuk menampilkan status lamaran pelamar.
- *
- * Komponen ini akan menampilkan progress bar dan status lamaran yang sedang berlangsung.
- *
- * Jika status lamaran adalah 'Rejected', maka akan menampilkan alasan penolakan.
- *
- * Jika tidak ada stage lamaran, maka akan menampilkan pesan untuk mengajukan lamaran.
- *
- * @param {number} progress - Progress lamaran dalam persen.
- * @param {ApplicationStage[]} stages - Daftar stage lamaran.
- * @param {string | null} rejectionReason - Alasan penolakan jika status lamaran adalah 'Rejected'.
- */
-/*******  a3a73eaa-232e-4af1-9890-648a32fbeb86  *******/
 export default function ApplicationStatusCard({
     progress,
     stages,

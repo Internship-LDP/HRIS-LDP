@@ -39,6 +39,7 @@ export interface ApplicantRecord {
     interviewer_name?: string | null;
     meeting_link?: string | null;
     interview_notes?: string | null;
+    interview_end_time?: string | null;
     has_interview_schedule?: boolean;
     status: ApplicantStatus;
     date?: string | null;
@@ -70,10 +71,13 @@ export interface ApplicantExperience {
 }
 
 export interface InterviewSchedule {
+    application_id?: number;
     candidate: string;
     position: string;
     date: string;
+    date_value?: string | null;
     time: string;
+    end_time?: string | null;
     mode: 'Online' | 'Offline';
     interviewer: string;
 }

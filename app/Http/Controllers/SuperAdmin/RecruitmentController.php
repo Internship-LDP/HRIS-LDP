@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -31,6 +32,9 @@ class RecruitmentController extends Controller
                 $profile = $application->user?->applicantProfile;
                 $interviewTime = $application->interview_time
                     ? substr((string) $application->interview_time, 0, 5)
+                    : null;
+                $interviewEndTime = $application->interview_end_time
+                    ? substr((string) $application->interview_end_time, 0, 5)
                     : null;
                 $hasInterview = (bool) ($application->interview_date || $interviewTime || $application->interview_mode);
 
@@ -113,6 +117,7 @@ class RecruitmentController extends Controller
                     'interviewer_name' => $application->interviewer_name,
                     'meeting_link' => $application->meeting_link,
                     'interview_notes' => $application->interview_notes,
+                    'interview_end_time' => $interviewEndTime,
                     'has_interview_schedule' => $hasInterview,
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
@@ -136,15 +141,22 @@ class RecruitmentController extends Controller
         $interviews = $applicationCollection
             ->where('status', 'Interview')
             ->map(function (Application $application) {
-                $interviewTime = $application->interview_time
+                $startTime = $application->interview_time
                     ? substr((string) $application->interview_time, 0, 5)
-                    : '-';
+                    : null;
+                $rawEndTime = $application->interview_end_time
+                    ? substr((string) $application->interview_end_time, 0, 5)
+                    : null;
+                $endTime = $rawEndTime ?? ($startTime ? $this->addMinutesToTime($startTime, 30) : null);
 
                 return [
+                    'application_id' => $application->id,
                     'candidate' => $application->full_name,
                     'position' => $application->position,
                     'date' => optional($application->interview_date)->format('d M Y') ?? '-',
-                    'time' => $interviewTime,
+                    'date_value' => optional($application->interview_date)->format('Y-m-d'),
+                    'time' => $startTime ?? '-',
+                    'end_time' => $endTime,
                     'mode' => $application->interview_mode ?? '-',
                     'interviewer' => $application->interviewer_name ?? '-',
                     'meeting_link' => $application->meeting_link,
@@ -253,6 +265,7 @@ class RecruitmentController extends Controller
             $validated = $request->validate([
                 'date' => ['required', 'date', 'after_or_equal:today'],
                 'time' => ['required', 'date_format:H:i'],
+                'end_time' => ['required', 'date_format:H:i', 'after:time'],
                 'mode' => ['required', 'string', 'in:Online,Offline'],
                 'interviewer' => ['required', 'string', 'max:100'],
                 'meeting_link' => ['nullable', 'string', 'max:500'],
@@ -265,10 +278,18 @@ class RecruitmentController extends Controller
                 ]);
             }
 
+            $this->ensureScheduleAvailable(
+                $application,
+                $validated['date'],
+                $validated['time'],
+                $validated['end_time'],
+            );
+
             // Simpan interview
             $application->update([
                 'interview_date' => $validated['date'],
                 'interview_time' => $validated['time'],
+                'interview_end_time' => $validated['end_time'],
                 'interview_mode' => $validated['mode'],
                 'interviewer_name' => $validated['interviewer'],
                 'meeting_link' => $validated['meeting_link'] ?? null,
@@ -307,5 +328,50 @@ class RecruitmentController extends Controller
             ($user->role === User::ROLES['super_admin'] || $user->isHumanCapitalAdmin()),
             403
         );
+    }
+
+    private function ensureScheduleAvailable(Application $current, string $date, string $startTime, string $endTime): void
+    {
+        $start = Carbon::createFromFormat('H:i', $startTime);
+        $end = Carbon::createFromFormat('H:i', $endTime);
+
+        $conflict = Application::query()
+            ->where('id', '!=', $current->id)
+            ->whereDate('interview_date', $date)
+            ->whereNotNull('interview_time')
+            ->get()
+            ->contains(function (Application $other) use ($start, $end) {
+                $otherStartRaw = $other->interview_time
+                    ? substr((string) $other->interview_time, 0, 5)
+                    : null;
+                if (!$otherStartRaw) {
+                    return false;
+                }
+                $otherStart = Carbon::createFromFormat('H:i', $otherStartRaw);
+                $otherEnd = $other->interview_end_time
+                    ? Carbon::createFromFormat('H:i', substr((string) $other->interview_end_time, 0, 5))
+                    : (clone $otherStart)->addMinutes(30);
+
+                return $otherStart->lt($end) && $otherEnd->gt($start);
+            });
+
+        if ($conflict) {
+            throw ValidationException::withMessages([
+                'time' => 'Slot waktu ini sudah digunakan untuk interview lain pada tanggal tersebut.',
+            ]);
+        }
+    }
+
+    private function addMinutesToTime(?string $time, int $minutes): ?string
+    {
+        if (!$time) {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromTimeString($time)->addMinutes($minutes)->format('H:i');
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
