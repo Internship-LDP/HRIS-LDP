@@ -74,7 +74,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('landing');
     }
 
     private function intendedUrlMatchesRole(User $user, string $url): bool
