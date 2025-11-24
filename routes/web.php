@@ -46,7 +46,7 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'jobs' => $jobs,
     ]);
-});
+})->name('landing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
