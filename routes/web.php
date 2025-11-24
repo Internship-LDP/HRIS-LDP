@@ -123,6 +123,10 @@ Route::middleware('auth')->group(function () {
             [RecruitmentController::class, 'updateOnboardingChecklist'])
             ->name('onboarding.update-checklist');
 
+        Route::post('/onboarding/{application}/convert-to-staff',
+            [RecruitmentController::class, 'convertToStaff'])
+            ->name('onboarding.convert-to-staff');
+
 
         Route::get('/kelola-divisi', [DivisionController::class, 'index'])->name('divisions.index');
         Route::patch('/kelola-divisi/{division}', [DivisionController::class, 'update'])->name('divisions.update');

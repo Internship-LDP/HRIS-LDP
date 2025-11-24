@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { CheckCircle, Clock, XCircle, FileText } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { CheckCircle, Clock, XCircle, FileText, UserPlus, Check } from 'lucide-react';
 import { OnboardingItem } from '../types';
 import OnboardingDetailDialog from './OnboardingDetailDialog';
+import { toast } from 'sonner';
 
 interface OnboardingTabProps {
     items: OnboardingItem[];
@@ -17,6 +19,26 @@ export default function OnboardingTab({ items }: OnboardingTabProps) {
     const handleViewDetail = (item: OnboardingItem) => {
         setSelectedItem(item);
         setDetailOpen(true);
+    };
+
+    const handleConvertToStaff = (applicationId: number) => {
+        // Tidak perlu confirm dialog browser lagi jika ingin UX lebih modern, 
+        // tapi user minta popup berhasil/gagal, jadi confirm tetap oke atau bisa pakai custom dialog.
+        // User request: "ketika klik jadikan staff tambahkan pop up kalau berhasil atau gagal"
+        // Kita pakai toast untuk feedback hasil.
+        
+        router.post(route('super-admin.onboarding.convert-to-staff', applicationId), {}, {
+            onSuccess: () => {
+                toast.success('Berhasil menjadikan staff', {
+                    description: 'Akun pelamar telah diubah menjadi akun staff.',
+                });
+            },
+            onError: (errors) => {
+                toast.error('Gagal menjadikan staff', {
+                    description: errors.message || 'Terjadi kesalahan saat memproses permintaan.',
+                });
+            },
+        });
     };
 
     return (
@@ -44,6 +66,25 @@ export default function OnboardingTab({ items }: OnboardingTabProps) {
                                         <Badge className={item.status === 'Selesai' ? 'bg-green-500' : 'bg-orange-500'}>
                                             {item.status}
                                         </Badge>
+                                        {item.status === 'Selesai' && (
+                                            <>
+                                                {item.is_staff ? (
+                                                    <div className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-green-600 bg-green-50 rounded-md border border-green-200">
+                                                        <Check className="h-4 w-4" />
+                                                        Berhasil
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                        onClick={() => handleConvertToStaff(item.application_id)}
+                                                    >
+                                                        <UserPlus className="mr-2 h-4 w-4" />
+                                                        Jadikan Akun Staff
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
                                         <Button
                                             size="sm"
                                             variant="outline"

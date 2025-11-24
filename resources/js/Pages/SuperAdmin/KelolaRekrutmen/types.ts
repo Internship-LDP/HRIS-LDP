@@ -89,6 +89,7 @@ export interface OnboardingItem {
     position: string;
     startedAt: string;
     status: 'Selesai' | 'In Progress';
+    is_staff: boolean;
     steps: Array<{
         label: string;
         complete: boolean;

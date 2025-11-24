@@ -5,10 +5,12 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\OnboardingChecklist;
+use App\Models\StaffProfile;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -188,6 +190,7 @@ class RecruitmentController extends Controller
                     'position' => $application->position ?? '-',
                     'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
                     'status' => $allComplete ? 'Selesai' : 'In Progress',
+                    'is_staff' => $application->user->role === User::ROLES['staff'],
                     'steps' => [
                         ['label' => 'Kontrak ditandatangani', 'complete' => $contractDone],
                         ['label' => 'Serah terima inventaris', 'complete' => $inventoryDone, 'pending' => !$inventoryDone && $contractDone],
@@ -354,6 +357,70 @@ class RecruitmentController extends Controller
             ->back()
             ->with('success', 'Progress onboarding berhasil disimpan.');
     }
+
+    /**
+     * POST: Convert applicant to staff
+     */
+    public function convertToStaff(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        if ($application->status !== 'Hired') {
+            return redirect()->back()->withErrors(['message' => 'Hanya pelamar dengan status Hired yang dapat dijadikan staff.']);
+        }
+
+        $user = $application->user;
+
+        if (! $user) {
+            return redirect()->back()->withErrors(['message' => 'User tidak ditemukan.']);
+        }
+
+        // Check if already staff
+        if ($user->role === User::ROLES['staff']) {
+            return redirect()->back()->with('success', 'User sudah menjadi staff.');
+        }
+
+        DB::transaction(function () use ($user, $application) {
+            // 1. Update User Role
+            $user->update([
+                'role' => User::ROLES['staff'],
+                'employee_code' => User::generateEmployeeCode(User::ROLES['staff']),
+                'division' => $application->division ?? $user->division,
+            ]);
+
+            // 2. Create Staff Profile from Applicant Profile
+            $applicantProfile = $user->applicantProfile;
+
+            if ($applicantProfile) {
+                // Determine education level
+                $educationLevel = 'Lainnya';
+                $educations = $applicantProfile->educations ?? [];
+                
+                if (! empty($educations)) {
+                    // Ambil pendidikan terakhir (asumsi array urut atau ambil index 0)
+                    // Idealnya kita cek tahun lulus atau logic lain, tapi untuk simpel ambil yg pertama
+                    $firstDegree = $educations[0]['degree'] ?? '';
+                    
+                    // Mapping sederhana
+                    if (in_array($firstDegree, StaffProfile::EDUCATION_LEVELS)) {
+                        $educationLevel = $firstDegree;
+                    }
+                }
+
+                StaffProfile::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'religion' => $applicantProfile->religion,
+                        'gender' => $applicantProfile->gender,
+                        'education_level' => $educationLevel,
+                    ]
+                );
+            }
+        });
+
+        return redirect()->back()->with('success', 'Akun berhasil diubah menjadi Staff.');
+    }
+
 
 
     /**
