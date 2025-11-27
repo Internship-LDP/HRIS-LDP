@@ -131,6 +131,14 @@ class StaffTerminationController extends Controller
             ])
             ->save();
 
+        // Jika status Selesai, nonaktifkan user
+        if ($termination->status === 'Selesai' && $termination->employee) {
+            $termination->employee->update([
+                'status' => 'Inactive',
+                'inactive_at' => now(),
+            ]);
+        }
+
         return redirect()
             ->back()
             ->with('success', 'Progress offboarding berhasil diperbarui.');

@@ -4,7 +4,16 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Plus, Save, Trash2 } from 'lucide-react';
-import { Education, RequiredEducationField } from '../profileTypes';
+import { Education, RequiredEducationField, GPA_REQUIRED_DEGREES } from '../profileTypes';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+
+const DEGREE_OPTIONS = ['SD', 'SMP', 'SMA/SMK', 'D3', 'D4', 'S1', 'S2', 'S3'];
 
 interface EducationFormProps {
     educations: Education[];
@@ -16,6 +25,7 @@ interface EducationFormProps {
     processing: boolean;
     getFieldError: (index: number, field: RequiredEducationField) => string | undefined;
     baseError?: string;
+    disabled?: boolean;
 }
 
 export default function EducationForm({
@@ -28,6 +38,7 @@ export default function EducationForm({
     processing,
     getFieldError,
     baseError,
+    disabled = false,
 }: EducationFormProps) {
     return (
         <Card className="p-6">
@@ -43,6 +54,7 @@ export default function EducationForm({
                     variant="outline"
                     onClick={onAdd}
                     className="border-blue-200 text-blue-900 hover:bg-blue-50"
+                    disabled={disabled}
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     Tambah Pendidikan
@@ -59,7 +71,7 @@ export default function EducationForm({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                disabled={educations.length === 1}
+                                disabled={educations.length === 1 || disabled}
                                 onClick={() => onRemove(education.id)}
                                 className="text-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
                             >
@@ -75,6 +87,7 @@ export default function EducationForm({
                                         onChange(education.id, 'institution', event.target.value)
                                     }
                                     placeholder="Contoh: Universitas Indonesia"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'institution') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -84,13 +97,24 @@ export default function EducationForm({
                             </div>
                             <div>
                                 <Label>Jenjang *</Label>
-                                <Input
+                                <Select
                                     value={education.degree ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'degree', event.target.value)
+                                    onValueChange={(value) =>
+                                        onChange(education.id, 'degree', value)
                                     }
-                                    placeholder="SMA/SMK, D3, S1..."
-                                />
+                                    disabled={disabled}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Jenjang" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {DEGREE_OPTIONS.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 {getFieldError(index, 'degree') && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {getFieldError(index, 'degree')}
@@ -105,6 +129,7 @@ export default function EducationForm({
                                         onChange(education.id, 'field_of_study', event.target.value)
                                     }
                                     placeholder="Contoh: Teknik Informatika"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'field_of_study') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -121,6 +146,7 @@ export default function EducationForm({
                                         onChange(education.id, 'start_year', event.target.value)
                                     }
                                     placeholder="2019"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'start_year') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -137,6 +163,7 @@ export default function EducationForm({
                                         onChange(education.id, 'end_year', event.target.value)
                                     }
                                     placeholder="2023"
+                                    disabled={disabled}
                                 />
                                 {getFieldError(index, 'end_year') && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -144,21 +171,65 @@ export default function EducationForm({
                                     </p>
                                 )}
                             </div>
-                            <div>
-                                <Label>IPK *</Label>
-                                <Input
-                                    value={education.gpa ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'gpa', event.target.value)
-                                    }
-                                    placeholder="3.50"
-                                />
-                                {getFieldError(index, 'gpa') && (
-                                    <p className="mt-1 text-sm text-red-500">
-                                        {getFieldError(index, 'gpa')}
-                                    </p>
+                            {education.degree &&
+                                GPA_REQUIRED_DEGREES.includes(education.degree) && (
+                                    <div>
+                                        <Label>IPK *</Label>
+                                        <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            maxLength={4}
+                                            value={education.gpa ?? ''}
+                                            onChange={(e) => {
+                                                const event = e as React.ChangeEvent<HTMLInputElement> & {
+                                                    nativeEvent: InputEvent;
+                                                };
+                                                let val = event.target.value;
+                                                const inputType = event.nativeEvent.inputType;
+
+                                                // Allow only numbers and dot
+                                                if (!/^[0-9.]*$/.test(val)) return;
+
+                                                // Auto-add dot if typing first digit
+                                                if (
+                                                    inputType === 'insertText' &&
+                                                    val.length === 1 &&
+                                                    /^[0-9]$/.test(val)
+                                                ) {
+                                                    val = val + '.';
+                                                }
+
+                                                // Prevent multiple dots
+                                                if ((val.match(/\./g) || []).length > 1) return;
+
+                                                // Enforce max 4.00
+                                                if (val !== '' && val !== '.') {
+                                                    const num = parseFloat(val);
+                                                    if (!isNaN(num) && num > 4.0) return;
+                                                }
+
+                                                // Limit decimal places to 2
+                                                if (val.includes('.')) {
+                                                    const parts = val.split('.');
+                                                    if (parts[1].length > 2) return;
+                                                }
+
+                                                onChange(
+                                                    education.id,
+                                                    'gpa',
+                                                    val,
+                                                );
+                                            }}
+                                            placeholder="3.50"
+                                            disabled={disabled}
+                                        />
+                                        {getFieldError(index, 'gpa') && (
+                                            <p className="mt-1 text-sm text-red-500">
+                                                {getFieldError(index, 'gpa')}
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
-                            </div>
                         </div>
                     </div>
                 ))}
@@ -167,7 +238,7 @@ export default function EducationForm({
             <div className="mt-6">
                 <Button
                     onClick={onSave}
-                    disabled={processing}
+                    disabled={processing || disabled}
                     className="bg-blue-900 hover:bg-blue-800"
                 >
                     <Save className="mr-2 h-4 w-4" />

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -20,20 +21,27 @@ import {
   Clock,
 } from 'lucide-react';
 import { ApplicantRecord } from '../types';
+import RejectionModal from './RejectionModal';
+import AcceptanceModal from './AcceptanceModal';
 
 interface ApplicantProfileViewProps {
   applicant: ApplicantRecord;
   onAccept?: () => void;
-  onReject?: () => void;
+  onReject?: (reason: string) => void;
   onScheduleInterview?: () => void;
+  isUpdatingStatus?: boolean;
 }
 
 export function ApplicantProfileView({ 
   applicant, 
   onAccept, 
   onReject, 
-  onScheduleInterview 
+  onScheduleInterview,
+  isUpdatingStatus = false
 }: ApplicantProfileViewProps) {
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [isAcceptanceModalOpen, setIsAcceptanceModalOpen] = useState(false);
+  
   const educations = applicant.educations ?? [];
   const experiences = applicant.experiences ?? [];
   const profileName = applicant.profile_name ?? applicant.name;
@@ -45,6 +53,13 @@ export function ApplicantProfileView({
   const profileGender = applicant.profile_gender;
   const profileReligion = applicant.profile_religion;
   const profileBirthDate = applicant.profile_date_of_birth;
+  const isHired = applicant.status === 'Hired';
+  const isRejected = applicant.status === 'Rejected';
+  const hasInterviewSchedule =
+    applicant.has_interview_schedule ||
+    applicant.status === 'Interview' ||
+    Boolean(applicant.interview_date || applicant.interview_time || applicant.interview_mode);
+  const scheduleButtonLabel = hasInterviewSchedule ? 'Edit Jadwal Interview' : 'Jadwalkan Interview';
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -61,6 +76,28 @@ export function ApplicantProfileView({
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const handleRejectClick = () => {
+    setIsRejectionModalOpen(true);
+  };
+
+  const handleAcceptClick = () => {
+    setIsAcceptanceModalOpen(true);
+  };
+
+  const handleConfirmReject = (reason: string) => {
+    if (onReject) {
+      onReject(reason);
+    }
+    setIsRejectionModalOpen(false);
+  };
+
+  const handleConfirmAccept = () => {
+    if (onAccept) {
+      onAccept();
+    }
+    setIsAcceptanceModalOpen(false);
   };
 
 
@@ -133,43 +170,46 @@ export function ApplicantProfileView({
 
       {/* Modern Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {onAccept && (
-          <Button 
-            onClick={onAccept} 
-            className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Terima Pelamar
-          </Button>
-        )}
-        {onReject && (
-          <Button 
-            onClick={onReject} 
-            variant="outline" 
-            className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 shadow-sm hover:shadow-md transition-all"
-          >
-            <XCircle className="w-4 h-4 mr-2" />
-            Tolak Pelamar
-          </Button>
-        )}
-        {onScheduleInterview && (
-          <Button 
-            onClick={onScheduleInterview} 
-            variant="outline" 
-            className="border-blue-900 text-blue-900 hover:bg-blue-50 shadow-sm hover:shadow-md transition-all"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Jadwalkan Interview
-          </Button>
-        )}
         {applicant.cv_url && (
           <Button 
             variant="outline"
             className="shadow-sm hover:shadow-md transition-all hover:bg-gray-50"
             onClick={() => applicant.cv_url && window.open(applicant.cv_url, '_blank')}
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download CV
+            <FileText className="w-4 h-4 mr-2" />
+            Lihat CV
+          </Button>
+        )}
+        {onScheduleInterview && !isHired && !isRejected && (
+          <Button 
+            onClick={onScheduleInterview} 
+            variant="outline" 
+            className="border-blue-900 text-blue-900 hover:bg-blue-50 shadow-sm hover:shadow-md transition-all"
+            title={hasInterviewSchedule ? 'Edit jadwal interview yang sudah dibuat' : 'Buat jadwal interview'}
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            {scheduleButtonLabel}
+          </Button>
+        )}
+        {onAccept && !isHired && !isRejected && (
+          <Button 
+            onClick={handleAcceptClick} 
+            className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+            disabled={isUpdatingStatus}
+          >
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Terima Pelamar
+          </Button>
+        )}
+        {onReject && !isHired && !isRejected && (
+          <Button 
+            onClick={handleRejectClick} 
+            variant="outline" 
+            className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 shadow-sm hover:shadow-md transition-all"
+            disabled={isUpdatingStatus}
+          >
+            <XCircle className="w-4 h-4 mr-2" />
+            Tolak Pelamar
           </Button>
         )}
       </div>
@@ -252,6 +292,14 @@ export function ApplicantProfileView({
                   <p className="text-xs text-gray-500">Status Lamaran</p>
                   <div>{getStatusBadge(applicant.status)}</div>
                 </div>
+                {isRejected && applicant.rejection_reason && (
+                  <div className="space-y-2 md:col-span-2 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                      Catatan Penolakan
+                    </p>
+                    <p className="text-sm text-red-800 leading-relaxed">{applicant.rejection_reason}</p>
+                  </div>
+                )}
                 {profileAddress && (
                   <div className="space-y-1 md:col-span-2">
                     <p className="text-xs text-gray-500">Alamat</p>
@@ -383,6 +431,22 @@ export function ApplicantProfileView({
           </Card>
         </TabsContent>
       </Tabs>
+
+      <RejectionModal
+        isOpen={isRejectionModalOpen}
+        onClose={() => setIsRejectionModalOpen(false)}
+        onConfirm={handleConfirmReject}
+        applicant={applicant}
+        isSubmitting={isUpdatingStatus}
+      />
+
+      <AcceptanceModal
+        isOpen={isAcceptanceModalOpen}
+        onClose={() => setIsAcceptanceModalOpen(false)}
+        onConfirm={handleConfirmAccept}
+        applicant={applicant}
+        isSubmitting={isUpdatingStatus}
+      />
     </div>
   );
 }

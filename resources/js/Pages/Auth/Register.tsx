@@ -51,11 +51,11 @@ export default function Register() {
         <>
             <Head title="Daftar" />
 
-            <div className="relative min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 px-4 py-10 text-gray-900">
-                <div className="pointer-events-none absolute top-16 right-10 size-72 rounded-full bg-purple-400/20 blur-3xl" />
+            <div className="relative min-h-screen bg-gradient-to-br from-[#0a0f1f] via-[#0b152b] to-[#060910] px-4 py-10 text-white overflow-hidden">
+                <div className="pointer-events-none absolute top-16 right-12 w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl" />
                 <div
-                    className="pointer-events-none absolute bottom-10 left-10 h-96 w-96 rounded-full bg-purple-300/20 blur-3xl"
-                    style={{ animationDelay: '1s' }}
+                    className="pointer-events-none absolute bottom-10 left-10 h-96 w-96 rounded-full bg-purple-500/15 blur-3xl"
+                    style={{ animationDelay: '0.5s' }}
                 />
 
                 <div
@@ -65,7 +65,7 @@ export default function Register() {
                     <div className="w-full max-w-md">
                         <Link
                             href="/"
-                            className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 transition hover:text-purple-600"
+                            className="mb-6 inline-flex items-center gap-2 text-sm text-white/80 transition hover:text-white"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Kembali ke Beranda
@@ -73,20 +73,20 @@ export default function Register() {
 
                         <div
                             ref={cardRef}
-                            className="rounded-2xl border border-purple-100 bg-white/80 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
+                            className="bg-white/10 backdrop-blur-[26px] rounded-[28px] shadow-[0_8px_32px_rgba(0,0,0,0.35)] border border-white/15 p-8 md:p-10"
                         >
                             <div className="mb-8 text-center">
-                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-purple-50">
+                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-white/10">
                                     <img
                                         src={logo}
                                         alt="Lintas Data Prima"
                                         className="h-12 w-12 object-contain"
                                     />
                                 </div>
-                                <h1 className="text-2xl font-semibold text-gray-900">
+                                <h1 className="text-3xl text-white mb-2">
                                     Buat Akun Baru
                                 </h1>
-                                <p className="mt-2 text-sm text-gray-600">
+                                <p className="text-white/80">
                                     Bergabung dengan Lintas Data Prima hari ini
                                 </p>
                             </div>
@@ -95,18 +95,18 @@ export default function Register() {
                                 <div className="space-y-2">
                                     <label
                                         htmlFor="name"
-                                        className="text-sm font-medium text-gray-700"
+                                        className="text-sm font-medium text-white/90"
                                     >
                                         Nama Lengkap
                                     </label>
                                     <div className="relative">
-                                        <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                                         <Input
                                             id="name"
                                             name="name"
                                             value={data.name}
                                             autoComplete="name"
-                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
                                                 setData('name', e.target.value)
                                             }
@@ -115,26 +115,26 @@ export default function Register() {
                                     </div>
                                     <InputError
                                         message={errors.name}
-                                        className="text-sm text-red-500"
+                                        className="text-sm text-red-300"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label
                                         htmlFor="email"
-                                        className="text-sm font-medium text-gray-700"
+                                        className="text-sm font-medium text-white/90"
                                     >
                                         Email
                                     </label>
                                     <div className="relative">
-                                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                                         <Input
                                             id="email"
                                             type="email"
                                             name="email"
                                             value={data.email}
                                             autoComplete="username"
-                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
                                                 setData('email', e.target.value)
                                             }
@@ -143,26 +143,26 @@ export default function Register() {
                                     </div>
                                     <InputError
                                         message={errors.email}
-                                        className="text-sm text-red-500"
+                                        className="text-sm text-red-300"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label
                                         htmlFor="password"
-                                        className="text-sm font-medium text-gray-700"
+                                        className="text-sm font-medium text-white/90"
                                     >
                                         Kata Sandi
                                     </label>
                                     <div className="relative">
-                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                                         <Input
                                             id="password"
                                             type={showPassword ? 'text' : 'password'}
                                             name="password"
                                             value={data.password}
                                             autoComplete="new-password"
-                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 pr-12 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 pr-12 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
                                                 setData('password', e.target.value)
                                             }
@@ -173,7 +173,7 @@ export default function Register() {
                                             onClick={() =>
                                                 setShowPassword((prev) => !prev)
                                             }
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 transition hover:text-white/80"
                                         >
                                             {showPassword ? (
                                                 <EyeOff className="h-5 w-5" />
@@ -184,19 +184,19 @@ export default function Register() {
                                     </div>
                                     <InputError
                                         message={errors.password}
-                                        className="text-sm text-red-500"
+                                        className="text-sm text-red-300"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label
                                         htmlFor="password_confirmation"
-                                        className="text-sm font-medium text-gray-700"
+                                        className="text-sm font-medium text-white/90"
                                     >
                                         Konfirmasi Kata Sandi
                                     </label>
                                     <div className="relative">
-                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                        <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                                         <Input
                                             id="password_confirmation"
                                             type={
@@ -207,7 +207,7 @@ export default function Register() {
                                             name="password_confirmation"
                                             value={data.password_confirmation}
                                             autoComplete="new-password"
-                                            className="h-12 rounded-xl border-gray-200 bg-white pl-11 pr-12 text-base focus-visible:border-purple-500 focus-visible:ring-purple-500"
+                                            className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 pr-12 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
                                                 setData(
                                                     'password_confirmation',
@@ -223,7 +223,7 @@ export default function Register() {
                                                     (prev) => !prev,
                                                 )
                                             }
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 transition hover:text-white/80"
                                         >
                                             {showConfirmPassword ? (
                                                 <EyeOff className="h-5 w-5" />
@@ -234,17 +234,17 @@ export default function Register() {
                                     </div>
                                     <InputError
                                         message={errors.password_confirmation}
-                                        className="text-sm text-red-500"
+                                        className="text-sm text-red-300"
                                     />
                                 </div>
 
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-white/70">
                                     Dengan mendaftar, Anda menyetujui{' '}
-                                    <span className="font-medium text-purple-600">
+                                    <span className="font-medium text-cyan-300">
                                         Syarat & Ketentuan
                                     </span>{' '}
                                     dan{' '}
-                                    <span className="font-medium text-purple-600">
+                                    <span className="font-medium text-cyan-300">
                                         Kebijakan Privasi
                                     </span>{' '}
                                     Lintas Data Prima.
@@ -253,17 +253,17 @@ export default function Register() {
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="h-12 w-full rounded-xl bg-gradient-to-r from-purple-600 to-purple-500 text-base font-semibold text-white shadow-lg shadow-purple-200 transition hover:from-purple-700 hover:to-purple-600"
+                                    className="h-12 w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-base font-semibold text-white shadow-[0_8px_32px_rgba(34,211,238,0.5)] border border-cyan-400/30 rounded-[20px]"
                                 >
                                     {processing ? 'Memproses...' : 'Daftar Sekarang'}
                                 </Button>
                             </form>
 
-                            <div className="mt-8 text-center text-sm text-gray-600">
+                            <div className="mt-8 text-center text-sm text-white/80">
                                 Sudah punya akun?{' '}
                                 <Link
                                     href={route('login')}
-                                    className="font-semibold text-purple-600 hover:text-purple-700"
+                                    className="font-semibold text-cyan-300 hover:text-cyan-200"
                                 >
                                     Masuk di sini
                                 </Link>

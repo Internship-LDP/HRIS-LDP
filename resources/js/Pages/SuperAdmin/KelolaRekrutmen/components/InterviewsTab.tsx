@@ -1,4 +1,4 @@
-﻿import { Card } from '@/Components/ui/card';
+import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { InterviewSchedule } from '../types';
 import { Calendar as CalendarIcon, Clock, Eye } from 'lucide-react';
@@ -30,7 +30,10 @@ export default function InterviewsTab({ interviews }: InterviewsTabProps) {
                                     <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-600">
                                         <span className="inline-flex items-center gap-2">
                                             <CalendarIcon className="h-4 w-4" />
-                                            {interview.date} • {interview.time}
+                                            <span>
+                                                {interview.date} • {interview.time}
+                                                {interview.end_time ? ` - ${interview.end_time}` : ''}
+                                            </span>
                                         </span>
                                         <span className="inline-flex items-center gap-2">
                                             <Clock className="h-4 w-4" />

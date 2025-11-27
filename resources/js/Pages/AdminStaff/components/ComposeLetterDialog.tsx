@@ -9,6 +9,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { Checkbox } from '@/Components/ui/checkbox';
 import {
     Select,
     SelectContent,
@@ -21,8 +22,6 @@ import { ChangeEvent, useMemo } from 'react';
 import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const ALL_DIVISIONS_VALUE = '__all_divisions__';
-
 interface ComposeLetterDialogProps {
     open: boolean;
     onOpenChange: (value: boolean) => void;
@@ -34,7 +33,7 @@ interface ComposeLetterDialogProps {
         jenis_surat: string;
         kategori: string;
         prioritas: string;
-        target_division: string;
+        target_divisions: string[];
         lampiran: File | null;
     };
     setData: (field: string, value: unknown) => void;
@@ -72,6 +71,13 @@ export default function ComposeLetterDialog({
         () => Object.entries(options.priorities),
         [options.priorities],
     );
+    const divisionOptions = useMemo(
+        () =>
+            options.divisions.filter(
+                (division) => !userInfo.division || division !== userInfo.division,
+            ),
+        [options.divisions, userInfo.division],
+    );
 
     const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
@@ -99,6 +105,29 @@ export default function ComposeLetterDialog({
 
         const extension = file.name.split('.').pop()?.toLowerCase();
         return extension ? allowedExtensions.has(extension) : false;
+    };
+
+    const toggleDivision = (division: string, checked: boolean) => {
+        if (checked) {
+            setData('target_divisions', [...data.target_divisions, division]);
+        } else {
+            setData(
+                'target_divisions',
+                data.target_divisions.filter((item) => item !== division),
+            );
+        }
+    };
+
+    const allDivisionsSelected =
+        divisionOptions.length > 0 &&
+        divisionOptions.every((division) => data.target_divisions.includes(division));
+
+    const toggleAllDivisions = (checked: boolean) => {
+        if (checked) {
+            setData('target_divisions', divisionOptions);
+        } else {
+            setData('target_divisions', []);
+        }
     };
 
     return (
@@ -188,28 +217,41 @@ export default function ComposeLetterDialog({
                         <Label>
                             Divisi Tujuan <span className="text-red-500">*</span>
                         </Label>
-                        <Select
-                            value={data.target_division}
-                            onValueChange={(value) => setData('target_division', value)}
-                        >
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Pilih divisi tujuan" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
-                                <SelectItem value={ALL_DIVISIONS_VALUE}>Semua Divisi</SelectItem>
-                                {options.divisions.map((division) => (
-                                    <SelectItem key={division} value={division}>
-                                        {division}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <p className="mt-1 text-xs text-slate-500">
-                            Pilih &quot;Semua Divisi&quot; jika surat perlu dikirim ke seluruh unit.
-                        </p>
-                        {errors.target_division && (
-                            <p className="mt-1 text-sm text-red-500">{errors.target_division}</p>
+                        <div className="mt-3 grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-white p-3">
+                            <label className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200">
+                                <span className="font-semibold text-slate-800">Pilih Semua Divisi</span>
+                                <Checkbox
+                                    checked={allDivisionsSelected}
+                                    onCheckedChange={(value) => toggleAllDivisions(Boolean(value))}
+                                />
+                            </label>
+                            {divisionOptions.length === 0 && (
+                                <p className="text-sm text-slate-500">Tidak ada divisi lain yang tersedia.</p>
+                            )}
+                            {divisionOptions.map((division) => {
+                                const checked = data.target_divisions.includes(division);
+                                return (
+                                    <label
+                                        key={division}
+                                        className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200"
+                                    >
+                                        <span className="text-slate-800">{division}</span>
+                                        <Checkbox
+                                            checked={checked}
+                                            onCheckedChange={(value) => toggleDivision(division, Boolean(value))}
+                                        />
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        {errors.target_divisions && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {errors.target_divisions as string}
+                            </p>
                         )}
+                        <p className="mt-1 text-xs text-slate-500">
+                            Divisi Anda tidak ditampilkan dan tidak dapat dipilih.
+                        </p>
                     </div>
 
                     <div>

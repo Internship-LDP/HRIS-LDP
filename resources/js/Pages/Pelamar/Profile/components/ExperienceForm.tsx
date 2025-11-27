@@ -14,6 +14,7 @@ interface ExperienceFormProps {
     onRemove: (id: string) => void;
     onSave: () => void;
     processing: boolean;
+    disabled?: boolean;
 }
 
 export default function ExperienceForm({
@@ -23,6 +24,7 @@ export default function ExperienceForm({
     onRemove,
     onSave,
     processing,
+    disabled = false,
 }: ExperienceFormProps) {
     return (
         <Card className="p-6">
@@ -38,6 +40,7 @@ export default function ExperienceForm({
                     variant="outline"
                     onClick={onAdd}
                     className="border-blue-200 text-blue-900 hover:bg-blue-50"
+                    disabled={disabled}
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     Tambah Pengalaman
@@ -60,6 +63,7 @@ export default function ExperienceForm({
                                     size="sm"
                                     onClick={() => onRemove(experience.id)}
                                     className="text-red-500 hover:text-red-600"
+                                    disabled={disabled}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -73,6 +77,7 @@ export default function ExperienceForm({
                                             onChange(experience.id, 'company', event.target.value)
                                         }
                                         placeholder="Contoh: PT. Lintas Data Prima"
+                                        disabled={disabled}
                                     />
                                 </div>
                                 <div>
@@ -83,6 +88,7 @@ export default function ExperienceForm({
                                             onChange(experience.id, 'position', event.target.value)
                                         }
                                         placeholder="Software Engineer"
+                                        disabled={disabled}
                                     />
                                 </div>
                                 <div>
@@ -93,6 +99,7 @@ export default function ExperienceForm({
                                         onChange={(event) =>
                                             onChange(experience.id, 'start_date', event.target.value)
                                         }
+                                        disabled={disabled}
                                     />
                                 </div>
                                 <div>
@@ -103,7 +110,7 @@ export default function ExperienceForm({
                                         onChange={(event) =>
                                             onChange(experience.id, 'end_date', event.target.value)
                                         }
-                                        disabled={experience.is_current}
+                                        disabled={experience.is_current || disabled}
                                     />
                                 </div>
                             </div>
@@ -117,6 +124,7 @@ export default function ExperienceForm({
                                         onChange(experience.id, 'is_current', event.target.checked)
                                     }
                                     className="h-4 w-4 rounded border-slate-300"
+                                    disabled={disabled}
                                 />
                                 <Label
                                     htmlFor={`current-${experience.id}`}
@@ -135,6 +143,7 @@ export default function ExperienceForm({
                                     }
                                     placeholder="Jelaskan tanggung jawab utama Anda..."
                                     rows={4}
+                                    disabled={disabled}
                                 />
                             </div>
                         </div>
@@ -145,7 +154,7 @@ export default function ExperienceForm({
             <div className="mt-6">
                 <Button
                     onClick={onSave}
-                    disabled={processing}
+                    disabled={processing || disabled}
                     className="bg-blue-900 hover:bg-blue-800"
                 >
                     <Save className="mr-2 h-4 w-4" />

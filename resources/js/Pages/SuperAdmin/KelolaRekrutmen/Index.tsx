@@ -4,9 +4,7 @@ import SuperAdminLayout from '@/Pages/SuperAdmin/Layout';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import ApplicantsTab from './components/ApplicantsTab';
-import ApplicantDetailDialog from './components/ApplicantDetailDialog';
 import ApplicantProfileDialog from './components/ApplicantProfileDialog';
-import AddApplicantDialog from './components/AddApplicantDialog';
 import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
 import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
@@ -38,8 +36,11 @@ export default function KelolaRekrutmenIndex({
     const [activeTab, setActiveTab] = useState('applicants');
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({
+        from: null,
+        to: null,
+    });
 
-    const [detailOpen, setDetailOpen] = useState(false);
     const [scheduleOpen, setScheduleOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
@@ -48,20 +49,32 @@ export default function KelolaRekrutmenIndex({
     const [updatingApplicantId, setUpdatingApplicantId] = useState<number | null>(null);
 
     // FILTER DATA
-    const filteredApplications =
+    const filteredByStatus =
         statusFilter === 'all'
             ? applications
             : applications.filter((application) => application.status === statusFilter);
 
+    const filteredByDate = filteredByStatus.filter((application) => {
+        const submittedDate = application.submitted_date;
+        if (!submittedDate) return false;
+
+        const submitted = new Date(submittedDate);
+        if (Number.isNaN(submitted.getTime())) return false;
+
+        if (dateRange.from && submitted < dateRange.from) return false;
+        if (dateRange.to && submitted > dateRange.to) return false;
+        return true;
+    });
+
     const normalizedSearch = searchTerm.trim().toLowerCase();
     const visibleApplications = normalizedSearch
-        ? filteredApplications.filter(
+        ? filteredByDate.filter(
               (application) =>
                   application.name.toLowerCase().includes(normalizedSearch) ||
                   application.position.toLowerCase().includes(normalizedSearch) ||
                   application.email.toLowerCase().includes(normalizedSearch),
           )
-        : filteredApplications;
+        : filteredByDate;
 
     const statusSummary: StatusSummary = applications.reduce((acc, application) => {
         acc[application.status as ApplicantStatus] =
@@ -102,11 +115,8 @@ export default function KelolaRekrutmenIndex({
     const handleViewProfile = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setProfileOpen(true);
-    };
-    const handleViewDetail = (application: ApplicantRecord) => {
-        setSelectedApplicant(application);
-        setDetailOpen(true);
 
+        // Auto-screening: if status is 'Applied', update to 'Screening'
         if (application.status === 'Applied' && application.id !== updatingApplicantId) {
             handleStatusUpdate(application.id, 'Screening');
         }
@@ -118,7 +128,6 @@ export default function KelolaRekrutmenIndex({
     const handleOpenScheduleDialog = (application: ApplicantRecord) => {
         setSelectedApplicant(application);
         setScheduleOpen(true);
-        setDetailOpen(false);
     };
 
     // -----------------------------------------
@@ -133,27 +142,14 @@ export default function KelolaRekrutmenIndex({
     const handleAcceptFromProfile = () => {
         if (!selectedApplicant) return;
 
-        const confirmed = window.confirm(
-            `Konfirmasi penerimaan (Hired) untuk ${selectedApplicant.name}? Status akan diubah menjadi 'Hired'.`
-        );
-        if (confirmed) {
-            handleStatusUpdate(selectedApplicant.id, 'Hired');
-            setProfileOpen(false);
-        }
+        handleStatusUpdate(selectedApplicant.id, 'Hired');
+        setProfileOpen(false);
     };
 
-    const handleRejectFromProfile = () => {
+    const handleRejectFromProfile = (reason: string) => {
         if (!selectedApplicant) return;
 
-        const reason = window.prompt(
-            `Masukkan alasan penolakan untuk ${selectedApplicant.name}:`
-        );
-        if (!reason || reason.trim() === '') {
-            alert('Alasan penolakan wajib diisi.');
-            return;
-        }
-
-        handleReject(selectedApplicant.id, reason.trim());
+        handleReject(selectedApplicant.id, reason);
         setProfileOpen(false);
     };
 
@@ -162,23 +158,6 @@ export default function KelolaRekrutmenIndex({
 
         setProfileOpen(false);
         setScheduleOpen(true);
-    };
-    const handleDelete = (application: ApplicantRecord) => {
-        const confirmed = window.confirm(
-            `Hapus lamaran ${application.name} untuk posisi ${application.position}?`,
-        );
-
-        if (!confirmed) return;
-
-        router.delete(route('super-admin.recruitment.destroy', application.id), {
-            preserveScroll: true,
-            onSuccess: () => {
-                if (selectedApplicant?.id === application.id) {
-                    setDetailOpen(false);
-                    setSelectedApplicant(null);
-                }
-            },
-        });
     };
 
     const isHumanCapitalAdmin =
@@ -206,7 +185,6 @@ export default function KelolaRekrutmenIndex({
                 title="Recruitment & Onboarding"
                 description="Kelola pelamar dan proses rekrutmen"
                 breadcrumbs={breadcrumbs}
-                actions={<AddApplicantDialog />}
             >
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
                     <TabsList>
@@ -222,11 +200,11 @@ export default function KelolaRekrutmenIndex({
                             onSearchTermChange={setSearchTerm}
                             statusFilter={statusFilter}
                             onStatusFilterChange={setStatusFilter}
+                            dateRange={dateRange}
+                            onDateRangeChange={setDateRange}
                             statusOrder={statusOrder}
                             statusSummary={statusSummary}
                             visibleApplications={visibleApplications}
-                            onViewDetail={handleViewDetail}
-                            onDelete={handleDelete}
                             onStatusUpdate={handleStatusUpdate}
                             onReject={handleReject}
                             isUpdatingStatus={isUpdatingStatus}
@@ -245,11 +223,7 @@ export default function KelolaRekrutmenIndex({
                     </TabsContent>
                 </Tabs>
 
-                <ApplicantDetailDialog
-                    open={detailOpen}
-                    onOpenChange={setDetailOpen}
-                    applicant={selectedApplicant}
-                />
+
                 <ApplicantProfileDialog
                     open={profileOpen}
                     onOpenChange={setProfileOpen}
@@ -257,12 +231,14 @@ export default function KelolaRekrutmenIndex({
                     onAccept={handleAcceptFromProfile}
                     onReject={handleRejectFromProfile}
                     onScheduleInterview={handleScheduleFromProfile}
+                    isUpdatingStatus={isUpdatingStatus}
                 />
                 <ScheduleInterviewDialog
                     open={scheduleOpen}
                     onOpenChange={setScheduleOpen}
                     applicant={selectedApplicant}
                     onSuccessSubmit={handleScheduleSuccess}
+                    existingInterviews={interviews}
                 />
             </SuperAdminLayout>
         </>

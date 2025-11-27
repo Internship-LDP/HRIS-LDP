@@ -38,6 +38,11 @@ type IndexPageProps = PageProps<{
 const defaultFilterValue = (value?: string | null) =>
     value && value.length > 0 ? value : 'all';
 
+interface UserLoggedInPayload {
+    id: number;
+    last_login_at: string | null;
+}
+
 export default function Index(props: IndexPageProps) {
     const {
         users,
@@ -55,6 +60,8 @@ export default function Index(props: IndexPageProps) {
     const [statusFilter, setStatusFilter] = useState(
         defaultFilterValue(filters.status),
     );
+    const [accountRows, setAccountRows] = useState(users.data);
+    const [paginationLinks, setPaginationLinks] = useState(users.links);
     const [selectedUser, setSelectedUser] = useState<AccountRecord | null>(
         null,
     );
@@ -109,6 +116,59 @@ export default function Index(props: IndexPageProps) {
         setRoleFilter(defaultFilterValue(filters.role));
         setStatusFilter(defaultFilterValue(filters.status));
     }, [filters.search, filters.role, filters.status]);
+
+    useEffect(() => {
+        setAccountRows(users.data);
+        setPaginationLinks(users.links);
+    }, [users.data, users.links]);
+
+    useEffect(() => {
+        if (!window.Echo) {
+            return;
+        }
+
+        const channel = window.Echo.private('super-admin.accounts');
+
+        const handleUserLoggedIn = (payload: UserLoggedInPayload) => {
+            setAccountRows((current) =>
+                current.map((account) =>
+                    account.id === payload.id
+                        ? { ...account, last_login_at: payload.last_login_at }
+                        : account,
+                ),
+            );
+
+            setSelectedUser((current) =>
+                current && current.id === payload.id
+                    ? { ...current, last_login_at: payload.last_login_at }
+                    : current,
+            );
+        };
+
+        channel.listen('UserLoggedIn', handleUserLoggedIn);
+
+        return () => {
+            channel.stopListening('UserLoggedIn');
+            window.Echo?.leave('super-admin.accounts');
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!selectedUser) {
+            return;
+        }
+
+        const latestSelected = accountRows.find(
+            (account) => account.id === selectedUser.id,
+        );
+
+        if (
+            latestSelected &&
+            latestSelected.last_login_at !== selectedUser.last_login_at
+        ) {
+            setSelectedUser(latestSelected);
+        }
+    }, [accountRows, selectedUser]);
 
     const openDetail = (user: AccountRecord) => {
         setSelectedUser(user);
@@ -180,8 +240,8 @@ export default function Index(props: IndexPageProps) {
                     />
 
                     <AccountTable
-                        users={users.data}
-                        links={users.links}
+                        users={accountRows}
+                        links={paginationLinks}
                         onView={openDetail}
                         onEdit={(user) =>
                             router.visit(

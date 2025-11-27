@@ -86,6 +86,17 @@ class ApplicationController extends Controller
             ]);
         }
 
+        $existingApplication = Application::where('user_id', $user->id)
+            ->where('division', $division->name)
+            ->where('position', $division->job_title)
+            ->exists();
+
+        if ($existingApplication) {
+            throw ValidationException::withMessages([
+                'division_id' => 'Anda sudah melamar untuk posisi ini.',
+            ]);
+        }
+
         $cvPath = $request->file('cv')?->store('applications/cv', 'public');
 
         Application::create([
@@ -135,6 +146,8 @@ class ApplicationController extends Controller
                 'job_description' => $profile->job_description,
                 'job_requirements' => $profile->job_requirements ?? [],
             ];
-        });
+        })->filter(function ($summary) {
+            return $summary['is_hiring'];
+        })->values();
     }
 }

@@ -40,6 +40,7 @@ class Application extends Model
         'interviewer_name',
         'meeting_link',
         'interview_notes',
+        'interview_end_time',
 
         'rejection_reason',//
     ];
@@ -48,6 +49,7 @@ class Application extends Model
         'submitted_at' => 'datetime',
         'interview_date' => 'date',
         'interview_time' => 'string',
+        'interview_end_time' => 'string',
     ];
 
     public function user(): BelongsTo

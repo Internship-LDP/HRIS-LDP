@@ -8,6 +8,8 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/Components/ui/tabs';
+import { Button } from '@/Components/ui/button';
+import { Edit, X } from 'lucide-react';
 import ProfileHeader from './Profile/components/ProfileHeader';
 import PersonalForm from './Profile/components/PersonalForm';
 import EducationForm from './Profile/components/EducationForm';
@@ -61,6 +63,8 @@ export default function Profile({
     const [reminderOpen, setReminderOpen] = useState(
         Boolean(profileReminderMessage),
     );
+    const [isEditing, setIsEditing] = useState(false);
+    
     useEffect(() => {
         setReminderOpen(Boolean(profileReminderMessage));
     }, [profileReminderMessage]);
@@ -88,6 +92,27 @@ export default function Profile({
                     savingPhoto={form.processing && submittingSection === 'photo'}
                 />
 
+                {/* Edit Mode Toggle Button */}
+                <div className="mb-6 flex justify-end">
+                    <Button
+                        onClick={() => setIsEditing(!isEditing)}
+                        variant={isEditing ? "destructive" : "default"}
+                        className={isEditing ? "" : "bg-blue-900 hover:bg-blue-800"}
+                    >
+                        {isEditing ? (
+                            <>
+                                <X className="mr-2 h-4 w-4" />
+                                Batalkan Edit
+                            </>
+                        ) : (
+                            <>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Profil
+                            </>
+                        )}
+                    </Button>
+                </div>
+
                 <Tabs defaultValue="personal" className="space-y-6">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="personal">Data Pribadi</TabsTrigger>
@@ -105,6 +130,7 @@ export default function Profile({
                             processing={
                                 form.processing && submittingSection === 'personal'
                             }
+                            disabled={!isEditing}
                         />
                     </TabsContent>
 
@@ -121,6 +147,7 @@ export default function Profile({
                                 form.processing && submittingSection === 'education'
                             }
                             getFieldError={getEducationError}
+                            disabled={!isEditing}
                         />
                     </TabsContent>
 
@@ -134,6 +161,7 @@ export default function Profile({
                             processing={
                                 form.processing && submittingSection === 'experience'
                             }
+                            disabled={!isEditing}
                         />
                     </TabsContent>
                 </Tabs>

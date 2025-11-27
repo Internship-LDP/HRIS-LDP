@@ -20,6 +20,7 @@ interface PersonalFormProps {
     onSave: () => void;
     onReset: () => void;
     processing: boolean;
+    disabled?: boolean;
 }
 
 export default function PersonalForm({
@@ -29,6 +30,7 @@ export default function PersonalForm({
     onSave,
     onReset,
     processing,
+    disabled = false,
 }: PersonalFormProps) {
     return (
         <Card className="p-6">
@@ -42,6 +44,7 @@ export default function PersonalForm({
                         value={data.full_name}
                         onChange={(event) => onChange('full_name', event.target.value)}
                         placeholder="Masukkan nama lengkap"
+                        disabled={disabled}
                     />
                     {errors['personal.full_name'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -56,6 +59,7 @@ export default function PersonalForm({
                         value={data.email}
                         onChange={(event) => onChange('email', event.target.value)}
                         placeholder="email@contoh.com"
+                        disabled={disabled}
                     />
                     {errors['personal.email'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -69,6 +73,7 @@ export default function PersonalForm({
                         value={data.phone}
                         onChange={(event) => onChange('phone', event.target.value)}
                         placeholder="08xxxxxxxxxx"
+                        disabled={disabled}
                     />
                     {errors['personal.phone'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -82,6 +87,7 @@ export default function PersonalForm({
                         type="date"
                         value={data.date_of_birth}
                         onChange={(event) => onChange('date_of_birth', event.target.value)}
+                        disabled={disabled}
                     />
                     {errors['personal.date_of_birth'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -94,6 +100,7 @@ export default function PersonalForm({
                     <Select
                         value={data.gender}
                         onValueChange={(value) => onChange('gender', value)}
+                        disabled={disabled}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih jenis kelamin" />
@@ -114,6 +121,7 @@ export default function PersonalForm({
                     <Select
                         value={data.religion}
                         onValueChange={(value) => onChange('religion', value)}
+                        disabled={disabled}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Pilih agama" />
@@ -143,6 +151,7 @@ export default function PersonalForm({
                     onChange={(event) => onChange('address', event.target.value)}
                     placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
                     rows={3}
+                    disabled={disabled}
                 />
                 {errors['personal.address'] && (
                     <p className="mt-1 text-sm text-red-500">
@@ -158,6 +167,7 @@ export default function PersonalForm({
                         value={data.city}
                         onChange={(event) => onChange('city', event.target.value)}
                         placeholder="Contoh: Jakarta Selatan"
+                        disabled={disabled}
                     />
                     {errors['personal.city'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -171,6 +181,7 @@ export default function PersonalForm({
                         value={data.province}
                         onChange={(event) => onChange('province', event.target.value)}
                         placeholder="Contoh: DKI Jakarta"
+                        disabled={disabled}
                     />
                     {errors['personal.province'] && (
                         <p className="mt-1 text-sm text-red-500">
@@ -183,13 +194,13 @@ export default function PersonalForm({
             <div className="mt-6 flex flex-wrap gap-3">
                 <Button
                     onClick={onSave}
-                    disabled={processing}
+                    disabled={processing || disabled}
                     className="bg-blue-900 hover:bg-blue-800"
                 >
                     <Save className="mr-2 h-4 w-4" />
                     Simpan Data Pribadi
                 </Button>
-                <Button type="button" variant="outline" onClick={onReset}>
+                <Button type="button" variant="outline" onClick={onReset} disabled={disabled}>
                     Batalkan
                 </Button>
             </div>

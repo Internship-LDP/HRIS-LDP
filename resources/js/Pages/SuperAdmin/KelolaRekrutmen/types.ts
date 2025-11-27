@@ -33,8 +33,17 @@ export interface ApplicantRecord {
     profile_date_of_birth?: string | null;
     educations?: ApplicantEducation[];
     experiences?: ApplicantExperience[];
+    interview_date?: string | null;
+    interview_time?: string | null;
+    interview_mode?: 'Online' | 'Offline' | null;
+    interviewer_name?: string | null;
+    meeting_link?: string | null;
+    interview_notes?: string | null;
+    interview_end_time?: string | null;
+    has_interview_schedule?: boolean;
     status: ApplicantStatus;
     date?: string | null;
+    submitted_date?: string | null;
     email: string;
     phone?: string | null;
     skills?: string | null;
@@ -63,19 +72,24 @@ export interface ApplicantExperience {
 }
 
 export interface InterviewSchedule {
+    application_id?: number;
     candidate: string;
     position: string;
     date: string;
+    date_value?: string | null;
     time: string;
+    end_time?: string | null;
     mode: 'Online' | 'Offline';
     interviewer: string;
 }
 
 export interface OnboardingItem {
+    application_id: number;
     name: string;
     position: string;
     startedAt: string;
     status: 'Selesai' | 'In Progress';
+    is_staff: boolean;
     steps: Array<{
         label: string;
         complete: boolean;

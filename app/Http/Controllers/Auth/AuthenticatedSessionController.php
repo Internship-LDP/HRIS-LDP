@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Events\UserLoggedIn;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -48,6 +49,11 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        $user->last_login_at = now();
+        $user->save();
+
+        UserLoggedIn::dispatch($user);
+
         $intended = $request->session()->pull('url.intended');
 
         if ($intended && $this->intendedUrlMatchesRole($user, $intended)) {
@@ -68,7 +74,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('landing');
     }
 
     private function intendedUrlMatchesRole(User $user, string $url): bool

@@ -94,7 +94,7 @@ class ProfileController extends Controller
             'educations.*.field_of_study' => ['required', 'string', 'max:255'],
             'educations.*.start_year' => ['required', 'string', 'regex:/^\d{4}$/'],
             'educations.*.end_year' => ['required', 'string', 'regex:/^\d{4}$/'],
-            'educations.*.gpa' => ['required', 'string', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'educations.*.gpa' => ['nullable', 'numeric', 'between:0,4.00'],
         ];
 
         $photoRules = [

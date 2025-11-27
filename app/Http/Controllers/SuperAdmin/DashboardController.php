@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\StaffProfile;
 use App\Models\User;
+use App\Models\DivisionProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -94,6 +95,25 @@ class DashboardController extends Controller
         $religionCounts = $profileCounts('religion');
         $genderCounts = $profileCounts('gender');
         $educationCounts = $profileCounts('education_level');
+
+        $divisionApplicants = Application::query()
+            ->select('division')
+            ->selectRaw('count(*) as total')
+            ->groupBy('division')
+            ->orderBy('division')
+            ->get()
+            ->map(function ($row) {
+                $divisionName = $row->division ?? 'Tidak ada divisi';
+                return [
+                    'id' => md5($divisionName),
+                    'name' => $divisionName,
+                    'count' => (int) $row->total,
+                    'new' => (int) Application::where('division', $row->division)
+                        ->whereBetween('submitted_at', [now()->startOfMonth(), now()])
+                        ->count(),
+                ];
+            })
+            ->values();
 
         $religionColors = [
             '#0ea5e9',
@@ -197,6 +217,7 @@ class DashboardController extends Controller
             'religionData' => $religionData,
             'genderData' => $genderData,
             'educationData' => $educationData,
+            'divisionApplicants' => $divisionApplicants,
         ]);
     }
 }

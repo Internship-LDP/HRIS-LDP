@@ -87,17 +87,31 @@ export const createEmptyExperience = (): Experience => ({
     is_current: false,
 });
 
+export const GPA_REQUIRED_DEGREES = ['D3', 'D4', 'S1', 'S2', 'S3'];
+
 export const isEducationComplete = (education: Education): boolean => {
-    const requiredFields: RequiredEducationField[] = [
+    const baseFields: RequiredEducationField[] = [
         'institution',
         'degree',
         'field_of_study',
         'start_year',
         'end_year',
-        'gpa',
     ];
 
-    return requiredFields.every((field) =>
+    const isBaseComplete = baseFields.every((field) =>
         Boolean((education[field] ?? '').toString().trim()),
     );
+
+    if (!isBaseComplete) {
+        return false;
+    }
+
+    if (
+        education.degree &&
+        GPA_REQUIRED_DEGREES.includes(education.degree)
+    ) {
+        return Boolean((education.gpa ?? '').toString().trim());
+    }
+
+    return true;
 };

@@ -4,9 +4,13 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\OnboardingChecklist;
+use App\Models\StaffProfile;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -29,6 +33,13 @@ class RecruitmentController extends Controller
         $applications = $applicationCollection
             ->map(function (Application $application) {
                 $profile = $application->user?->applicantProfile;
+                $interviewTime = $application->interview_time
+                    ? substr((string) $application->interview_time, 0, 5)
+                    : null;
+                $interviewEndTime = $application->interview_end_time
+                    ? substr((string) $application->interview_end_time, 0, 5)
+                    : null;
+                $hasInterview = (bool) ($application->interview_date || $interviewTime || $application->interview_mode);
 
                 $profileFullName = $profile?->full_name ?: $application->full_name;
                 $profileEmail = $profile?->email ?: $application->email;
@@ -103,8 +114,17 @@ class RecruitmentController extends Controller
                     'profile_date_of_birth' => $profileDateOfBirth,
                     'educations' => $educations,
                     'experiences' => $experiences,
+                    'interview_date' => optional($application->interview_date)->format('Y-m-d'),
+                    'interview_time' => $interviewTime,
+                    'interview_mode' => $application->interview_mode,
+                    'interviewer_name' => $application->interviewer_name,
+                    'meeting_link' => $application->meeting_link,
+                    'interview_notes' => $application->interview_notes,
+                    'interview_end_time' => $interviewEndTime,
+                    'has_interview_schedule' => $hasInterview,
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
+                    'submitted_date' => optional($application->submitted_at)->format('Y-m-d'),
                     'email' => $application->email,
                     'phone' => $application->phone,
                     'skills' => $application->skills,
@@ -125,11 +145,22 @@ class RecruitmentController extends Controller
         $interviews = $applicationCollection
             ->where('status', 'Interview')
             ->map(function (Application $application) {
+                $startTime = $application->interview_time
+                    ? substr((string) $application->interview_time, 0, 5)
+                    : null;
+                $rawEndTime = $application->interview_end_time
+                    ? substr((string) $application->interview_end_time, 0, 5)
+                    : null;
+                $endTime = $rawEndTime ?? ($startTime ? $this->addMinutesToTime($startTime, 30) : null);
+
                 return [
+                    'application_id' => $application->id,
                     'candidate' => $application->full_name,
                     'position' => $application->position,
                     'date' => optional($application->interview_date)->format('d M Y') ?? '-',
-                    'time' => $application->interview_time ?? '-',
+                    'date_value' => optional($application->interview_date)->format('Y-m-d'),
+                    'time' => $startTime ?? '-',
+                    'end_time' => $endTime,
                     'mode' => $application->interview_mode ?? '-',
                     'interviewer' => $application->interviewer_name ?? '-',
                     'meeting_link' => $application->meeting_link,
@@ -143,15 +174,27 @@ class RecruitmentController extends Controller
         $onboarding = $applicationCollection
             ->where('status', 'Hired')
             ->map(function (Application $application) {
+                // Load checklist dari database
+                $checklist = OnboardingChecklist::where('application_id', $application->id)->first();
+                
+                $contractDone = $checklist?->contract_signed ?? false;
+                $inventoryDone = $checklist?->inventory_handover ?? false;
+                $trainingDone = $checklist?->training_orientation ?? false;
+                
+                // Hitung status: jika semua selesai, status = Selesai
+                $allComplete = $contractDone && $inventoryDone && $trainingDone;
+                
                 return [
+                    'application_id' => $application->id,
                     'name' => $application->full_name,
                     'position' => $application->position ?? '-',
                     'startedAt' => optional($application->submitted_at)->format('d M Y') ?? '-',
-                    'status' => 'In Progress',
+                    'status' => $allComplete ? 'Selesai' : 'In Progress',
+                    'is_staff' => $application->user->role === User::ROLES['staff'],
                     'steps' => [
-                        ['label' => 'Kontrak ditandatangani', 'complete' => false],
-                        ['label' => 'Serah terima inventaris', 'complete' => false, 'pending' => true],
-                        ['label' => 'Training & orientasi', 'complete' => false, 'pending' => true],
+                        ['label' => 'Kontrak ditandatangani', 'complete' => $contractDone],
+                        ['label' => 'Serah terima inventaris', 'complete' => $inventoryDone, 'pending' => !$inventoryDone && $contractDone],
+                        ['label' => 'Training & orientasi', 'complete' => $trainingDone, 'pending' => !$trainingDone && $inventoryDone],
                     ],
                 ];
             })
@@ -238,6 +281,7 @@ class RecruitmentController extends Controller
             $validated = $request->validate([
                 'date' => ['required', 'date', 'after_or_equal:today'],
                 'time' => ['required', 'date_format:H:i'],
+                'end_time' => ['required', 'date_format:H:i', 'after:time'],
                 'mode' => ['required', 'string', 'in:Online,Offline'],
                 'interviewer' => ['required', 'string', 'max:100'],
                 'meeting_link' => ['nullable', 'string', 'max:500'],
@@ -250,10 +294,18 @@ class RecruitmentController extends Controller
                 ]);
             }
 
+            $this->ensureScheduleAvailable(
+                $application,
+                $validated['date'],
+                $validated['time'],
+                $validated['end_time'],
+            );
+
             // Simpan interview
             $application->update([
                 'interview_date' => $validated['date'],
                 'interview_time' => $validated['time'],
+                'interview_end_time' => $validated['end_time'],
                 'interview_mode' => $validated['mode'],
                 'interviewer_name' => $validated['interviewer'],
                 'meeting_link' => $validated['meeting_link'] ?? null,
@@ -283,6 +335,95 @@ class RecruitmentController extends Controller
     }
 
     /**
+     * POST: Update onboarding checklist
+     */
+    public function updateOnboardingChecklist(Request $request, $id): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        $validated = $request->validate([
+            'contract_signed' => ['required', 'boolean'],
+            'inventory_handover' => ['required', 'boolean'],
+            'training_orientation' => ['required', 'boolean'],
+        ]);
+
+        // Simpan ke database
+        OnboardingChecklist::updateOrCreate(
+            ['application_id' => $id],
+            $validated
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Progress onboarding berhasil disimpan.');
+    }
+
+    /**
+     * POST: Convert applicant to staff
+     */
+    public function convertToStaff(Request $request, Application $application): RedirectResponse
+    {
+        $this->ensureAuthorized($request->user());
+
+        if ($application->status !== 'Hired') {
+            return redirect()->back()->withErrors(['message' => 'Hanya pelamar dengan status Hired yang dapat dijadikan staff.']);
+        }
+
+        $user = $application->user;
+
+        if (! $user) {
+            return redirect()->back()->withErrors(['message' => 'User tidak ditemukan.']);
+        }
+
+        // Check if already staff
+        if ($user->role === User::ROLES['staff']) {
+            return redirect()->back()->with('success', 'User sudah menjadi staff.');
+        }
+
+        DB::transaction(function () use ($user, $application) {
+            // 1. Update User Role
+            $user->update([
+                'role' => User::ROLES['staff'],
+                'employee_code' => User::generateEmployeeCode(User::ROLES['staff']),
+                'division' => $application->division ?? $user->division,
+            ]);
+
+            // 2. Create Staff Profile from Applicant Profile
+            $applicantProfile = $user->applicantProfile;
+
+            if ($applicantProfile) {
+                // Determine education level
+                $educationLevel = 'Lainnya';
+                $educations = $applicantProfile->educations ?? [];
+                
+                if (! empty($educations)) {
+                    // Ambil pendidikan terakhir (asumsi array urut atau ambil index 0)
+                    // Idealnya kita cek tahun lulus atau logic lain, tapi untuk simpel ambil yg pertama
+                    $firstDegree = $educations[0]['degree'] ?? '';
+                    
+                    // Mapping sederhana
+                    if (in_array($firstDegree, StaffProfile::EDUCATION_LEVELS)) {
+                        $educationLevel = $firstDegree;
+                    }
+                }
+
+                StaffProfile::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'religion' => $applicantProfile->religion,
+                        'gender' => $applicantProfile->gender,
+                        'education_level' => $educationLevel,
+                    ]
+                );
+            }
+        });
+
+        return redirect()->back()->with('success', 'Akun berhasil diubah menjadi Staff.');
+    }
+
+
+
+    /**
      * Pastikan user berhak mengakses
      */
     private function ensureAuthorized(?User $user): void
@@ -292,5 +433,50 @@ class RecruitmentController extends Controller
             ($user->role === User::ROLES['super_admin'] || $user->isHumanCapitalAdmin()),
             403
         );
+    }
+
+    private function ensureScheduleAvailable(Application $current, string $date, string $startTime, string $endTime): void
+    {
+        $start = Carbon::createFromFormat('H:i', $startTime);
+        $end = Carbon::createFromFormat('H:i', $endTime);
+
+        $conflict = Application::query()
+            ->where('id', '!=', $current->id)
+            ->whereDate('interview_date', $date)
+            ->whereNotNull('interview_time')
+            ->get()
+            ->contains(function (Application $other) use ($start, $end) {
+                $otherStartRaw = $other->interview_time
+                    ? substr((string) $other->interview_time, 0, 5)
+                    : null;
+                if (!$otherStartRaw) {
+                    return false;
+                }
+                $otherStart = Carbon::createFromFormat('H:i', $otherStartRaw);
+                $otherEnd = $other->interview_end_time
+                    ? Carbon::createFromFormat('H:i', substr((string) $other->interview_end_time, 0, 5))
+                    : (clone $otherStart)->addMinutes(30);
+
+                return $otherStart->lt($end) && $otherEnd->gt($start);
+            });
+
+        if ($conflict) {
+            throw ValidationException::withMessages([
+                'time' => 'Slot waktu ini sudah digunakan untuk interview lain pada tanggal tersebut.',
+            ]);
+        }
+    }
+
+    private function addMinutesToTime(?string $time, int $minutes): ?string
+    {
+        if (!$time) {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromTimeString($time)->addMinutes($minutes)->format('H:i');
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

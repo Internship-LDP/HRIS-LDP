@@ -205,13 +205,22 @@ export default function Applications({
                         </p>
                     </div>
                     <div className="grid gap-4 p-6 md:grid-cols-2">
-                        {divisions.map((division) => (
-                            <DivisionCard
-                                key={division.id}
-                                division={division}
-                                onApply={() => handleOpenForm(division)}
-                            />
-                        ))}
+                        {divisions.map((division) => {
+                            const isApplied = applications.some(
+                                (app) =>
+                                    app.division === division.name &&
+                                    app.position === division.job_title,
+                            );
+
+                            return (
+                                <DivisionCard
+                                    key={division.id}
+                                    division={division}
+                                    isApplied={isApplied}
+                                    onApply={() => handleOpenForm(division)}
+                                />
+                            );
+                        })}
                     </div>
                     {divisions.length === 0 && (
                         <div className="p-6 text-center text-sm text-slate-500">
@@ -343,43 +352,58 @@ function StatCard({
 
 function DivisionCard({
     division,
+    isApplied,
     onApply,
 }: {
     division: DivisionSummary;
+    isApplied: boolean;
     onApply: () => void;
 }) {
     const ratio =
         division.capacity > 0
             ? Math.min((division.current_staff / division.capacity) * 100, 100)
             : 0;
-    const canApply = division.is_hiring && division.available_slots > 0;
+    const canApply = division.is_hiring && division.available_slots > 0 && !isApplied;
     const disabled = !canApply;
-    const statusLabel = division.is_hiring ? (
-        <Badge
-            className={
-                canApply
-                    ? 'bg-green-600 hover:bg-green-600'
-                    : 'bg-orange-500 hover:bg-orange-500'
-            }
-        >
-            {canApply ? (
-                <>
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    Lowongan Terbuka
-                </>
-            ) : (
-                <>
-                    <XCircle className="mr-1 h-3 w-3" />
-                    Slot Terpenuhi
-                </>
-            )}
-        </Badge>
-    ) : (
-        <Badge variant="outline" className="border-slate-300 text-slate-500">
-            <XCircle className="mr-1 h-3 w-3" />
-            Tidak Ada Lowongan
-        </Badge>
-    );
+    
+    let statusLabel;
+    if (isApplied) {
+        statusLabel = (
+            <Badge className="bg-blue-500 hover:bg-blue-500">
+                <CheckCircle className="mr-1 h-3 w-3" />
+                Sudah Dilamar
+            </Badge>
+        );
+    } else if (division.is_hiring) {
+        statusLabel = (
+            <Badge
+                className={
+                    canApply
+                        ? 'bg-green-600 hover:bg-green-600'
+                        : 'bg-orange-500 hover:bg-orange-500'
+                }
+            >
+                {division.available_slots > 0 ? (
+                    <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Lowongan Terbuka
+                    </>
+                ) : (
+                    <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Slot Terpenuhi
+                    </>
+                )}
+            </Badge>
+        );
+    } else {
+        statusLabel = (
+            <Badge variant="outline" className="border-slate-300 text-slate-500">
+                <XCircle className="mr-1 h-3 w-3" />
+                Tidak Ada Lowongan
+            </Badge>
+        );
+    }
 
     return (
         <button
@@ -452,12 +476,16 @@ function DivisionCard({
                 )}
             </div>
 
-            {canApply && (
+            {isApplied ? (
+                <p className="mt-3 text-center text-xs text-blue-600 font-medium">
+                    Anda sudah apply lowongan kerja ini
+                </p>
+            ) : canApply ? (
                 <p className="mt-3 text-center text-xs text-blue-600">
                     <Send className="mr-1 inline h-3 w-3" />
                     Klik untuk melamar ke divisi ini
                 </p>
-            )}
+            ) : null}
         </button>
     );
 }

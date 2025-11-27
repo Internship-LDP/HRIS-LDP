@@ -46,7 +46,7 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'jobs' => $jobs,
     ]);
-});
+})->name('landing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
@@ -118,6 +118,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('/recruitment/{application}',
             [RecruitmentController::class, 'destroy'])
             ->name('recruitment.destroy');
+
+        Route::post('/onboarding/{id}/update-checklist',
+            [RecruitmentController::class, 'updateOnboardingChecklist'])
+            ->name('onboarding.update-checklist');
+
+        Route::post('/onboarding/{application}/convert-to-staff',
+            [RecruitmentController::class, 'convertToStaff'])
+            ->name('onboarding.convert-to-staff');
+
 
         Route::get('/kelola-divisi', [DivisionController::class, 'index'])->name('divisions.index');
         Route::patch('/kelola-divisi/{division}', [DivisionController::class, 'update'])->name('divisions.update');

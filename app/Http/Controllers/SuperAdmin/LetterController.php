@@ -4,9 +4,11 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\StoreSuratRequest;
+use App\Events\LetterUpdated;
 use App\Models\Departemen;
 use App\Models\Surat;
 use App\Models\User;
+use App\Support\LetterPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -91,11 +93,11 @@ class LetterController extends Controller
             'stats' => $stats,
             'filters' => $filters,
             'letters' => [
-                'inbox' => $this->transformLetters($inbox),
-                'outbox' => $this->transformLetters($outbox),
-                'archive' => $this->transformLetters($archive),
+                'inbox' => LetterPresenter::collection($inbox),
+                'outbox' => LetterPresenter::collection($outbox),
+                'archive' => LetterPresenter::collection($archive),
             ],
-            'pendingDisposition' => $this->transformLetters($pendingDisposition),
+            'pendingDisposition' => LetterPresenter::collection($pendingDisposition),
             'options' => [
                 'letterTypes' => [
                     'Permohonan',
@@ -144,6 +146,7 @@ class LetterController extends Controller
         $data['tanggal_surat'] = now()->toDateString();
         $data['status_persetujuan'] = 'Terkirim';
         $data['previous_division'] = $user->division ?? $departemen?->nama;
+        $data['current_recipient'] = 'hr';
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
@@ -168,7 +171,9 @@ class LetterController extends Controller
             $payload = $data;
             $payload['target_division'] = $divisionName;
             $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
-            Surat::create($payload);
+            $newSurat = Surat::create($payload);
+
+            LetterUpdated::dispatch($newSurat, 'created');
         }
 
         return redirect()
@@ -199,6 +204,8 @@ class LetterController extends Controller
             'disposed_by' => $request->user()->id,
             'disposed_at' => now(),
         ])->save();
+
+        LetterUpdated::dispatch($surat->fresh(), 'disposed');
 
         return redirect()
             ->back()
@@ -244,6 +251,8 @@ class LetterController extends Controller
                 'disposed_by' => $userId,
                 'disposed_at' => now(),
             ])->save();
+
+            LetterUpdated::dispatch($surat->fresh(), 'disposed');
         }
 
         return redirect()
@@ -298,6 +307,8 @@ class LetterController extends Controller
                 'disposed_by' => $userId,
                 'disposed_at' => now(),
             ])->save();
+
+            LetterUpdated::dispatch($surat->fresh(), 'rejected');
         }
 
         return redirect()
@@ -329,6 +340,8 @@ class LetterController extends Controller
             'current_recipient' => 'archive',
         ])->save();
 
+        LetterUpdated::dispatch($surat->fresh(), 'archived');
+
         return redirect()
             ->route('super-admin.letters.index')
             ->with('success', 'Surat dipindahkan ke arsip.');
@@ -349,92 +362,11 @@ class LetterController extends Controller
             'current_recipient' => 'division',
         ])->save();
 
+        LetterUpdated::dispatch($surat->fresh(), 'unarchived');
+
         return redirect()
             ->route('super-admin.letters.index')
             ->with('success', 'Surat dikembalikan ke daftar aktif.');
-    }
-
-    /**
-     * Transform collection surat untuk frontend.
-     */
-    private function transformLetters(Collection $letters): array
-    {
-        return $letters->map(function (Surat $surat) {
-            return [
-                'id' => $surat->surat_id,
-                'letterNumber' => $surat->nomor_surat,
-                'senderName' => $surat->user?->name,
-                'senderDivision' => $surat->departemen?->nama ?? $surat->user?->division,
-                'senderPosition' => $surat->user?->role,
-                'recipientName' => $surat->penerima,
-                'subject' => $surat->perihal,
-                'letterType' => $surat->jenis_surat,
-                'category' => $surat->kategori,
-                'priority' => $surat->prioritas,
-                'date' => optional($surat->tanggal_surat)->format('d M Y'),
-                'status' => $surat->status_persetujuan,
-                'content' => $surat->isi_surat,
-                'type' => $surat->tipe_surat,
-                'targetDivision' => $surat->target_division,
-                'currentRecipient' => $surat->current_recipient,
-                'dispositionNote' => $surat->disposition_note,
-                'replyNote' => $surat->reply_note,
-                'replyBy' => $surat->replyAuthor?->name,
-                'replyAt' => optional($surat->reply_at)->format('d M Y H:i'),
-                'replyHistory' => $this->replyHistoryPayload($surat),
-                'disposedBy' => $surat->disposer?->name,
-                'disposedAt' => optional($surat->disposed_at)->format('d M Y H:i'),
-                'approvalDate' => optional($surat->tanggal_persetujuan)->format('d M Y H:i'),
-                'createdAt' => optional($surat->created_at)->format('d M Y H:i'),
-                'updatedAt' => optional($surat->updated_at)->format('d M Y H:i'),
-                'attachment' => $surat->lampiran_path
-                    ? [
-                        'name' => $surat->lampiran_nama,
-                        'size' => $this->formatSize($surat->lampiran_size),
-                        'url' => $surat->attachmentUrl(),
-                        'mime' => $surat->lampiran_mime,
-                    ]
-                    : null,
-            ];
-        })->values()->toArray();
-    }
-
-    private function replyHistoryPayload(Surat $surat): array
-    {
-        $histories = $surat->replyHistories
-            ? $surat->replyHistories->map(function ($history) {
-                return [
-                    'id' => $history->id,
-                    'note' => $history->note,
-                    'author' => $history->author?->name,
-                    'division' => $history->from_division,
-                    'toDivision' => $history->to_division,
-                    'timestamp' => optional($history->replied_at)->format('d M Y H:i'),
-                ];
-            })->values()->toArray()
-            : [];
-
-        if (empty($histories) && $surat->reply_note) {
-            $histories[] = [
-                'id' => null,
-                'note' => $surat->reply_note,
-                'author' => $surat->replyAuthor?->name,
-                'division' => $surat->previous_division,
-                'toDivision' => $surat->target_division,
-                'timestamp' => optional($surat->reply_at)->format('d M Y H:i'),
-            ];
-        }
-
-        return $histories;
-    }
-
-    private function formatSize(?int $bytes): string
-    {
-        if (! $bytes) {
-            return '0 KB';
-        }
-
-        return number_format($bytes / 1024, 2).' KB';
     }
 
     private function resolveDepartemen(?string $division): ?Departemen

@@ -43,13 +43,13 @@ const QuickActions: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-64 right-0 bg-white border-t border-slate-200 shadow-md py-3 z-50">
-      <div className="flex justify-center flex-wrap gap-3 px-6">
+    <div className="w-full py-4 px-6">
+      <div className="flex justify-center flex-wrap gap-3 max-w-7xl mx-auto">
         {actions.map((action) => (
           <Link
             key={action.name}
             href={action.href}
-            className={`flex items-center text-white text-sm font-medium px-4 py-2 rounded-lg transition ${action.color}`}
+            className={`flex items-center text-white text-sm font-medium px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 ${action.color}`}
           >
             {action.icon}
             {action.name}

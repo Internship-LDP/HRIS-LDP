@@ -8,8 +8,13 @@ import {
     UserPlus,
     Mail,
     Building2,
+    ChevronLeft,
+    ChevronRight,
+    LogOut,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { ComponentType, SVGProps } from 'react';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
     label: string;
@@ -70,10 +75,56 @@ const defaultNavItems: NavItem[] = [
     },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+    isOpen: boolean;
+    onToggle: () => void;
+}
+
+export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const {
         props: { auth, sidebarNotifications = {} },
     } = usePage<PageProps<{ sidebarNotifications?: Record<string, number> }>>();
+    const [liveBadges, setLiveBadges] = useState<Record<string, number>>(
+        sidebarNotifications,
+    );
+    const pendingStatuses = ['Menunggu HR', 'Diajukan', 'Diproses'];
+    const lettersBadgeKey = 'super-admin.letters.index';
+
+    useEffect(() => {
+        setLiveBadges(sidebarNotifications);
+    }, [sidebarNotifications]);
+
+    useEffect(() => {
+        if (!window.Echo) {
+            return;
+        }
+
+        const channel = window.Echo.private('super-admin.letters');
+        const handleLetterUpdated = (payload: { letter?: { status?: string; currentRecipient?: string } }) => {
+            const letter = payload?.letter;
+            if (!letter) {
+                return;
+            }
+
+            const shouldCount =
+                pendingStatuses.includes(letter.status ?? '') &&
+                letter.currentRecipient === 'hr';
+
+            setLiveBadges((prev) => {
+                const current = prev[lettersBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [lettersBadgeKey]: next };
+            });
+        };
+
+        channel.listen('LetterUpdated', handleLetterUpdated).listen('.LetterUpdated', handleLetterUpdated);
+
+        return () => {
+            channel.stopListening('LetterUpdated');
+            window.Echo?.leave('super-admin.letters');
+        };
+    }, []);
+
     const user = auth?.user;
     const isSuperAdmin = user?.role === 'Super Admin';
     const isHumanCapitalAdmin =
@@ -94,22 +145,42 @@ export default function Sidebar() {
     const panelLabel = isHumanCapitalAdmin ? 'Admin HR' : 'Super Admin';
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-10 w-64 bg-blue-950 text-white shadow-lg">
-            <div className="flex h-20 items-center justify-between px-6">
-                <div>
-                    <p className="text-xs uppercase tracking-widest text-blue-200">
-                        PT. Lintas Data Prima
+        <aside
+            className={cn(
+                "fixed inset-y-0 left-0 z-10 bg-blue-950 text-white shadow-lg transition-all duration-300 ease-in-out flex flex-col",
+                isOpen ? "w-64" : "w-20"
+            )}
+        >
+            {/* Header */}
+            <div className={cn("flex items-center px-4 h-20", isOpen ? "justify-between" : "justify-center")}>
+                {isOpen && (
+                    <div className="overflow-hidden whitespace-nowrap">
+                        <p className="text-xs uppercase tracking-widest text-blue-200">
+                            PT. Lintas Data Prima
+                        </p>
+                        <p className="text-xl font-semibold">{panelLabel}</p>
+                        <p className="text-xs text-blue-200">HRIS Portal</p>
+                    </div>
+                )}
+                <button
+                    onClick={onToggle}
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white transition-colors"
+                >
+                    {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                </button>
+            </div>
+
+            {/* Navigation Label */}
+            {isOpen && (
+                <div className="px-6 mb-2">
+                    <p className="text-xs uppercase tracking-wide text-blue-300">
+                        Navigasi
                     </p>
-                    <p className="text-xl font-semibold">{panelLabel}</p>
-                    <p className="text-xs text-blue-200">HRIS Portal</p>
                 </div>
-            </div>
-            <div className="px-6">
-                <p className="text-xs uppercase tracking-wide text-blue-300">
-                    Navigasi
-                </p>
-            </div>
-            <nav className="mt-4 flex flex-col gap-1 px-4">
+            )}
+
+            {/* Nav Items */}
+            <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto py-2">
                 {navItems
                     .filter((item) => (item.superAdminOnly ? isSuperAdmin : true))
                     .map((item) => {
@@ -124,48 +195,81 @@ export default function Sidebar() {
                         <Link
                             key={item.label}
                             href={route(item.routeName)}
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                            title={!isOpen ? item.label : undefined}
+                            className={cn(
+                                "flex items-center rounded-lg transition-all duration-200 group relative",
+                                isOpen ? "gap-3 px-3 py-2" : "justify-center p-3",
                                 isActive
                                     ? 'bg-white/10 text-white'
                                     : 'text-blue-100 hover:bg-white/5'
-                            }`}
+                            )}
                         >
-                            <Icon className="h-4 w-4" />
-                            <span className="flex flex-1 items-center justify-between">
-                                <span>{item.label}</span>
-                                {(() => {
-                                    const rawCount = item.badgeKey
-                                        ? sidebarNotifications[item.badgeKey] ?? 0
-                                        : 0;
-                                    if (!rawCount || rawCount <= 0) {
-                                        return null;
-                                    }
-                                    const displayCount = rawCount > 99 ? '99+' : rawCount;
-                                    return (
-                                        <span className="ml-3 inline-flex min-w-[2rem] justify-center rounded-full bg-rose-500 px-2 py-0.5 text-[11px] font-semibold text-white">
-                                            {displayCount}
-                                        </span>
-                                    );
-                                })()}
-                            </span>
+                            <Icon className={cn("shrink-0", isOpen ? "h-4 w-4" : "h-5 w-5")} />
+                            
+                            {isOpen && (
+                                <span className="flex flex-1 items-center justify-between overflow-hidden">
+                                    <span className="truncate">{item.label}</span>
+                                    {(() => {
+                                        const rawCount = item.badgeKey
+                                            ? liveBadges[item.badgeKey] ?? 0
+                                            : 0;
+                                        if (!rawCount || rawCount <= 0) {
+                                            return null;
+                                        }
+                                        const displayCount = rawCount > 99 ? '99+' : rawCount;
+                                        return (
+                                            <span className="ml-2 inline-flex min-w-[1.25rem] h-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">
+                                                {displayCount}
+                                            </span>
+                                        );
+                                    })()}
+                                </span>
+                            )}
+
+                            {/* Badge for collapsed state */}
+                            {!isOpen && item.badgeKey && (liveBadges[item.badgeKey] ?? 0) > 0 && (
+                                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-blue-950" />
+                            )}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="absolute bottom-0 w-full border-t border-blue-900 px-6 py-5">
-                <p className="text-xs uppercase tracking-wide text-blue-300">
-                    Logged in as
-                </p>
-                <p className="text-sm font-semibold text-white">{user?.name}</p>
-                <p className="text-xs text-blue-200">{user?.email}</p>
-                <button
-                    type="button"
-                    onClick={() => router.post(route('logout'))}
-                    className="mt-4 w-full rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-                >
-                    Keluar
-                </button>
+            {/* Footer */}
+            <div className="border-t border-blue-900 p-4">
+                {isOpen ? (
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-blue-300">
+                                Logged in as
+                            </p>
+                            <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+                            <p className="text-xs text-blue-200 truncate">{user?.email}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => router.post(route('logout'))}
+                            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                        >
+                            <LogOut size={16} />
+                            <span>Keluar</span>
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-4">
+                         <div className="h-8 w-8 rounded-full bg-blue-800 flex items-center justify-center text-xs font-bold text-white cursor-help" title={user?.name}>
+                            {user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => router.post(route('logout'))}
+                            className="p-2 rounded-lg hover:bg-white/10 text-blue-200 hover:text-white transition-colors"
+                            title="Keluar"
+                        >
+                            <LogOut size={20} />
+                        </button>
+                    </div>
+                )}
             </div>
         </aside>
     );

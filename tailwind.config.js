@@ -17,7 +17,9 @@ export default {
     			sans: [
     				'Figtree',
                     ...defaultTheme.fontFamily.sans
-                ]
+                ],
+                poppins: ['Poppins', ...defaultTheme.fontFamily.sans],
+                mulish: ['Mulish', ...defaultTheme.fontFamily.sans],
     		},
     		borderRadius: {
     			lg: 'var(--radius)',

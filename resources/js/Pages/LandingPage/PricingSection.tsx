@@ -1,6 +1,5 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import AOS from 'aos';
-import { gsap } from 'gsap';
 import { Check, Star } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 
@@ -50,47 +49,23 @@ const plans = [
 ];
 
 export function PricingSection() {
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
-
   useEffect(() => {
     AOS.init({
       duration: 1000,
-      once: false,
-      mirror: true,
+      once: true,
       offset: 100,
-    });
-
-    // Add hover animation for cards
-    cardsRef.current.forEach((card, index) => {
-      if (card) {
-        card.addEventListener('mouseenter', () => {
-          gsap.to(card, {
-            scale: index === 1 ? 1.03 : 1.05,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
-        });
-
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
-        });
-      }
     });
   }, []);
 
   return (
-    <section id="pricing" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-50 via-white to-purple-50">
+    <section id="pricing" className="py-16 md:py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16" data-aos="fade-up">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-4">
-            Harga yang Sederhana & <span className="bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">Transparan</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-white mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+            Harga yang Sederhana & <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Transparan</span>
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
             Pilih paket yang sempurna untuk kebutuhan Anda. Semua paket termasuk data tidak terbatas dan tanpa kontrak.
           </p>
         </div>
@@ -100,16 +75,15 @@ export function PricingSection() {
           {plans.map((plan, index) => (
             <div
               key={index}
-              ref={(el) => (cardsRef.current[index] = el)}
               data-aos="fade-up"
               data-aos-delay={index * 100}
-              className={`relative ${
+              className={`relative transition-transform duration-300 ease-out transform-gpu will-change-transform hover:-translate-y-2 hover:scale-[1.03] ${
                 plan.popular ? 'md:-mt-4' : ''
               }`}
             >
               {/* Popular Badge */}
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-1 rounded-full text-sm flex items-center gap-1 shadow-lg z-10">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-1 rounded-full text-sm flex items-center gap-1 shadow-[0_4px_16px_rgba(34,211,238,0.5)] z-10 backdrop-blur-sm border border-cyan-400/30">
                   <Star className="w-4 h-4 fill-current" />
                   Paling Populer
                 </div>
@@ -117,34 +91,34 @@ export function PricingSection() {
 
               {/* Card */}
               <div
-                className={`h-full bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-xl border-2 ${
+                className={`h-full bg-white/15 backdrop-blur-[30px] rounded-[24px] p-6 md:p-8 shadow-[0_8px_32px_rgba(139,92,246,0.3)] border-2 ${
                   plan.popular
-                    ? 'border-purple-500 shadow-purple-200'
-                    : 'border-gray-200'
+                    ? 'border-cyan-400/60 shadow-[0_8px_32px_rgba(34,211,238,0.4)]'
+                    : 'border-white/30'
                 }`}
               >
                 {/* Plan Name */}
-                <h3 className="text-2xl text-gray-900 mb-2">
+                <h3 className="text-2xl text-white mb-2">
                   {plan.name}
                 </h3>
                 
                 {/* Speed */}
-                <div className="text-purple-600 mb-6">{plan.speed}</div>
+                <div className="text-cyan-400 mb-6">{plan.speed}</div>
 
                 {/* Price */}
                 <div className="mb-8">
-                  <span className="text-4xl md:text-5xl text-gray-900">Rp{plan.price}</span>
-                  <span className="text-gray-600">rb/bulan</span>
+                  <span className="text-4xl md:text-5xl text-white">Rp{plan.price}</span>
+                  <span className="text-white/70">rb/bulan</span>
                 </div>
 
                 {/* Features */}
                 <ul className="space-y-4 mb-8">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-purple-600" />
+                      <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5 border border-cyan-400/40">
+                        <Check className="w-3 h-3 text-cyan-400" />
                       </div>
-                      <span className="text-gray-600 text-sm md:text-base">{feature}</span>
+                      <span className="text-white/90 text-sm md:text-base">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -153,9 +127,9 @@ export function PricingSection() {
                 <Button
                   className={`w-full ${
                     plan.popular
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-lg shadow-purple-200'
-                      : 'bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50'
-                  }`}
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-[0_8px_32px_rgba(34,211,238,0.5)] border border-cyan-400/30'
+                      : 'bg-white/20 border-2 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm'
+                  } rounded-[20px]`}
                 >
                   Mulai Sekarang
                 </Button>
@@ -166,7 +140,7 @@ export function PricingSection() {
 
         {/* Bottom Note */}
         <div className="text-center mt-12" data-aos="fade-up" data-aos-delay="400">
-          <p className="text-gray-600">
+          <p className="text-white/80">
             Semua paket dilengkapi dengan jaminan uang kembali 30 hari. Tanpa pertanyaan.
           </p>
         </div>

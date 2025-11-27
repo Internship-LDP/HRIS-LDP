@@ -157,7 +157,7 @@ export default function AdminStaffLetters() {
         jenis_surat: '',
         kategori: '',
         prioritas: '',
-        target_division: '',
+        target_divisions: [] as string[],
         lampiran: null as File | null,
     });
     const replyForm = useForm({

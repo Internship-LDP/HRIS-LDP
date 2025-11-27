@@ -9,6 +9,7 @@ import { PricingSection } from './PricingSection';
 import { CareersSection } from './CareersSection';
 import { ContactSection } from './ContactSection';
 import SplashCursor from '@/Components/SplashCursor';
+import SplashScreen from '@/Components/SplashScreen'; // ⬅️ tambahkan ini
 
 type CareerJob = {
   division: string;
@@ -34,8 +35,14 @@ export default function LandingPage({
   return (
     <>
       <Head title="Lintas Data Prima" />
+
+      {/* Splash Screen modern */}
+      <SplashScreen />
+
+      {/* Cursor efek */}
       <SplashCursor />
-      <div className="bg-white min-h-screen overflow-x-hidden">
+
+      <div className="bg-gradient-to-br from-[#05070f] via-[#0b1024] to-[#050a16] text-white min-h-screen overflow-x-hidden relative">
         <Navbar canLogin={canLogin} canRegister={canRegister} />
         <main>
           <HeroSection />
