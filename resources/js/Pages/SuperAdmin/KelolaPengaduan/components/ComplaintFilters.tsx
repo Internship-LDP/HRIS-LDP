@@ -38,19 +38,19 @@ export default function ComplaintFilters({
     onCategoryChange,
 }: ComplaintFiltersProps) {
     return (
-        <div className="flex flex-col gap-4 lg:flex-row">
+        <div className="flex flex-col gap-2 md:gap-4 lg:flex-row">
             <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute left-2.5 md:left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                     value={search}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
                         onSearchChange(event.target.value)
                     }
-                    placeholder="Cari ID, subjek, atau isi pengaduan..."
-                    className="pl-10"
+                    placeholder="Cari ID, subjek, atau isi..."
+                    className="pl-8 md:pl-10 h-9 md:h-10 text-xs md:text-sm"
                 />
             </div>
-            <div className="flex flex-1 flex-wrap gap-2 lg:flex-none">
+            <div className="grid grid-cols-3 gap-1.5 md:flex md:flex-1 md:flex-wrap md:gap-2 lg:flex-none">
                 <FilterSelect
                     placeholder="Status"
                     emptyLabel="Semua Status"
@@ -97,7 +97,7 @@ function FilterSelect({
 }: FilterSelectProps) {
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-full min-w-[160px] lg:w-40">
+            <SelectTrigger className="w-full min-w-0 md:min-w-[140px] lg:w-40 h-9 md:h-10 text-xs md:text-sm">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>

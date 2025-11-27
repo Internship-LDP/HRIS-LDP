@@ -51,18 +51,18 @@ export default function KelolaStaffIndex() {
 
             <StatsCards stats={stats} />
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-                <Card className='p-6 lg:col-span-2'>
-                    <div className='mb-4 flex items-center justify-between'>
+            <div className='grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3'>
+                <Card className='p-3 md:p-6 lg:col-span-2'>
+                    <div className='mb-3 md:mb-4 flex items-start md:items-center justify-between gap-2'>
                         <div>
-                            <h3 className='text-lg font-semibold text-blue-900'>
+                            <h3 className='text-sm md:text-lg font-semibold text-blue-900'>
                                 Proses Offboarding Aktif
                             </h3>
-                            <p className='text-sm text-slate-500'>
+                            <p className='text-[10px] md:text-sm text-slate-500'>
                                 Pantau pengajuan termination yang sedang berjalan
                             </p>
                         </div>
-                        <Badge variant='outline' className='text-blue-700'>
+                        <Badge variant='outline' className='text-blue-700 text-[10px] md:text-xs shrink-0'>
                             {terminations.active.length} records
                         </Badge>
                     </div>
@@ -72,22 +72,22 @@ export default function KelolaStaffIndex() {
                     />
                 </Card>
 
-                <Card className='space-y-4 p-6'>
-                    <h3 className='text-lg font-semibold text-blue-900'>
+                <Card className='space-y-3 md:space-y-4 p-3 md:p-6'>
+                    <h3 className='text-sm md:text-lg font-semibold text-blue-900'>
                         Informasi Penting
                     </h3>
                     <InfoCard
-                        icon={<Calendar className='h-4 w-4 text-blue-600' />}
+                        icon={<Calendar className='h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600' />}
                         text='Masa pemberitahuan minimal 30 hari sebelum tanggal efektif resign.'
                         variant='info'
                     />
                     <InfoCard
-                        icon={<AlertCircle className='h-4 w-4 text-yellow-600' />}
+                        icon={<AlertCircle className='h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600' />}
                         text='Pastikan serah terima pekerjaan dan inventaris selesai sebelum exit.'
                         variant='warning'
                     />
                     <InfoCard
-                        icon={<CheckCircle className='h-4 w-4 text-green-600' />}
+                        icon={<CheckCircle className='h-3.5 w-3.5 md:h-4 md:w-4 text-green-600' />}
                         text='Exit interview dijadwalkan otomatis setelah pengajuan disetujui.'
                         variant='success'
                     />
@@ -118,8 +118,8 @@ function InfoCard({
               : 'bg-green-50 border-green-200';
 
     return (
-        <div className={`flex items-start gap-3 rounded-lg border p-4 text-sm ${colors}`}>
-            <div>{icon}</div>
+        <div className={`flex items-start gap-2 md:gap-3 rounded-lg border p-2.5 md:p-4 text-[11px] md:text-sm ${colors}`}>
+            <div className="shrink-0">{icon}</div>
             <p className='text-slate-700'>{text}</p>
         </div>
     );

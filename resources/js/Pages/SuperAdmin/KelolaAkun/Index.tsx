@@ -208,7 +208,7 @@ export default function Index(props: IndexPageProps) {
             actions={
                 <Link
                     href={route('super-admin.accounts.create')}
-                    className="inline-flex h-11 items-center justify-center rounded-lg bg-blue-900 px-5 text-sm font-semibold text-white transition hover:bg-blue-800"
+                    className="inline-flex h-10 md:h-11 items-center justify-center rounded-lg bg-blue-900 px-4 md:px-5 text-xs md:text-sm font-semibold text-white transition hover:bg-blue-800 w-full md:w-auto"
                 >
                     Tambah Akun
                 </Link>
@@ -218,16 +218,16 @@ export default function Index(props: IndexPageProps) {
 
             <AccountStats stats={stats} />
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h3 className="text-xl font-semibold text-blue-900">
+            <div className="rounded-xl md:rounded-2xl border bg-white p-3 md:p-6 shadow-sm">
+                <div className="mb-3 md:mb-6">
+                    <h3 className="text-sm md:text-xl font-semibold text-blue-900">
                         Daftar Akun Pengguna
                     </h3>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-[10px] md:text-sm text-slate-500">
                         Pantau status akun, role, dan divisi pengguna sistem
                     </p>
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-6">
                     <AccountFilters
                         search={search}
                         role={roleFilter}

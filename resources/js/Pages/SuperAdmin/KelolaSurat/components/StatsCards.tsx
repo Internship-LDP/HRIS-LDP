@@ -40,20 +40,20 @@ const STAT_META = [
 
 export default function StatsCards({ stats }: StatsCardsProps) {
     return (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 md:gap-6 md:grid-cols-2 xl:grid-cols-4">
             {STAT_META.map((item) => {
                 const Icon = item.icon;
                 return (
-                    <Card key={item.key} className="p-6">
-                        <div className="flex items-center gap-4">
-                            <div className={cn('rounded-lg p-3 text-white', item.bg)}>
-                                <Icon className="h-6 w-6" />
+                    <Card key={item.key} className="p-3 md:p-6">
+                        <div className="flex items-center gap-2 md:gap-4">
+                            <div className={cn('rounded-lg p-2 md:p-3 text-white', item.bg)}>
+                                <Icon className="h-4 w-4 md:h-6 md:w-6" />
                             </div>
-                            <div>
-                                <p className="text-sm text-slate-500">
+                            <div className="min-w-0">
+                                <p className="text-[10px] md:text-sm text-slate-500 truncate">
                                     {item.label}
                                 </p>
-                                <p className="text-2xl font-semibold text-blue-900">
+                                <p className="text-lg md:text-2xl font-semibold text-blue-900">
                                     {stats[item.key] ?? 0}
                                 </p>
                             </div>

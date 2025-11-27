@@ -18,11 +18,11 @@ const labels: { key: keyof AccountStatsProps['stats']; label: string }[] = [
 
 export default function AccountStats({ stats }: AccountStatsProps) {
     return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-3 lg:grid-cols-5">
             {labels.map((item) => (
-                <div key={item.key} className="rounded-lg border bg-white p-4 shadow-sm">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
-                    <p className="mt-1 text-2xl font-semibold text-blue-900">{stats[item.key]}</p>
+                <div key={item.key} className="rounded-lg border bg-white p-2 md:p-4 shadow-sm">
+                    <p className="text-[9px] md:text-xs uppercase tracking-wide text-slate-500 truncate">{item.label}</p>
+                    <p className="mt-0.5 md:mt-1 text-lg md:text-2xl font-semibold text-blue-900">{stats[item.key]}</p>
                 </div>
             ))}
         </div>

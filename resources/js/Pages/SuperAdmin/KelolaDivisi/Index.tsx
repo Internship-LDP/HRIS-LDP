@@ -99,14 +99,14 @@ export default function KelolaDivisiIndex({ divisions, stats, flash }: KelolaDiv
 
             <SummaryCards stats={stats} />
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Divisi & Staff</CardTitle>
-                    <CardDescription>
+            <Card className="mt-4 md:mt-6">
+                <CardHeader className="p-3 md:p-6">
+                    <CardTitle className="text-sm md:text-xl">Divisi & Staff</CardTitle>
+                    <CardDescription className="text-[10px] md:text-sm">
                         Lihat kapasitas tim, detail staff, dan kelola lowongan pekerjaan.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 md:p-6 pt-0 md:pt-0">
                     {divisions.length === 0 ? (
                         <div className="rounded-lg border border-dashed p-8 text-center text-slate-500">
                             Belum ada konfigurasi divisi.

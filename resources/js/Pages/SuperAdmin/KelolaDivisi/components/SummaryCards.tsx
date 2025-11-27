@@ -36,7 +36,7 @@ const SUMMARY_ITEMS: Array<{
 
 export function SummaryCards({ stats }: { stats: StatsSummary }) {
     return (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4">
             {SUMMARY_ITEMS.map((item) => (
                 <SummaryCard
                     key={item.key}
@@ -63,13 +63,13 @@ function SummaryCard({
 }) {
     return (
         <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-                <div className={`rounded-lg p-3 ${accent}`}>
-                    <Icon className="h-6 w-6" />
+            <CardContent className="flex items-center gap-2 md:gap-4 p-3 md:p-6">
+                <div className={`rounded-lg p-2 md:p-3 ${accent}`}>
+                    <Icon className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
-                <div>
-                    <p className="text-sm text-slate-500">{title}</p>
-                    <p className="text-2xl font-semibold text-slate-900">{value}</p>
+                <div className="min-w-0">
+                    <p className="text-[10px] md:text-sm text-slate-500 truncate">{title}</p>
+                    <p className="text-lg md:text-2xl font-semibold text-slate-900">{value}</p>
                 </div>
             </CardContent>
         </Card>
