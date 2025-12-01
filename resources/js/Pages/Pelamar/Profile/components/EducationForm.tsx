@@ -83,12 +83,20 @@ export default function EducationForm({
                                 <Label>Nama Institusi *</Label>
                                 <Input
                                     value={education.institution ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'institution', event.target.value)
-                                    }
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        // Only allow letters, numbers, and spaces
+                                        const validPattern = /^[a-zA-Z0-9\s]*$/;
+                                        if (validPattern.test(value) || value === '') {
+                                            onChange(education.id, 'institution', value);
+                                        }
+                                    }}
                                     placeholder="Contoh: Universitas Indonesia"
                                     disabled={disabled}
                                 />
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Hanya huruf, angka, dan spasi. Tulis dengan lengkap, jangan disingkat (contoh: "Universitas Indonesia" bukan "UI")
+                                </p>
                                 {getFieldError(index, 'institution') && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {getFieldError(index, 'institution')}
@@ -125,12 +133,20 @@ export default function EducationForm({
                                 <Label>Program Studi *</Label>
                                 <Input
                                     value={education.field_of_study ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'field_of_study', event.target.value)
-                                    }
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        // Only allow letters, numbers, and spaces
+                                        const validPattern = /^[a-zA-Z0-9\s]*$/;
+                                        if (validPattern.test(value) || value === '') {
+                                            onChange(education.id, 'field_of_study', value);
+                                        }
+                                    }}
                                     placeholder="Contoh: Teknik Informatika"
                                     disabled={disabled}
                                 />
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Hanya huruf, angka, dan spasi
+                                </p>
                                 {getFieldError(index, 'field_of_study') && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {getFieldError(index, 'field_of_study')}

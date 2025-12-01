@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     ApplicantProfilePayload,
     ApplicantProfileForm,
@@ -7,7 +8,6 @@ import {
     createEmptyExperience,
     Education,
     Experience,
-    FeedbackState,
     RequiredEducationField,
     SectionKey,
     isEducationComplete,
@@ -43,7 +43,6 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         profile.profile_photo_url ?? null,
     );
     const [photoChanged, setPhotoChanged] = useState(false);
-    const [feedback, setFeedback] = useState<FeedbackState>(null);
     const [submittingSection, setSubmittingSection] =
         useState<SectionKey | null>(null);
 
@@ -116,15 +115,15 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                 (form.setData as any)('profile_photo', null);
                 setPhotoChanged(false);
                 router.reload({ only: ['profile'] });
-                setFeedback({
-                    type: 'success',
-                    message: 'Foto profil berhasil disimpan.',
+                toast.success('Berhasil! ', {
+                    description: 'Foto profil berhasil disimpan.',
+                    duration: 3000,
                 });
             },
             onError: () => {
-                setFeedback({
-                    type: 'error',
-                    message: 'Gagal menyimpan foto profil, silakan coba lagi.',
+                toast.error('Gagal Menyimpan ', {
+                    description: 'Gagal menyimpan foto profil, silakan coba lagi.',
+                    duration: 4000,
                 });
             },
             onFinish: () => setSubmittingSection(null),
@@ -211,23 +210,27 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                     (form.setData as any)('profile_photo', null);
                     router.reload({ only: ['profile'] });
                 }
-                setFeedback({
-                    type: 'success',
-                    message:
-                        section === 'personal'
-                            ? 'Data pribadi berhasil disimpan.'
-                            : section === 'education'
-                              ? 'Data pendidikan berhasil disimpan.'
-                              : 'Data pengalaman berhasil disimpan.',
+                const messages = {
+                    personal: 'Data pribadi berhasil disimpan.',
+                    education: 'Data pendidikan berhasil disimpan.',
+                    experience: 'Data pengalaman berhasil disimpan.',
+                    photo: 'Foto profil berhasil disimpan.',
+                };
+                toast.success('Berhasil! ', {
+                    description: messages[section],
+                    duration: 3000,
                 });
             },
             onError: () => {
-                setFeedback({
-                    type: 'error',
-                    message:
-                        section === 'education'
-                            ? 'Periksa kembali data pendidikan yang wajib diisi.'
-                            : 'Gagal menyimpan data, silakan coba lagi.',
+                const errorMessages = {
+                    personal: 'Gagal menyimpan data pribadi, silakan coba lagi.',
+                    education: 'Periksa kembali data pendidikan yang wajib diisi.',
+                    experience: 'Gagal menyimpan data pengalaman, silakan coba lagi.',
+                    photo: 'Gagal menyimpan foto profil, silakan coba lagi.',
+                };
+                toast.error('Gagal Menyimpan ', {
+                    description: errorMessages[section],
+                    duration: 4000,
                 });
             },
             onFinish: () => setSubmittingSection(null),
@@ -248,8 +251,6 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         form,
         photoPreview,
         photoChanged,
-        feedback,
-        setFeedback,
         submittingSection,
         completionPercentage,
         setPersonalField,

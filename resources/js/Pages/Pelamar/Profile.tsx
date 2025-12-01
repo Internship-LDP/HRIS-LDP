@@ -14,7 +14,6 @@ import ProfileHeader from './Profile/components/ProfileHeader';
 import PersonalForm from './Profile/components/PersonalForm';
 import EducationForm from './Profile/components/EducationForm';
 import ExperienceForm from './Profile/components/ExperienceForm';
-import FeedbackDialog from './Profile/components/FeedbackDialog';
 import { useProfileForm } from './Profile/useProfileForm';
 import { ApplicantProfilePayload } from './Profile/profileTypes';
 import {
@@ -42,8 +41,6 @@ export default function Profile({
         form,
         photoPreview,
         photoChanged,
-        feedback,
-        setFeedback,
         submittingSection,
         completionPercentage,
         setPersonalField,
@@ -166,8 +163,6 @@ export default function Profile({
                     </TabsContent>
                 </Tabs>
             </PelamarLayout>
-
-            <FeedbackDialog feedback={feedback} onClose={() => setFeedback(null)} />
             <AlertDialog open={reminderOpen} onOpenChange={setReminderOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>

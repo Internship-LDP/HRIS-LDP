@@ -142,8 +142,94 @@ class ProfileController extends Controller
             \Log::info('Using photo-only validation rules');
         }
 
+        // Custom validation messages in Indonesian
+        $messages = [
+            // Personal data messages
+            'personal.full_name.required' => 'Nama lengkap wajib diisi.',
+            'personal.full_name.string' => 'Nama lengkap harus berupa teks.',
+            'personal.full_name.max' => 'Nama lengkap maksimal 255 karakter.',
+            
+            'personal.email.required' => 'Email wajib diisi.',
+            'personal.email.email' => 'Format email tidak valid.',
+            'personal.email.max' => 'Email maksimal 255 karakter.',
+            'personal.email.unique' => 'Email sudah digunakan.',
+            
+            'personal.phone.required' => 'Nomor telepon wajib diisi.',
+            'personal.phone.string' => 'Nomor telepon harus berupa teks.',
+            'personal.phone.max' => 'Nomor telepon maksimal 30 karakter.',
+            
+            'personal.date_of_birth.required' => 'Tanggal lahir wajib diisi.',
+            'personal.date_of_birth.date' => 'Format tanggal lahir tidak valid.',
+            'personal.date_of_birth.before' => 'Tanggal lahir harus sebelum hari ini.',
+            
+            'personal.gender.required' => 'Jenis kelamin wajib diisi.',
+            'personal.gender.string' => 'Jenis kelamin harus berupa teks.',
+            'personal.gender.max' => 'Jenis kelamin maksimal 20 karakter.',
+            
+            'personal.religion.required' => 'Agama wajib diisi.',
+            'personal.religion.string' => 'Agama harus berupa teks.',
+            'personal.religion.max' => 'Agama maksimal 50 karakter.',
+            
+            'personal.address.required' => 'Alamat lengkap wajib diisi.',
+            'personal.address.string' => 'Alamat harus berupa teks.',
+            
+            'personal.city.required' => 'Kota/Kabupaten wajib diisi.',
+            'personal.city.string' => 'Kota/Kabupaten harus berupa teks.',
+            'personal.city.max' => 'Kota/Kabupaten maksimal 120 karakter.',
+            
+            'personal.province.required' => 'Provinsi wajib diisi.',
+            'personal.province.string' => 'Provinsi harus berupa teks.',
+            'personal.province.max' => 'Provinsi maksimal 120 karakter.',
+            
+            // Profile photo messages
+            'profile_photo.required' => 'Foto profil wajib diisi.',
+            'profile_photo.image' => 'File harus berupa gambar.',
+            'profile_photo.max' => 'Ukuran foto maksimal 5MB.',
+            
+            // Education messages
+            'educations.required' => 'Data pendidikan wajib diisi.',
+            'educations.array' => 'Data pendidikan harus berupa array.',
+            'educations.min' => 'Minimal satu data pendidikan harus diisi.',
+            
+            'educations.*.institution.required' => 'Nama institusi wajib diisi.',
+            'educations.*.institution.string' => 'Nama institusi harus berupa teks.',
+            'educations.*.institution.max' => 'Nama institusi maksimal 255 karakter.',
+            
+            'educations.*.degree.required' => 'Jenjang pendidikan wajib diisi.',
+            'educations.*.degree.string' => 'Jenjang pendidikan harus berupa teks.',
+            'educations.*.degree.max' => 'Jenjang pendidikan maksimal 120 karakter.',
+            
+            'educations.*.field_of_study.required' => 'Jurusan wajib diisi.',
+            'educations.*.field_of_study.string' => 'Jurusan harus berupa teks.',
+            'educations.*.field_of_study.max' => 'Jurusan maksimal 255 karakter.',
+            
+            'educations.*.start_year.required' => 'Tahun mulai wajib diisi.',
+            'educations.*.start_year.string' => 'Tahun mulai harus berupa teks.',
+            'educations.*.start_year.regex' => 'Tahun mulai harus 4 digit angka.',
+            
+            'educations.*.end_year.required' => 'Tahun selesai wajib diisi.',
+            'educations.*.end_year.string' => 'Tahun selesai harus berupa teks.',
+            'educations.*.end_year.regex' => 'Tahun selesai harus 4 digit angka.',
+            
+            'educations.*.gpa.numeric' => 'IPK harus berupa angka.',
+            'educations.*.gpa.between' => 'IPK harus antara 0 sampai 4.00.',
+            
+            // Experience messages
+            'experiences.array' => 'Data pengalaman harus berupa array.',
+            'experiences.*.company.string' => 'Nama perusahaan harus berupa teks.',
+            'experiences.*.company.max' => 'Nama perusahaan maksimal 255 karakter.',
+            'experiences.*.position.string' => 'Posisi harus berupa teks.',
+            'experiences.*.position.max' => 'Posisi maksimal 255 karakter.',
+            'experiences.*.start_date.string' => 'Tanggal mulai harus berupa teks.',
+            'experiences.*.start_date.max' => 'Tanggal mulai maksimal 20 karakter.',
+            'experiences.*.end_date.string' => 'Tanggal selesai harus berupa teks.',
+            'experiences.*.end_date.max' => 'Tanggal selesai maksimal 20 karakter.',
+            'experiences.*.description.string' => 'Deskripsi harus berupa teks.',
+            'experiences.*.is_current.boolean' => 'Status pekerjaan sekarang harus benar/salah.',
+        ];
+
         try {
-            $validated = $request->validate($rules);
+            $validated = $request->validate($rules, $messages);
         } catch (ValidationException $exception) {
             if ($section === 'photo') {
                 \Log::warning('Profile photo validation failed', [

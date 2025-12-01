@@ -32,6 +32,49 @@ export default function PersonalForm({
     processing,
     disabled = false,
 }: PersonalFormProps) {
+    // Validation: Only letters, spaces, hyphens, and apostrophes
+    const handleNameChange = (value: string) => {
+        const validNamePattern = /^[a-zA-Z\s\-']*$/;
+        if (validNamePattern.test(value) || value === '') {
+            onChange('full_name', value);
+        }
+    };
+
+    // Validation: Must contain @
+    const handleEmailChange = (value: string) => {
+        onChange('email', value);
+    };
+
+    // Validation: Only numbers, 8-12 characters
+    const handlePhoneChange = (value: string) => {
+        const numbersOnly = value.replace(/\D/g, '');
+        if (numbersOnly.length <= 12) {
+            onChange('phone', numbersOnly);
+        }
+    };
+
+    // Validation: Only letters and spaces for city/province
+    const handleCityChange = (value: string) => {
+        const validCityPattern = /^[a-zA-Z\s]*$/;
+        if (validCityPattern.test(value) || value === '') {
+            onChange('city', value);
+        }
+    };
+
+    const handleProvinceChange = (value: string) => {
+        const validProvincePattern = /^[a-zA-Z\s]*$/;
+        if (validProvincePattern.test(value) || value === '') {
+            onChange('province', value);
+        }
+    };
+
+    // Get today's date in YYYY-MM-DD format for max date restriction
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const maxDate = yesterday.toISOString().split('T')[0];
+
     return (
         <Card className="p-6">
             <h3 className="mb-4 text-lg font-semibold text-blue-900">
@@ -42,10 +85,13 @@ export default function PersonalForm({
                     <Label>Nama Lengkap *</Label>
                     <Input
                         value={data.full_name}
-                        onChange={(event) => onChange('full_name', event.target.value)}
+                        onChange={(event) => handleNameChange(event.target.value)}
                         placeholder="Masukkan nama lengkap"
                         disabled={disabled}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        Hanya huruf, spasi, tanda hubung (-) dan apostrof (')
+                    </p>
                     {errors['personal.full_name'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.full_name']}
@@ -57,10 +103,13 @@ export default function PersonalForm({
                     <Input
                         type="email"
                         value={data.email}
-                        onChange={(event) => onChange('email', event.target.value)}
+                        onChange={(event) => handleEmailChange(event.target.value)}
                         placeholder="email@contoh.com"
                         disabled={disabled}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        Harus mengandung simbol @
+                    </p>
                     {errors['personal.email'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.email']}
@@ -71,10 +120,19 @@ export default function PersonalForm({
                     <Label>Nomor Telepon *</Label>
                     <Input
                         value={data.phone}
-                        onChange={(event) => onChange('phone', event.target.value)}
+                        onChange={(event) => handlePhoneChange(event.target.value)}
                         placeholder="08xxxxxxxxxx"
                         disabled={disabled}
+                        maxLength={12}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        8-12 digit angka
+                    </p>
+                    {data.phone && (data.phone.length < 8 || data.phone.length > 12) && (
+                        <p className="mt-1 text-sm text-amber-600">
+                            Nomor telepon harus 8-12 digit
+                        </p>
+                    )}
                     {errors['personal.phone'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.phone']}
@@ -88,7 +146,11 @@ export default function PersonalForm({
                         value={data.date_of_birth}
                         onChange={(event) => onChange('date_of_birth', event.target.value)}
                         disabled={disabled}
+                        max={maxDate}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        Tidak dapat memilih tanggal hari ini atau masa depan
+                    </p>
                     {errors['personal.date_of_birth'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.date_of_birth']}
@@ -165,10 +227,13 @@ export default function PersonalForm({
                     <Label>Kota/Kabupaten *</Label>
                     <Input
                         value={data.city}
-                        onChange={(event) => onChange('city', event.target.value)}
+                        onChange={(event) => handleCityChange(event.target.value)}
                         placeholder="Contoh: Jakarta Selatan"
                         disabled={disabled}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        Hanya huruf dan spasi
+                    </p>
                     {errors['personal.city'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.city']}
@@ -179,10 +244,13 @@ export default function PersonalForm({
                     <Label>Provinsi *</Label>
                     <Input
                         value={data.province}
-                        onChange={(event) => onChange('province', event.target.value)}
+                        onChange={(event) => handleProvinceChange(event.target.value)}
                         placeholder="Contoh: DKI Jakarta"
                         disabled={disabled}
                     />
+                    <p className="mt-1 text-xs text-slate-500">
+                        Hanya huruf dan spasi
+                    </p>
                     {errors['personal.province'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.province']}
