@@ -133,31 +133,31 @@ export default function Dashboard({
         >
             <Head title="Super Admin Dashboard" />
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
                 {statCards.map((stat) => (
                     <div
                         key={stat.label}
-                        className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                        className="rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                     >
                         <div className="flex items-start justify-between">
-                            <div className={`${stat.color} rounded-xl p-3`}>
-                                <stat.icon className="h-6 w-6 text-white" />
+                            <div className={`${stat.color} rounded-xl p-2`}>
+                                <stat.icon className="h-5 w-5 text-white" />
                             </div>
                             {stat.trend === 'up' ? (
-                                <TrendingUp className="h-5 w-5 text-green-500" />
+                                <TrendingUp className="h-4 w-4 text-green-500" />
                             ) : (
-                                <TrendingDown className="h-5 w-5 text-red-500" />
+                                <TrendingDown className="h-4 w-4 text-red-500" />
                             )}
                         </div>
-                        <p className="mt-4 text-sm text-slate-500">
+                        <p className="mt-3 text-xs text-slate-500">
                             {stat.label}
                         </p>
-                        <div className="mt-2 flex items-end gap-2">
-                            <span className="text-2xl font-semibold text-blue-900">
+                        <div className="mt-1 flex items-end gap-1.5">
+                            <span className="text-xl font-semibold text-blue-900">
                                 {stat.value}
                             </span>
                             <span
-                                className={`text-sm ${
+                                className={`text-xs ${
                                     stat.trend === 'up'
                                         ? 'text-green-500'
                                         : 'text-red-500'
@@ -170,22 +170,22 @@ export default function Dashboard({
                 ))}
             </div>
 
-            <section className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
+            <section className="mt-8 rounded-2xl border bg-white p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
                     <div>
-                        <h3 className="text-lg font-semibold text-blue-900">Total Pendaftar per Divisi</h3>
-                        <p className="text-sm text-slate-500">Monitoring jumlah pelamar berdasarkan divisi</p>
+                        <h3 className="text-base font-semibold text-blue-900">Total Pendaftar per Divisi</h3>
+                        <p className="text-xs text-slate-500">Monitoring jumlah pelamar berdasarkan divisi</p>
                     </div>
                 </div>
 
                 {divisionApplicants.length > 0 ? (
                     <Tabs defaultValue={divisionApplicants[0].id} className="w-full">
-                        <TabsList className="mb-4 flex h-auto w-full flex-wrap justify-start gap-2 border border-slate-200 bg-white p-1">
+                        <TabsList className="mb-3 flex h-auto w-full flex-wrap justify-start gap-1.5 border border-slate-200 bg-white p-1">
                             {divisionApplicants.map((div) => (
                                 <TabsTrigger
                                     key={div.id}
                                     value={div.id}
-                                    className="px-4 py-2 data-[state=active]:bg-blue-900 data-[state=active]:text-white rounded-md transition-all"
+                                    className="px-3 py-1.5 text-xs data-[state=active]:bg-blue-900 data-[state=active]:text-white rounded-md transition-all"
                                 >
                                     {div.name}
                                 </TabsTrigger>
@@ -206,34 +206,34 @@ export default function Dashboard({
 
                             return (
                                 <TabsContent key={div.id} value={div.id} className="mt-0">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                        <Card className="md:col-span-1 border-l-4 border-blue-500 p-6 shadow-sm">
-                                            <div className="mb-4 flex items-start justify-between">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <Card className="md:col-span-1 border-l-4 border-blue-500 p-4 shadow-sm">
+                                            <div className="mb-3 flex items-start justify-between">
                                                 <div>
-                                                    <p className="text-sm font-medium text-slate-500">Total Pelamar</p>
-                                                    <h2 className="mt-2 text-4xl font-bold text-blue-900">{formatNumber(div.count)}</h2>
+                                                    <p className="text-xs font-medium text-slate-500">Total Pelamar</p>
+                                                    <h2 className="mt-1.5 text-3xl font-bold text-blue-900">{formatNumber(div.count)}</h2>
                                                 </div>
-                                                <div className="rounded-lg bg-blue-50 p-3">
-                                                    <Users className="h-6 w-6 text-blue-600" />
+                                                <div className="rounded-lg bg-blue-50 p-2">
+                                                    <Users className="h-5 w-5 text-blue-600" />
                                                 </div>
                                             </div>
-                                            <div className="mt-4 flex items-center text-sm">
-                                                <div className="mr-2 rounded-full bg-green-100 p-1">
-                                                    <TrendingUp className="h-4 w-4 text-green-600" />
+                                            <div className="mt-3 flex items-center text-xs">
+                                                <div className="mr-1.5 rounded-full bg-green-100 p-0.5">
+                                                    <TrendingUp className="h-3 w-3 text-green-600" />
                                                 </div>
-                                                <span className="mr-1 text-base font-bold text-green-600">+{formatNumber(div.new)}</span>
+                                                <span className="mr-1 text-sm font-bold text-green-600">+{formatNumber(div.new)}</span>
                                                 <span className="text-slate-500">pelamar baru bulan ini</span>
                                             </div>
                                         </Card>
 
-                                        <Card className="md:col-span-2 flex flex-col justify-center p-6 shadow-sm">
-                                            <div className="mb-4 flex items-center justify-between">
-                                                <h4 className="font-medium text-blue-900">Tren Pendaftaran - {div.name}</h4>
-                                                <Badge variant="outline" className="border-blue-200 text-blue-600">
+                                        <Card className="md:col-span-2 flex flex-col justify-center p-4 shadow-sm">
+                                            <div className="mb-3 flex items-center justify-between">
+                                                <h4 className="text-sm font-medium text-blue-900">Tren Pendaftaran - {div.name}</h4>
+                                                <Badge variant="outline" className="border-blue-200 text-blue-600 text-[10px]">
                                                     30 Hari Terakhir ({new Date().toLocaleDateString('id-ID', { month: 'long' })})
                                                 </Badge>
                                             </div>
-                                            <div className="h-[180px] w-full">
+                                            <div className="h-[135px] w-full">
                                                 <ResponsiveContainer width="100%" height="100%" debounce={300}>
                                                     <BarChart data={chartData}>
                                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
@@ -253,63 +253,63 @@ export default function Dashboard({
                         })}
                     </Tabs>
                 ) : (
-                    <p className="text-sm text-slate-500">Belum ada data pendaftar per divisi.</p>
+                    <p className="text-xs text-slate-500">Belum ada data pendaftar per divisi.</p>
                 )}
             </section>
 
-            <section className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-                <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <section className="mt-8 rounded-2xl border bg-white p-4 shadow-sm">
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h3 className="text-xl font-semibold text-blue-900">
+                        <h3 className="text-lg font-semibold text-blue-900">
                             Statistik Staff
                         </h3>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-xs text-slate-500">
                             Demografi dan distribusi staff PT. Lintas Data Prima
                         </p>
                     </div>
                     <Badge className="bg-blue-900 text-white">
-                        <UserCheck className="h-3 w-3" />
-                        <span className="text-xs font-medium">
+                        <UserCheck className="h-2.5 w-2.5" />
+                        <span className="text-[10px] font-medium">
                             {formatNumber(staffStats.total)} Total Staff
                         </span>
                     </Badge>
                 </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="rounded-lg bg-green-500 p-3">
-                                <UserCheck className="h-6 w-6 text-white" />
+                <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-lg bg-green-500 p-2">
+                                <UserCheck className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Staff Aktif</p>
-                                <p className="text-2xl font-semibold text-blue-900">
+                                <p className="text-xs text-slate-500">Staff Aktif</p>
+                                <p className="text-xl font-semibold text-blue-900">
                                     {formatNumber(staffStats.active)}
                                 </p>
                             </div>
                         </div>
                     </Card>
-                    <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="rounded-lg bg-blue-500 p-3">
-                                <Users className="h-6 w-6 text-white" />
+                    <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-lg bg-blue-500 p-2">
+                                <Users className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Total Staff</p>
-                                <p className="text-2xl font-semibold text-blue-900">
+                                <p className="text-xs text-slate-500">Total Staff</p>
+                                <p className="text-xl font-semibold text-blue-900">
                                     {formatNumber(staffStats.total)}
                                 </p>
                             </div>
                         </div>
                     </Card>
-                    <Card className="p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="rounded-lg bg-red-500 p-3">
-                                <UserX className="h-6 w-6 text-white" />
+                    <Card className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-lg bg-red-500 p-2">
+                                <UserX className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <p className="text-sm text-slate-500">Staff Tidak Aktif</p>
-                                <p className="text-2xl font-semibold text-blue-900">
+                                <p className="text-xs text-slate-500">Staff Tidak Aktif</p>
+                                <p className="text-xl font-semibold text-blue-900">
                                     {formatNumber(staffStats.inactive)}
                                 </p>
                             </div>
@@ -317,12 +317,12 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <Card className="p-6">
-                        <h3 className="mb-4 text-blue-900">Berdasarkan Agama</h3>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <Card className="p-4">
+                        <h3 className="mb-3 text-sm font-semibold text-blue-900">Berdasarkan Agama</h3>
                         {religionData.length > 0 ? (
                             <>
-                                <ResponsiveContainer width="100%" height={200} debounce={300}>
+                                <ResponsiveContainer width="100%" height={150} debounce={300}>
                                     <PieChart>
                                         <Pie
                                             data={religionData}
@@ -342,7 +342,7 @@ export default function Dashboard({
                                         <Tooltip />
                                     </PieChart>
                                 </ResponsiveContainer>
-                                <div className="mt-4 space-y-2 text-sm">
+                                <div className="mt-3 space-y-1.5 text-xs">
                                     {religionData.map((item, index) => (
                                         <div
                                             key={`${item.name}-${index}`}
@@ -365,44 +365,44 @@ export default function Dashboard({
                                 </div>
                             </>
                         ) : (
-                            <p className="text-sm text-slate-500">
+                            <p className="text-xs text-slate-500">
                                 Belum ada data agama staff yang tersedia.
                             </p>
                         )}
                     </Card>
 
-                    <Card className="p-6">
-                        <h3 className="mb-4 text-blue-900">Berdasarkan Jenis Kelamin</h3>
+                    <Card className="p-4">
+                        <h3 className="mb-3 text-sm font-semibold text-blue-900">Berdasarkan Jenis Kelamin</h3>
                         {genderData.length > 0 ? (
                             <>
-                                <div className="space-y-6">
+                                <div className="space-y-4">
                                     {genderData.map((item, index) => (
                                         <div key={`${item.name}-${index}`}>
-                                            <div className="mb-2 flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
+                                            <div className="mb-1.5 flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5">
                                                     <div
-                                                        className="h-4 w-4 rounded"
+                                                        className="h-3 w-3 rounded"
                                                         style={{ backgroundColor: item.color }}
                                                     />
                                                     <span className="text-slate-900">
                                                         {item.name}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-slate-900">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs text-slate-900">
                                                         {formatNumber(item.value)}
                                                     </span>
                                                     <Badge
                                                         variant="outline"
-                                                        className="text-xs text-slate-600"
+                                                        className="text-[10px] text-slate-600"
                                                     >
                                                         {item.percentage}%
                                                     </Badge>
                                                 </div>
                                             </div>
-                                            <div className="h-3 w-full rounded-full bg-slate-200">
+                                            <div className="h-2 w-full rounded-full bg-slate-200">
                                                 <div
-                                                    className="h-3 rounded-full transition-all"
+                                                    className="h-2 rounded-full transition-all"
                                                     style={{
                                                         width: `${item.percentage}%`,
                                                         backgroundColor: item.color,
@@ -412,25 +412,25 @@ export default function Dashboard({
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
-                                    <p className="text-blue-900">Rasio Gender</p>
-                                    <p className="mt-1 text-slate-600">
+                                <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs">
+                                    <p className="text-blue-900 font-medium">Rasio Gender</p>
+                                    <p className="mt-0.5 text-slate-600">
                                         {genderRatioText}
                                     </p>
                                 </div>
                             </>
                         ) : (
-                            <p className="text-sm text-slate-500">
+                            <p className="text-xs text-slate-500">
                                 Belum ada data gender staff yang tersedia.
                             </p>
                         )}
                     </Card>
 
-                    <Card className="p-6">
-                        <h3 className="mb-4 text-blue-900">Berdasarkan Pendidikan</h3>
+                    <Card className="p-4">
+                        <h3 className="mb-3 text-sm font-semibold text-blue-900">Berdasarkan Pendidikan</h3>
                         {educationData.length > 0 ? (
                             <>
-                                <ResponsiveContainer width="100%" height={200} debounce={300}>
+                                <ResponsiveContainer width="100%" height={150} debounce={300}>
                                     <BarChart data={educationData}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="level" />
@@ -439,14 +439,14 @@ export default function Dashboard({
                                         <Bar dataKey="value" fill="#1e3a8a" />
                                     </BarChart>
                                 </ResponsiveContainer>
-                                <div className="mt-4 space-y-2">
+                                <div className="mt-3 space-y-1.5">
                                     {educationData.map((item, index) => (
                                         <div
                                             key={`${item.level}-${index}`}
-                                            className="flex items-center justify-between rounded-lg bg-slate-50 p-2 text-sm"
+                                            className="flex items-center justify-between rounded-lg bg-slate-50 p-1.5 text-xs"
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <GraduationCap className="h-4 w-4 text-blue-900" />
+                                            <div className="flex items-center gap-1.5">
+                                                <GraduationCap className="h-3 w-3 text-blue-900" />
                                                 <span className="text-slate-900">
                                                     {item.level}
                                                 </span>
@@ -459,7 +459,7 @@ export default function Dashboard({
                                 </div>
                             </>
                         ) : (
-                            <p className="text-sm text-slate-500">
+                            <p className="text-xs text-slate-500">
                                 Belum ada data pendidikan staff yang tersedia.
                             </p>
                         )}
@@ -467,12 +467,12 @@ export default function Dashboard({
                 </div>
             </section>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-semibold text-blue-900">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="rounded-2xl border bg-white p-4 shadow-sm">
+                    <h3 className="mb-3 text-base font-semibold text-blue-900">
                         Tren Registrasi & Lamaran
                     </h3>
-                    <ResponsiveContainer width="100%" height={280} debounce={300}>
+                    <ResponsiveContainer width="100%" height={210} debounce={300}>
                         <LineChart data={activityData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
