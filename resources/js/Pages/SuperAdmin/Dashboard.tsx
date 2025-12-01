@@ -234,7 +234,7 @@ export default function Dashboard({
                                                 </Badge>
                                             </div>
                                             <div className="h-[180px] w-full">
-                                                <ResponsiveContainer width="100%" height="100%">
+                                                <ResponsiveContainer width="100%" height="100%" debounce={300}>
                                                     <BarChart data={chartData}>
                                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                                                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
@@ -322,7 +322,7 @@ export default function Dashboard({
                         <h3 className="mb-4 text-blue-900">Berdasarkan Agama</h3>
                         {religionData.length > 0 ? (
                             <>
-                                <ResponsiveContainer width="100%" height={200}>
+                                <ResponsiveContainer width="100%" height={200} debounce={300}>
                                     <PieChart>
                                         <Pie
                                             data={religionData}
@@ -430,7 +430,7 @@ export default function Dashboard({
                         <h3 className="mb-4 text-blue-900">Berdasarkan Pendidikan</h3>
                         {educationData.length > 0 ? (
                             <>
-                                <ResponsiveContainer width="100%" height={200}>
+                                <ResponsiveContainer width="100%" height={200} debounce={300}>
                                     <BarChart data={educationData}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="level" />
@@ -472,7 +472,7 @@ export default function Dashboard({
                     <h3 className="mb-4 text-lg font-semibold text-blue-900">
                         Tren Registrasi & Lamaran
                     </h3>
-                    <ResponsiveContainer width="100%" height={280}>
+                    <ResponsiveContainer width="100%" height={280} debounce={300}>
                         <LineChart data={activityData}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />

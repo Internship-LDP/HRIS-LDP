@@ -77,9 +77,9 @@ export default function SuperAdminLayout({
             />
             
             <div className={cn(
-                "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out",
-                "ml-0 md:ml-64",
-                !isSidebarOpen && "md:ml-20"
+                "flex-1 flex flex-col min-h-screen transition-[margin] duration-300 ease-in-out will-change-[margin]",
+                "ml-0 md:ml-52",
+                !isSidebarOpen && "md:ml-16"
             )}>
                 {/* Mobile header */}
                 <div className="sticky top-0 z-30 flex items-center gap-4 bg-white border-b border-slate-200 px-4 py-3 md:hidden">
