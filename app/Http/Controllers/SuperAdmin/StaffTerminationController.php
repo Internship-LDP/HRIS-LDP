@@ -76,6 +76,14 @@ class StaffTerminationController extends Controller
     {
         $user = User::where('employee_code', $request->input('employee_code'))->firstOrFail();
 
+        // Validasi: Hanya karyawan dengan role "Staff" yang bisa diajukan termination
+        if ($user->role !== User::ROLES['staff']) {
+            return redirect()
+                ->back()
+                ->withErrors(['employee_code' => 'ID Karyawan yang dimasukkan bukan staff. Hanya staff yang dapat diajukan untuk termination.'])
+                ->withInput();
+        }
+
         StaffTermination::create([
             'reference' => StaffTermination::generateReference(),
             'user_id' => $user->id,
@@ -148,18 +156,12 @@ class StaffTerminationController extends Controller
     {
         $this->authorizeAccess($request->user());
 
-        abort_unless(
-            $termination->status === 'Selesai',
-            403,
-            'Hanya arsip nonaktif yang dapat dihapus.'
-        );
-
         $employeeName = $termination->employee_name;
         $termination->delete();
 
         return redirect()
             ->route('super-admin.staff.index')
-            ->with('success', "Arsip offboarding {$employeeName} berhasil dihapus.");
+            ->with('success', "Offboarding {$employeeName} berhasil dibatalkan.");
     }
 
     private function transformTerminations(Collection $terminations): array

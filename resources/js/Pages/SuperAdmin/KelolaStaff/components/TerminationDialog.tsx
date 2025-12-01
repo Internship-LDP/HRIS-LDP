@@ -36,7 +36,6 @@ export default function TerminationDialog({
         type: '' as '' | 'Resign' | 'PHK' | 'Pensiun',
         effective_date: '',
         reason: '',
-        suggestion: '',
     });
 
     const handleSubmit = () => {
@@ -77,7 +76,7 @@ export default function TerminationDialog({
                             <div className="space-y-2">
                                 <Label>ID Karyawan</Label>
                                 <Input
-                                    placeholder="EMP-XXXX"
+                                    placeholder="STFXXXX"
                                     value={form.data.employee_code}
                                     onChange={(event) =>
                                         form.setData('employee_code', event.target.value.toUpperCase())
@@ -140,18 +139,6 @@ export default function TerminationDialog({
                                 )}
                             </div>
                         </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Saran (Opsional)</Label>
-                        <Textarea
-                            rows={4}
-                            placeholder="Saran untuk perusahaan"
-                            value={form.data.suggestion}
-                            onChange={(event) => form.setData('suggestion', event.target.value)}
-                        />
-                        {form.errors.suggestion && (
-                            <p className="text-xs text-red-500">{form.errors.suggestion}</p>
-                        )}
                     </div>
                     <div className="flex flex-col gap-3 md:flex-row md:justify-end">
                         <Button

@@ -68,6 +68,7 @@ export default function ChecklistDialog({
     const totalItems = checklistTemplate.length || 1;
     const completedItems = Object.values(form.data.checklist).filter(Boolean).length;
     const progressValue = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+    const allChecklistCompleted = completedItems === totalItems;
 
     const handleSubmit = (
         statusOverride?: TerminationRecord['status'],
@@ -211,8 +212,9 @@ export default function ChecklistDialog({
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="border-green-500 text-green-600"
-                                    disabled={form.processing}
+                                    className="border-green-500 text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={form.processing || !allChecklistCompleted}
+                                    title={!allChecklistCompleted ? `Checklist belum lengkap (${completedItems}/${totalItems})` : ''}
                                 >
                                     <CheckCircle className="mr-2 h-4 w-4" />
                                     Tandai Selesai
@@ -226,9 +228,8 @@ export default function ChecklistDialog({
                                         memperbarui status offboarding menjadi selesai.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-                                    {completedItems} dari {totalItems} tugas saat ini sudah dicentang. Mohon
-                                    pastikan tidak ada pending checklist sebelum melanjutkan.
+                                <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+                                    ✓ Semua {totalItems} tugas checklist telah diselesaikan. Proses offboarding siap ditandai selesai.
                                 </div>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel disabled={form.processing}>
@@ -245,6 +246,11 @@ export default function ChecklistDialog({
                             </AlertDialogContent>
                         </AlertDialog>
 
+                        {!allChecklistCompleted && (
+                            <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-700">
+                                ⚠️ Checklist belum lengkap ({completedItems}/{totalItems})
+                            </Badge>
+                        )}
                         <Badge variant="outline" className="border-slate-300 text-slate-600">
                             Checklist bersifat internal untuk tim HR.
                         </Badge>
