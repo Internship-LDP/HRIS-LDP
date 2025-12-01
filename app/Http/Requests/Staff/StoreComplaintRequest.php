@@ -23,7 +23,15 @@ class StoreComplaintRequest extends FormRequest
             'description' => ['required', 'string', 'max:5000'],
             'priority' => ['required', 'in:high,medium,low'],
             'anonymous' => ['nullable', 'boolean'],
-            'attachment' => ['nullable', 'file', 'max:5120'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'attachment.mimes' => 'Lampiran harus berupa file dengan tipe: PDF, JPG, JPEG, atau PNG.',
+            'attachment.max' => 'Ukuran lampiran tidak boleh lebih dari 5 MB.',
         ];
     }
 }

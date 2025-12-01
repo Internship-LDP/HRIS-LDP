@@ -113,6 +113,11 @@ export default function ComplaintComposerDialog({
                 });
                 handleClose();
             },
+            onError: () => {
+                toast.error('Gagal mengirim pengaduan', {
+                    description: 'Silakan periksa kembali formulir Anda.',
+                });
+            },
         });
     };
 
@@ -129,6 +134,7 @@ export default function ComplaintComposerDialog({
                         <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
                             <Checkbox
                                 id="anonymous"
+                                className="border-blue-400 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                                 checked={form.data.anonymous}
                                 onCheckedChange={(checked) => form.setData('anonymous', Boolean(checked))}
                             />
@@ -236,7 +242,7 @@ export default function ComplaintComposerDialog({
                                     </div>
                                 )}
                                 <p className="text-xs text-slate-500">
-                                    Format yang diterima: PDF, JPG, PNG dengan ukuran maksimal 5 MB.
+                                    Format yang diterima: PDF, JPG, JPEG, PNG dengan ukuran maksimal 5 MB.
                                 </p>
                             </div>
                             {form.errors.attachment && (
