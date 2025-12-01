@@ -9,7 +9,7 @@ import {
 } from '@/Pages/SuperAdmin/components/accounts/types';
 import { PageProps } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type IndexPageProps = PageProps<{
@@ -35,8 +35,7 @@ type IndexPageProps = PageProps<{
     };
 }>;
 
-const defaultFilterValue = (value?: string | null) =>
-    value && value.length > 0 ? value : 'all';
+
 
 interface UserLoggedInPayload {
     id: number;
@@ -53,20 +52,15 @@ export default function Index(props: IndexPageProps) {
         flash,
     } = props;
 
-    const [search, setSearch] = useState(filters.search ?? '');
-    const [roleFilter, setRoleFilter] = useState(
-        defaultFilterValue(filters.role),
-    );
-    const [statusFilter, setStatusFilter] = useState(
-        defaultFilterValue(filters.status),
-    );
-    const [accountRows, setAccountRows] = useState(users.data);
+    const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [allUsers, setAllUsers] = useState(users.data);
     const [paginationLinks, setPaginationLinks] = useState(users.links);
     const [selectedUser, setSelectedUser] = useState<AccountRecord | null>(
         null,
     );
     const [detailOpen, setDetailOpen] = useState(false);
-    const firstRender = useRef(true);
     useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
@@ -76,32 +70,36 @@ export default function Index(props: IndexPageProps) {
         }
     }, [flash?.success, flash?.generated_password]);
 
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-            return;
+    // Client-side filtering - no server request, no URL change
+    const accountRows = useMemo(() => {
+        let filtered = allUsers;
+
+        // Filter by search
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filtered = filtered.filter(
+                (user) =>
+                    user.id.toString().includes(searchLower) ||
+                    user.name.toLowerCase().includes(searchLower) ||
+                    user.email.toLowerCase().includes(searchLower),
+            );
         }
 
-        const params = {
-            search: search || undefined,
-            role: roleFilter !== 'all' ? roleFilter : undefined,
-            status: statusFilter !== 'all' ? statusFilter : undefined,
-        };
+        // Filter by role
+        if (roleFilter !== 'all') {
+            filtered = filtered.filter((user) => user.role === roleFilter);
+        }
 
-        router.reload({
-            data: params,
-            only: ['users', 'filters', 'stats'],
-        });
-    }, [search, roleFilter, statusFilter]);
+        // Filter by status
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter((user) => user.status === statusFilter);
+        }
 
-    useEffect(() => {
-        setSearch(filters.search ?? '');
-        setRoleFilter(defaultFilterValue(filters.role));
-        setStatusFilter(defaultFilterValue(filters.status));
-    }, [filters.search, filters.role, filters.status]);
+        return filtered;
+    }, [allUsers, search, roleFilter, statusFilter]);
 
     useEffect(() => {
-        setAccountRows(users.data);
+        setAllUsers(users.data);
         setPaginationLinks(users.links);
     }, [users.data, users.links]);
 
@@ -113,7 +111,7 @@ export default function Index(props: IndexPageProps) {
         const channel = window.Echo.private('super-admin.accounts');
 
         const handleUserLoggedIn = (payload: UserLoggedInPayload) => {
-            setAccountRows((current) =>
+            setAllUsers((current) =>
                 current.map((account) =>
                     account.id === payload.id
                         ? { ...account, last_login_at: payload.last_login_at }
@@ -141,7 +139,7 @@ export default function Index(props: IndexPageProps) {
             return;
         }
 
-        const latestSelected = accountRows.find(
+        const latestSelected = allUsers.find(
             (account) => account.id === selectedUser.id,
         );
 
