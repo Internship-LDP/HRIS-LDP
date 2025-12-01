@@ -66,7 +66,6 @@ export default function Index(props: IndexPageProps) {
         null,
     );
     const [detailOpen, setDetailOpen] = useState(false);
-    const filterTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const firstRender = useRef(true);
     useEffect(() => {
         if (flash?.success) {
@@ -83,32 +82,16 @@ export default function Index(props: IndexPageProps) {
             return;
         }
 
-        if (filterTimeout.current) {
-            clearTimeout(filterTimeout.current);
-        }
-
-        filterTimeout.current = setTimeout(() => {
-            const params = {
-                search: search || undefined,
-                role: roleFilter !== 'all' ? roleFilter : undefined,
-                status: statusFilter !== 'all' ? statusFilter : undefined,
-            };
-
-            router.visit(route('super-admin.accounts.index'), {
-                method: 'get',
-                data: params,
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-                only: ['users', 'filters', 'stats'],
-            });
-        }, 250);
-
-        return () => {
-            if (filterTimeout.current) {
-                clearTimeout(filterTimeout.current);
-            }
+        const params = {
+            search: search || undefined,
+            role: roleFilter !== 'all' ? roleFilter : undefined,
+            status: statusFilter !== 'all' ? statusFilter : undefined,
         };
+
+        router.reload({
+            data: params,
+            only: ['users', 'filters', 'stats'],
+        });
     }, [search, roleFilter, statusFilter]);
 
     useEffect(() => {

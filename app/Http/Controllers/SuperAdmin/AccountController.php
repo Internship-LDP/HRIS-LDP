@@ -28,7 +28,7 @@ class AccountController extends Controller
 
         $query = User::query()->latest();
 
-        // 🔍 Filter pencarian
+        //  Filter pencarian
         if ($filters['search']) {
             $query->where(function ($builder) use ($filters) {
                 $search = '%' . $filters['search'] . '%';
