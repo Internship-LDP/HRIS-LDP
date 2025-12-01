@@ -229,7 +229,9 @@ export default function Dashboard({
                                         <Card className="md:col-span-2 flex flex-col justify-center p-6 shadow-sm">
                                             <div className="mb-4 flex items-center justify-between">
                                                 <h4 className="font-medium text-blue-900">Tren Pendaftaran - {div.name}</h4>
-                                                <Badge variant="outline" className="border-blue-200 text-blue-600">30 Hari Terakhir</Badge>
+                                                <Badge variant="outline" className="border-blue-200 text-blue-600">
+                                                    30 Hari Terakhir ({new Date().toLocaleDateString('id-ID', { month: 'long' })})
+                                                </Badge>
                                             </div>
                                             <div className="h-[180px] w-full">
                                                 <ResponsiveContainer width="100%" height="100%">

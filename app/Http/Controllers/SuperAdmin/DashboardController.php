@@ -46,11 +46,11 @@ class DashboardController extends Controller
         ];
 
         $statChanges = [
-            'totalUsers' => $countRegisteredInRange(null, $currentMonthStart, $now) - $countRegisteredInRange(null, $previousMonthStart, $previousMonthEnd),
-            'superAdmins' => $countRegisteredInRange(User::ROLES['super_admin'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['super_admin'], $previousMonthStart, $previousMonthEnd),
-            'admins' => $countRegisteredInRange(User::ROLES['admin'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['admin'], $previousMonthStart, $previousMonthEnd),
-            'staff' => $countRegisteredInRange(User::ROLES['staff'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['staff'], $previousMonthStart, $previousMonthEnd),
-            'pelamar' => $countRegisteredInRange(User::ROLES['pelamar'], $currentMonthStart, $now) - $countRegisteredInRange(User::ROLES['pelamar'], $previousMonthStart, $previousMonthEnd),
+            'totalUsers' => $countRegisteredInRange(null, $currentMonthStart, $now),
+            'superAdmins' => $countRegisteredInRange(User::ROLES['super_admin'], $currentMonthStart, $now),
+            'admins' => $countRegisteredInRange(User::ROLES['admin'], $currentMonthStart, $now),
+            'staff' => $countRegisteredInRange(User::ROLES['staff'], $currentMonthStart, $now),
+            'pelamar' => $countRegisteredInRange(User::ROLES['pelamar'], $currentMonthStart, $now),
         ];
 
         $distributionRoles = [
