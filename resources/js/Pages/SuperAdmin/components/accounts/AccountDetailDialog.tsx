@@ -1,5 +1,17 @@
 import { useEffect } from 'react';
 import { AccountRecord } from './types';
+import { AlertTriangle } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
 
 interface AccountDetailDialogProps {
     user: AccountRecord | null;
@@ -87,12 +99,35 @@ export default function AccountDetailDialog({
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                        onClick={() => onToggleStatus(user)}
-                    >
-                        {user.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
-                    </button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <button
+                                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                                {user.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-white">
+                            <AlertDialogHeader>
+                                <div className="flex items-center gap-2">
+                                    <AlertTriangle className={`h-5 w-5 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
+                                    <AlertDialogTitle>{user.status === 'Active' ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?'}</AlertDialogTitle>
+                                </div>
+                                <AlertDialogDescription>
+                                    Apakah Anda yakin ingin {user.status === 'Active' ? 'menonaktifkan' : 'mengaktifkan'} akun <span className="font-semibold text-slate-900">{user.name}</span>?
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction 
+                                    onClick={() => onToggleStatus(user)}
+                                    className={user.status === 'Active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}
+                                >
+                                    Ya, {user.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     <button
                         className="rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
                         onClick={() => onOpenChange(false)}

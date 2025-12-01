@@ -1,6 +1,17 @@
 import { Link } from '@inertiajs/react';
 import { ReactNode } from 'react';
-import { Edit, Eye, KeyRound, ToggleLeft, Trash2, MoreVertical } from 'lucide-react';
+import { Edit, Eye, KeyRound, ToggleLeft, Trash2, AlertTriangle } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/Components/ui/alert-dialog';
 import { AccountRecord, PaginationLink } from './types';
 
 interface AccountTableProps {
@@ -74,12 +85,59 @@ export default function AccountTable({
                                     <IconButton label="Edit" onClick={() => onEdit(user)} size="sm">
                                         <Edit className="h-3.5 w-3.5" />
                                     </IconButton>
-                                    <IconButton label="Reset Password" onClick={() => onResetPassword(user)} size="sm">
-                                        <KeyRound className="h-3.5 w-3.5" />
-                                    </IconButton>
-                                    <IconButton label="Ubah Status" onClick={() => onToggleStatus(user)} size="sm">
-                                        <ToggleLeft className="h-3.5 w-3.5" />
-                                    </IconButton>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <div className="inline-block">
+                                                <IconButton label="Reset Password" onClick={() => {}} size="sm">
+                                                    <KeyRound className="h-3.5 w-3.5" />
+                                                </IconButton>
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="bg-white">
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Reset Password?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Apakah Anda yakin ingin mereset password untuk <span className="font-semibold text-slate-900">{user.name}</span>? Password baru akan digenerate secara otomatis.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => onResetPassword(user)} className="bg-blue-900 hover:bg-blue-800">
+                                                    Ya, Reset Password
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <div className="inline-block">
+                                                <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => {}} size="sm">
+                                                    <ToggleLeft className={`h-3.5 w-3.5 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
+                                                </IconButton>
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="bg-white">
+                                            <AlertDialogHeader>
+                                                <div className="flex items-center gap-2">
+                                                    <AlertTriangle className={`h-5 w-5 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
+                                                    <AlertDialogTitle>{user.status === 'Active' ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?'}</AlertDialogTitle>
+                                                </div>
+                                                <AlertDialogDescription>
+                                                    Apakah Anda yakin ingin {user.status === 'Active' ? 'menonaktifkan' : 'mengaktifkan'} akun <span className="font-semibold text-slate-900">{user.name}</span>?
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                <AlertDialogAction 
+                                                    onClick={() => onToggleStatus(user)}
+                                                    className={user.status === 'Active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}
+                                                >
+                                                    Ya, {user.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                     <IconButton
                                         label="Hapus"
                                         size="sm"
@@ -169,18 +227,59 @@ export default function AccountTable({
                                         >
                                             <Edit className="h-4 w-4" />
                                         </IconButton>
-                                        <IconButton
-                                            label="Reset Password"
-                                            onClick={() => onResetPassword(user)}
-                                        >
-                                            <KeyRound className="h-4 w-4" />
-                                        </IconButton>
-                                        <IconButton
-                                            label="Ubah Status"
-                                            onClick={() => onToggleStatus(user)}
-                                        >
-                                            <ToggleLeft className="h-4 w-4" />
-                                        </IconButton>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <div className="inline-block">
+                                                    <IconButton label="Reset Password" onClick={() => {}}>
+                                                        <KeyRound className="h-4 w-4" />
+                                                    </IconButton>
+                                                </div>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-white">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Reset Password?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Apakah Anda yakin ingin mereset password untuk <span className="font-semibold text-slate-900">{user.name}</span>? Password baru akan digenerate secara otomatis.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => onResetPassword(user)} className="bg-blue-900 hover:bg-blue-800">
+                                                        Ya, Reset Password
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <div className="inline-block">
+                                                    <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => {}}>
+                                                        <ToggleLeft className={`h-4 w-4 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
+                                                    </IconButton>
+                                                </div>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="bg-white">
+                                                <AlertDialogHeader>
+                                                    <div className="flex items-center gap-2">
+                                                        <AlertTriangle className={`h-5 w-5 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
+                                                        <AlertDialogTitle>{user.status === 'Active' ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?'}</AlertDialogTitle>
+                                                    </div>
+                                                    <AlertDialogDescription>
+                                                        Apakah Anda yakin ingin {user.status === 'Active' ? 'menonaktifkan' : 'mengaktifkan'} akun <span className="font-semibold text-slate-900">{user.name}</span>?
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction 
+                                                        onClick={() => onToggleStatus(user)}
+                                                        className={user.status === 'Active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}
+                                                    >
+                                                        Ya, {user.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                         <IconButton
                                             label="Hapus"
                                             onClick={() => {
