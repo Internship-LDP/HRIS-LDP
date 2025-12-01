@@ -143,16 +143,16 @@ export default function KelolaPengaduanIndex(props: ComplaintsPageProps) {
                 { label: 'Super Admin', href: route('super-admin.dashboard') },
                 { label: 'Kelola Pengaduan' },
             ]}
-            actions={
-                <Button
-                    type="button"
-                    className="hidden items-center gap-2 bg-blue-900 hover:bg-blue-800 md:flex text-white"
-                    onClick={() => setActiveTab('complaints')}
-                >
-                    <MessageSquarePlus className="h-4 w-4" />
-                    Lihat Pengaduan
-                </Button>
-            }
+            // actions={
+            //     <Button
+            //         type="button"
+            //         className="hidden items-center gap-2 bg-blue-900 hover:bg-blue-800 md:flex text-white"
+            //         onClick={() => setActiveTab('complaints')}
+            //     >
+            //         <MessageSquarePlus className="h-4 w-4" />
+            //         Lihat Pengaduan
+            //     </Button>
+            // }
         >
             <Head title="Kelola Pengaduan" />
 
