@@ -102,7 +102,11 @@ export default function AccountForm({
                     <input
                         id="name"
                         value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
+                        onChange={(e) => {
+                            // Only allow letters and spaces
+                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                            setData('name', value);
+                        }}
                         className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                     {errors.name && (
