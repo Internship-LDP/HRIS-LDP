@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ReactNode } from 'react';
-import { Edit, Eye, KeyRound, ToggleLeft, Trash2, AlertTriangle } from 'lucide-react';
+import { Edit, Eye, ToggleLeft, Trash2, AlertTriangle } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,7 +19,6 @@ interface AccountTableProps {
     links: PaginationLink[];
     onView: (user: AccountRecord) => void;
     onEdit: (user: AccountRecord) => void;
-    onResetPassword: (user: AccountRecord) => void;
     onToggleStatus: (user: AccountRecord) => void;
     onDelete: (user: AccountRecord) => void;
 }
@@ -29,7 +28,6 @@ export default function AccountTable({
     links,
     onView,
     onEdit,
-    onResetPassword,
     onToggleStatus,
     onDelete,
 }: AccountTableProps) {
@@ -85,29 +83,6 @@ export default function AccountTable({
                                     <IconButton label="Edit" onClick={() => onEdit(user)} size="sm">
                                         <Edit className="h-3.5 w-3.5" />
                                     </IconButton>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <div className="inline-block">
-                                                <IconButton label="Reset Password" onClick={() => {}} size="sm">
-                                                    <KeyRound className="h-3.5 w-3.5" />
-                                                </IconButton>
-                                            </div>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="bg-white">
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Reset Password?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Apakah Anda yakin ingin mereset password untuk <span className="font-semibold text-slate-900">{user.name}</span>? Password baru akan digenerate secara otomatis.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => onResetPassword(user)} className="bg-blue-900 hover:bg-blue-800">
-                                                    Ya, Reset Password
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
 
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
@@ -227,29 +202,6 @@ export default function AccountTable({
                                         >
                                             <Edit className="h-4 w-4" />
                                         </IconButton>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <div className="inline-block">
-                                                    <IconButton label="Reset Password" onClick={() => {}}>
-                                                        <KeyRound className="h-4 w-4" />
-                                                    </IconButton>
-                                                </div>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent className="bg-white">
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Reset Password?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Apakah Anda yakin ingin mereset password untuk <span className="font-semibold text-slate-900">{user.name}</span>? Password baru akan digenerate secara otomatis.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => onResetPassword(user)} className="bg-blue-900 hover:bg-blue-800">
-                                                        Ya, Reset Password
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
 
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>

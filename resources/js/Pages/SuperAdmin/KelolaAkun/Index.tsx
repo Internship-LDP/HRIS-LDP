@@ -31,7 +31,6 @@ type IndexPageProps = PageProps<{
     divisionOptions: string[];
     flash?: {
         success?: string;
-        generated_password?: string;
     };
 }>;
 
@@ -65,10 +64,7 @@ export default function Index(props: IndexPageProps) {
         if (flash?.success) {
             toast.success(flash.success);
         }
-        if (flash?.generated_password) {
-            toast.info(`Password baru: ${flash.generated_password}`);
-        }
-    }, [flash?.success, flash?.generated_password]);
+    }, [flash?.success]);
 
     // Client-side filtering - no server request, no URL change
     const accountRows = useMemo(() => {
@@ -164,13 +160,6 @@ export default function Index(props: IndexPageProps) {
         );
     };
 
-    const handleResetPassword = (user: AccountRecord) => {
-        router.post(
-            route('super-admin.accounts.reset-password', user.id),
-            {},
-            { preserveScroll: true },
-        );
-    };
 
     const handleDelete = (user: AccountRecord) => {
         router.delete(route('super-admin.accounts.destroy', user.id), {
@@ -229,7 +218,6 @@ export default function Index(props: IndexPageProps) {
                                 route('super-admin.accounts.edit', user.id),
                             )
                         }
-                        onResetPassword={handleResetPassword}
                         onToggleStatus={handleToggleStatus}
                         onDelete={handleDelete}
                     />
