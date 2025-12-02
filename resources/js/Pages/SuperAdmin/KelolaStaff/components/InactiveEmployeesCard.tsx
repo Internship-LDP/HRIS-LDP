@@ -89,8 +89,8 @@ function EmployeeDetailDialog({ employee }: { employee: InactiveEmployeeRecord }
         exitType === 'Resign'
             ? 'mt-1 bg-blue-500'
             : exitType === 'Pensiun'
-              ? 'mt-1 bg-amber-500'
-              : 'mt-1 bg-red-500';
+                ? 'mt-1 bg-amber-500'
+                : 'mt-1 bg-red-500';
 
     return (
         <Dialog>
