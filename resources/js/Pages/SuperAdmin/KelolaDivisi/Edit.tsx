@@ -51,12 +51,16 @@ export default function EditDivisionDialog({ division, form, onClose, onSubmit }
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="division-manager">Manager</Label>
+                                    <Label htmlFor="division-manager">Ketua Divisi</Label>
                                     <Input
                                         id="division-manager"
                                         value={form.data.manager_name}
-                                        onChange={(e) => form.setData('manager_name', e.target.value)}
-                                        placeholder="Nama manager"
+                                        onChange={(e) => {
+                                            // Only allow letters and spaces
+                                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                            form.setData('manager_name', value);
+                                        }}
+                                        placeholder="Nama ketua divisi"
                                     />
                                     {form.errors.manager_name && (
                                         <p className="text-xs text-destructive">{form.errors.manager_name}</p>
