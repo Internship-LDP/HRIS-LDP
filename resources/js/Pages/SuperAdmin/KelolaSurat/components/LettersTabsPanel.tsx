@@ -51,8 +51,8 @@ export default function LettersTabsPanel({
     unarchiveProcessing,
 }: LettersTabsPanelProps) {
     return (
-        <Card className="p-6">
-            <div className="mb-6">
+        <Card className="p-3 md:p-6">
+            <div className="mb-4 md:mb-6">
                 <FiltersBar
                     search={searchQuery}
                     category={categoryFilter}
@@ -63,28 +63,28 @@ export default function LettersTabsPanel({
             </div>
 
             <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as typeof activeTab)}>
-                <TabsList className="mb-5">
+                <TabsList className="mb-4 md:mb-5">
                     <TabsTrigger
                         value="inbox"
-                        className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        className="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
                     >
                         Inbox
                     </TabsTrigger>
                     <TabsTrigger
                         value="outbox"
-                        className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        className="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
                     >
                         Outbox
                     </TabsTrigger>
                     <TabsTrigger
                         value="archive"
-                        className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        className="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
                     >
                         Arsip
                     </TabsTrigger>
                     <TabsTrigger
                         value="history"
-                        className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                        className="rounded-lg px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
                     >
                         Riwayat Disposisi
                     </TabsTrigger>
