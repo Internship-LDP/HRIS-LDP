@@ -1,71 +1,85 @@
-import { useMemo, useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Card } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { MessageSquare } from 'lucide-react';
-import StaffLayout from '@/Pages/Staff/components/Layout';
-import type { PageProps } from '@/types';
-import ComplaintComposerDialog from './Complaints/components/ComplaintComposerDialog';
-import ComplaintDetailDialog from './Complaints/components/ComplaintDetailDialog';
-import ComplaintFilters from './Complaints/components/ComplaintFilters';
-import ComplaintTable from './Complaints/components/ComplaintTable';
-import AnnouncementList from './Complaints/components/AnnouncementList';
-import OverviewCards from './Complaints/components/OverviewCards';
-import RegulationList from './Complaints/components/RegulationList';
-import type {
-    ComplaintRecord,
-    ComplaintsPageProps,
-} from './Complaints/types';
+import { useMemo, useState, useEffect } from "react";
+import { Head, usePage } from "@inertiajs/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { Card } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { MessageSquare } from "lucide-react";
+import StaffLayout from "@/Pages/Staff/components/Layout";
+import type { PageProps } from "@/types";
+
+import ComplaintComposerDialog from "./Complaints/components/ComplaintComposerDialog";
+import ComplaintDetailDialog from "./Complaints/components/ComplaintDetailDialog";
+import ComplaintFilters from "./Complaints/components/ComplaintFilters";
+import ComplaintTable from "./Complaints/components/ComplaintTable";
+import AnnouncementList from "./Complaints/components/AnnouncementList";
+import RegulationList from "./Complaints/components/RegulationList";
+
+import type { ComplaintRecord, ComplaintsPageProps } from "./Complaints/types";
 
 export default function StaffComplaints() {
     const {
-        props: { stats, complaints, filters, regulations, announcements },
+        props: { complaints, filters, regulations, announcements },
     } = usePage<PageProps<ComplaintsPageProps>>();
 
-    const [activeTab, setActiveTab] = useState<'complaints' | 'regulations' | 'forum'>('complaints');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [categoryFilter, setCategoryFilter] = useState('all');
-    const [priorityFilter, setPriorityFilter] = useState('all');
+    const [activeTab, setActiveTab] = useState<
+        "complaints" | "regulations" | "forum"
+    >("complaints");
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [categoryFilter, setCategoryFilter] = useState("all");
+    const [priorityFilter, setPriorityFilter] = useState("all");
+
     const [composerOpen, setComposerOpen] = useState(false);
-    const [detailComplaint, setDetailComplaint] = useState<ComplaintRecord | null>(null);
+    const [detailComplaint, setDetailComplaint] =
+        useState<ComplaintRecord | null>(null);
 
+    // Reset filter saat membuka popup composer
+    useEffect(() => {
+        if (composerOpen) {
+            setSearchTerm("");
+            setStatusFilter("all");
+            setCategoryFilter("all");
+            setPriorityFilter("all");
+        }
+    }, [composerOpen]);
+
+    // Filter daftar complaint
     const filteredComplaints = useMemo(() => {
-        const normalizedSearch = searchTerm.trim().toLowerCase();
+        const s = searchTerm.toLowerCase().trim();
 
-        return complaints.filter((complaint) => {
-            const matchesSearch =
-                !normalizedSearch ||
-                complaint.subject.toLowerCase().includes(normalizedSearch) ||
-                (complaint.letterNumber ?? '').toLowerCase().includes(normalizedSearch) ||
-                complaint.category.toLowerCase().includes(normalizedSearch);
+        return complaints.filter((item) => {
+            const matchSearch =
+                !s ||
+                item.subject.toLowerCase().includes(s) ||
+                (item.letterNumber ?? "").toLowerCase().includes(s);
 
-            const matchesStatus =
-                statusFilter === 'all' ||
-                complaint.status.toLowerCase() === statusFilter.toLowerCase();
+            const matchStatus =
+                statusFilter === "all" ||
+                item.status.toLowerCase() === statusFilter.toLowerCase();
 
-            const matchesCategory =
-                categoryFilter === 'all' ||
-                complaint.category.toLowerCase() === categoryFilter.toLowerCase();
+            const matchCategory =
+                categoryFilter === "all" ||
+                item.category.toLowerCase() === categoryFilter.toLowerCase();
 
-            const matchesPriority =
-                priorityFilter === 'all' ||
-                complaint.priority.toLowerCase() === priorityFilter.toLowerCase();
+            const matchPriority =
+                priorityFilter === "all" ||
+                item.priority.toLowerCase() === priorityFilter.toLowerCase();
 
-            return matchesSearch && matchesStatus && matchesCategory && matchesPriority;
+            return matchSearch && matchStatus && matchCategory && matchPriority;
         });
     }, [complaints, searchTerm, statusFilter, categoryFilter, priorityFilter]);
 
     return (
         <>
             <Head title="Keluhan & Saran" />
+
             <StaffLayout
                 title="Keluhan & Saran"
                 description="Kirim pengaduan dan pantau tindak lanjut HR secara real-time."
                 breadcrumbs={[
-                    { label: 'Dashboard', href: route('staff.dashboard') },
-                    { label: 'Keluhan & Saran' },
+                    { label: "Dashboard", href: route("staff.dashboard") },
+                    { label: "Keluhan & Saran" },
                 ]}
                 actions={
                     <Button
@@ -77,59 +91,77 @@ export default function StaffComplaints() {
                     </Button>
                 }
             >
-                <OverviewCards stats={stats} />
+                <div className="overflow-x-auto">
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={(v) =>
+                            setActiveTab(v as typeof activeTab)
+                        }
+                        className="mt-6 min-w-max"
+                    >
+                        <TabsList className="flex gap-2">
+                            <TabsTrigger value="complaints">
+                                Pengaduan
+                            </TabsTrigger>
+                            <TabsTrigger value="regulations">
+                                Regulasi
+                            </TabsTrigger>
+                            <TabsTrigger value="forum">Forum</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
 
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="mt-8">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="complaints">Pengaduan & Saran</TabsTrigger>
-                        <TabsTrigger value="regulations">Regulasi</TabsTrigger>
-                        <TabsTrigger value="forum">Forum & Pengumuman</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="complaints" className="mt-4">
-                        <Card className="p-6">
+                <Tabs value={activeTab} className="mt-4">
+                    <TabsContent value="complaints">
+                        <Card className="p-4 md:p-6">
                             <ComplaintFilters
                                 searchTerm={searchTerm}
                                 statusFilter={statusFilter}
                                 categoryFilter={categoryFilter}
                                 priorityFilter={priorityFilter}
-                                filters={filters}
+                                // 🔥 categories kosong supaya ComplaintFilters pakai fallback FE default
+                                filters={{
+                                    ...filters,
+                                    categories: [], // <<— FIX UTAMA
+                                }}
                                 onSearchChange={setSearchTerm}
                                 onStatusChange={setStatusFilter}
                                 onCategoryChange={setCategoryFilter}
                                 onPriorityChange={setPriorityFilter}
                             />
 
-                            <ComplaintTable
-                                complaints={filteredComplaints}
-                                onSelect={setDetailComplaint}
-                            />
+                            <div className="mt-4">
+                                <ComplaintTable
+                                    complaints={filteredComplaints}
+                                    onSelect={setDetailComplaint}
+                                />
+                            </div>
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="regulations" className="mt-4">
+                    <TabsContent value="regulations">
                         <RegulationList regulations={regulations} />
                     </TabsContent>
 
-                    <TabsContent value="forum" className="mt-4">
+                    <TabsContent value="forum">
                         <AnnouncementList announcements={announcements} />
                     </TabsContent>
                 </Tabs>
             </StaffLayout>
 
+            {/* Composer dialog pakai kategori FE default */}
             <ComplaintComposerDialog
                 open={composerOpen}
-                filters={filters}
+                filters={{
+                    ...filters,
+                    categories: [], // <<— FIX UTAMA
+                }}
                 onOpenChange={setComposerOpen}
             />
 
             <ComplaintDetailDialog
                 complaint={detailComplaint}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setDetailComplaint(null);
-                    }
-                }}
+                onOpenChange={(open) => !open && setDetailComplaint(null)}
             />
         </>
     );
