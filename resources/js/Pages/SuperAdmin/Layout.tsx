@@ -6,7 +6,11 @@ import Sidebar from '@/Pages/SuperAdmin/components/Sidebar';
 import { Toaster } from 'sonner';
 import QuickActions from '@/Pages/SuperAdmin/components/QuickActions';
 import { cn } from '@/lib/utils';
-import { Menu } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 
 interface SuperAdminLayoutProps {
     title: string;
@@ -22,6 +26,9 @@ export default function SuperAdminLayout({
     actions,
     children,
 }: PropsWithChildren<SuperAdminLayoutProps>) {
+    const { props: { auth } } = usePage<PageProps>();
+    const user = auth?.user;
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('sidebarOpen');
@@ -32,6 +39,7 @@ export default function SuperAdminLayout({
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [notificationCount] = useState(3); // This can be connected to real notification data later
 
     useEffect(() => {
         const checkMobile = () => {
@@ -81,17 +89,46 @@ export default function SuperAdminLayout({
                 "ml-0 md:ml-52",
                 !isSidebarOpen && "md:ml-16"
             )}>
-                {/* Mobile header */}
-                <div className="sticky top-0 z-30 flex items-center gap-4 bg-white border-b border-slate-200 px-4 py-3 md:hidden w-full max-w-full">
-                    <button
-                        onClick={toggleMobileMenu}
-                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
-                    >
-                        <Menu size={24} />
-                    </button>
-                    <div>
-                        <p className="text-xs text-slate-500">PT. Lintas Data Prima</p>
-                        <p className="text-sm font-semibold text-blue-900">Super Admin</p>
+                {/* Navbar - Mobile & Desktop */}
+                <div className="sticky top-0 z-30 flex items-center justify-between gap-4 bg-white border-b border-slate-200 px-4 py-3 w-full max-w-full">
+                    {/* Left side - Mobile menu + Logo */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={toggleMobileMenu}
+                            className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 md:hidden"
+                        >
+                            <Menu size={24} />
+                        </button>
+                        <div className="md:hidden">
+                            <p className="text-xs text-slate-500">PT. Lintas Data Prima</p>
+                            <p className="text-sm font-semibold text-blue-900">Super Admin</p>
+                        </div>
+                    </div>
+
+                    {/* Right side - Notifications & User Menu (Desktop only) */}
+                    <div className="hidden md:flex items-center gap-3">
+                        {/* Notifications */}
+                        <Button variant="ghost" size="icon" className="relative">
+                            <Bell className="w-5 h-5" />
+                            {notificationCount > 0 && (
+                                <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-red-500 text-xs">
+                                    {notificationCount}
+                                </Badge>
+                            )}
+                        </Button>
+
+                        {/* User Profile Display */}
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-900 rounded-full flex items-center justify-center">
+                                <span className="text-white text-sm">
+                                    {user?.name ? user.name.charAt(0).toUpperCase() : 'SA'}
+                                </span>
+                            </div>
+                            <div className="text-left hidden lg:block">
+                                <p className="text-sm text-gray-900">{user?.name || 'Super Admin'}</p>
+                                <p className="text-xs text-gray-600">{user?.role || 'Administrator'}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
