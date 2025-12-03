@@ -190,33 +190,51 @@ export default function ApplicantsTab({
                                     <span className="truncate">{displayDateRange}</span>
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-2 md:p-3" align="start">
-                                <Calendar
-                                    mode="range"
-                                    numberOfMonths={1}
-                                    month={datePickerMonth}
-                                    onMonthChange={setDatePickerMonth}
-                                    selected={dateRange as DateRange}
-                                    onSelect={(range: DateRange | undefined) => {
-                                        if (!range) {
-                                            onDateRangeChange({ from: null, to: null });
-                                            return;
-                                        }
-                                        onDateRangeChange({
-                                            from: range.from ?? null,
-                                            to: range.to ?? null,
-                                        });
-                                    }}
-                                    className="text-xs md:text-sm [&_.rdp-caption]:text-xs [&_.rdp-caption]:md:text-sm [&_.rdp-cell]:w-8 [&_.rdp-cell]:h-8 [&_.rdp-cell]:md:w-9 [&_.rdp-cell]:md:h-9 [&_.rdp-head_cell]:w-8 [&_.rdp-head_cell]:md:w-9 [&_.rdp-button]:h-8 [&_.rdp-button]:w-8 [&_.rdp-button]:md:h-9 [&_.rdp-button]:md:w-9 [&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
-                                />
-                                <div className="mt-2 md:mt-3 flex justify-end">
+                            <PopoverContent className="w-auto p-2 max-h-[80vh] overflow-auto" align="start">
+                                <div className="flex flex-col md:flex-row gap-2 md:gap-3">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-semibold text-slate-600">Mulai</p>
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateRange.from ?? undefined}
+                                            onSelect={(date) => {
+                                                onDateRangeChange({
+                                                    from: date ?? null,
+                                                    to: dateRange.to,
+                                                });
+                                            }}
+                                            disabled={(date) =>
+                                                dateRange.to ? date > dateRange.to : false
+                                            }
+                                            className="text-[9px] md:text-[10px] [&_.rdp-caption]:text-[9px] [&_.rdp-caption]:md:text-[10px] [&_.rdp-cell]:w-4 [&_.rdp-cell]:h-4 [&_.rdp-cell]:md:w-5 [&_.rdp-cell]:md:h-5 [&_.rdp-head_cell]:w-4 [&_.rdp-head_cell]:md:w-5 [&_.rdp-button]:h-4 [&_.rdp-button]:w-4 [&_.rdp-button]:md:h-5 [&_.rdp-button]:md:w-5 [&_.rdp-nav_button]:h-4 [&_.rdp-nav_button]:w-4"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-semibold text-slate-600">Selesai</p>
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateRange.to ?? undefined}
+                                            onSelect={(date) => {
+                                                onDateRangeChange({
+                                                    from: dateRange.from,
+                                                    to: date ?? null,
+                                                });
+                                            }}
+                                            disabled={(date) =>
+                                                dateRange.from ? date < dateRange.from : false
+                                            }
+                                            className="text-[9px] md:text-[10px] [&_.rdp-caption]:text-[9px] [&_.rdp-caption]:md:text-[10px] [&_.rdp-cell]:w-4 [&_.rdp-cell]:h-4 [&_.rdp-cell]:md:w-5 [&_.rdp-cell]:md:h-5 [&_.rdp-head_cell]:w-4 [&_.rdp-head_cell]:md:w-5 [&_.rdp-button]:h-4 [&_.rdp-button]:w-4 [&_.rdp-button]:md:h-5 [&_.rdp-button]:md:w-5 [&_.rdp-nav_button]:h-4 [&_.rdp-nav_button]:w-4"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="mt-2 flex justify-end border-t pt-2">
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="gap-1 h-7 md:h-8 text-xs"
+                                        className="gap-1 h-6 text-[10px]"
                                         onClick={() => onDateRangeChange({ from: null, to: null })}
                                     >
-                                        <X className="h-3.5 w-3.5 md:h-4 md:w-4" /> Reset
+                                        <X className="h-3 w-3" /> Reset
                                     </Button>
                                 </div>
                             </PopoverContent>
