@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use Illuminate\Support\Facades\DB;
+use App\Events\AccountDeactivated;
 class AccountController extends Controller
 {
     /**
@@ -263,8 +264,11 @@ class AccountController extends Controller
 
         $user->update($validated);
 
-        $this->syncStaffProfile($user, $profileData);
-
+        // 🔥 Kalau status di-set ke Inactive dari Kelola Akun → paksa logout semua session user ini
+        if ($validated['status'] === 'Inactive') {
+            $this->forceLogoutUser($user);
+        }
+ 
         return redirect()
             ->route('super-admin.accounts.index')
             ->with('success', 'Akun berhasil diperbarui.');
@@ -290,6 +294,11 @@ class AccountController extends Controller
         $user->status = $user->status === 'Active' ? 'Inactive' : 'Active';
         $user->inactive_at = $user->status === 'Inactive' ? now()->toDateString() : null;
         $user->save();
+
+        // 🔥 Paksa user logout jika status menjadi Inactive
+        if ($user->status === 'Inactive') {
+            $this->forceLogoutUser($user);
+        }
 
         return redirect()
             ->back()
@@ -341,6 +350,18 @@ class AccountController extends Controller
             User::ROLES['staff'],
             User::ROLES['pelamar'],
         ];
+    }
+
+    /**
+     * Broadcast event dan hapus semua sesi ketika akun dinonaktifkan.
+     */
+    private function forceLogoutUser(User $user): void
+    {
+        broadcast(new AccountDeactivated($user));
+
+        DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->delete();
     }
 
     private function syncStaffProfile(User $user, array $profileData): void

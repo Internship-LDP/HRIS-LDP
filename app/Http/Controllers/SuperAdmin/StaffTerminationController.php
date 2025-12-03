@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\DB;
+use App\Events\AccountDeactivated;
 
 class StaffTerminationController extends Controller
 {
@@ -139,12 +141,15 @@ class StaffTerminationController extends Controller
             ])
             ->save();
 
+        $employee = $termination->employee;
         // Jika status Selesai, nonaktifkan user
-        if ($termination->status === 'Selesai' && $termination->employee) {
-            $termination->employee->update([
+        if ($termination->status === 'Selesai' && $employee) {
+            $employee->update([
                 'status' => 'Inactive',
                 'inactive_at' => now(),
             ]);
+
+            $this->forceLogoutUser($employee);
         }
 
         return redirect()
@@ -196,5 +201,17 @@ class StaffTerminationController extends Controller
             $user && in_array($user->role, [User::ROLES['super_admin'], User::ROLES['admin']], true),
             403
         );
+    }
+
+    /**
+     * Broadcast ke user yang dinonaktifkan dan hapus seluruh sesi aktifnya.
+     */
+    private function forceLogoutUser(User $user): void
+    {
+        broadcast(new AccountDeactivated($user));
+
+        DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->delete();
     }
 }
