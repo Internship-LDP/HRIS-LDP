@@ -257,25 +257,6 @@ export function Navbar({ canLogin = true, canRegister = true }: NavbarProps) {
                   </a>
                 );
               })}
-
-              {canLogin && (
-                <a
-                  href={route('login')}
-                  onClick={closeSidebar}
-                  className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-2xl transition-colors backdrop-blur-sm"
-                >
-                  Masuk
-                </a>
-              )}
-              {canRegister && (
-                <a
-                  href={route('register')}
-                  onClick={closeSidebar}
-                  className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-2xl transition-colors backdrop-blur-sm"
-                >
-                  Daftar
-                </a>
-              )}
             </nav>
           </div>
 

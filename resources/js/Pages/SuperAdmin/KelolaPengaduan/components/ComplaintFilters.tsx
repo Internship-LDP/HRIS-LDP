@@ -97,7 +97,7 @@ function FilterSelect({
 }: FilterSelectProps) {
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-full min-w-0 md:min-w-[140px] lg:w-40 h-9 md:h-10 text-xs md:text-sm">
+            <SelectTrigger className="w-full min-w-0 md:min-w-[105px] lg:w-40 h-9 md:h-10 text-xs md:text-sm">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>

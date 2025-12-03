@@ -298,14 +298,14 @@ export default function ComplaintDetailDialog({
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="sm:min-w-[120px]"
+                                className="sm:min-w-[90px]"
                                 onClick={() => onOpenChange(false)}
                             >
                                 Tutup
                             </Button>
                             <Button
                                 type="button"
-                                className="bg-blue-900 hover:bg-blue-800 sm:min-w-[160px] text-white"
+                                className="bg-blue-900 hover:bg-blue-800 sm:min-w-[120px] text-white"
                                 disabled={form.processing}
                                 onClick={handleSubmit}
                             >

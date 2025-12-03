@@ -107,7 +107,7 @@ export default function ComplaintTable({
                                         {complaint.category}
                                     </span>
                                 </TableCell>
-                                <TableCell className="max-w-[240px] truncate">
+                                <TableCell className="max-w-[180px] truncate">
                                     {complaint.subject}
                                 </TableCell>
                                 <TableCell>{complaint.submittedAt ?? '-'}</TableCell>
@@ -149,13 +149,12 @@ export default function ComplaintTable({
                                         event.preventDefault();
                                     }
                                 }}
-                                className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${
-                                    link.active
+                                className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${link.active
                                         ? 'bg-blue-900 text-white'
                                         : link.url
-                                          ? 'text-blue-900 hover:bg-blue-50'
-                                          : 'text-slate-400'
-                                }`}
+                                            ? 'text-blue-900 hover:bg-blue-50'
+                                            : 'text-slate-400'
+                                    }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}
