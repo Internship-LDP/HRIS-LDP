@@ -50,21 +50,20 @@ export function DivisionTabs({
 }: DivisionTabsProps) {
     return (
         <Tabs value={activeDivisionId} onValueChange={onTabChange}>
-            <TabsList className="w-full justify-start overflow-auto">
+            <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
                 {divisions.map((division) => (
                     <TabsTrigger
                         key={division.id}
                         value={division.id.toString()}
-                        className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900"
+                        className="rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 whitespace-nowrap"
                     >
-                        <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-blue-800" />
+                        <div className="flex items-center gap-1 md:gap-2">
+                            <Building2 className="h-3 w-3 md:h-4 md:w-4 text-blue-800" />
                             <span
-                                className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                                    division.is_hiring
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'text-slate-700'
-                                }`}
+                                className={`rounded-full px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-semibold ${division.is_hiring
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'text-slate-700'
+                                    }`}
                             >
                                 {division.name}
                             </span>
@@ -131,8 +130,8 @@ function DivisionOverview({ division }: { division: DivisionRecord }) {
         division.available_slots <= 0
             ? { color: 'text-red-600', bg: 'bg-red-100' }
             : division.capacity > 0 && division.current_staff / division.capacity >= 0.8
-              ? { color: 'text-orange-600', bg: 'bg-orange-100' }
-              : { color: 'text-green-600', bg: 'bg-green-100' };
+                ? { color: 'text-orange-600', bg: 'bg-orange-100' }
+                : { color: 'text-green-600', bg: 'bg-green-100' };
 
     return (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -145,13 +144,12 @@ function DivisionOverview({ division }: { division: DivisionRecord }) {
                 </div>
                 <div className="mt-3 h-2 rounded-full bg-slate-200">
                     <div
-                        className={`h-2 rounded-full ${
-                            division.available_slots === 0
-                                ? 'bg-red-500'
-                                : division.capacity > 0 && division.current_staff / division.capacity >= 0.8
-                                  ? 'bg-orange-500'
-                                  : 'bg-green-500'
-                        }`}
+                        className={`h-2 rounded-full ${division.available_slots === 0
+                            ? 'bg-red-500'
+                            : division.capacity > 0 && division.current_staff / division.capacity >= 0.8
+                                ? 'bg-orange-500'
+                                : 'bg-green-500'
+                            }`}
                         style={{ width: `${ratio}%` }}
                     />
                 </div>
@@ -191,34 +189,42 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
     if (staff.length === 0) {
         return (
-            <div className="rounded-lg border border-dashed p-8 text-center text-slate-500">
+            <div className="rounded-lg border border-dashed p-4 md:p-8 text-center text-slate-500">
                 Belum ada staff pada divisi ini.
             </div>
         );
     }
 
     return (
-        <div className="rounded-xl border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Nama</TableHead>
-                        <TableHead>Posisi</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Tanggal Bergabung</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {staff.map((member) => (
-                        <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.position}</TableCell>
-                            <TableCell className="text-slate-600">{member.email}</TableCell>
-                            <TableCell className="text-slate-600">{member.join_date ?? '-'}</TableCell>
+        <div className="rounded-xl border overflow-hidden">
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nama</TableHead>
+                            <TableHead>Posisi</TableHead>
+                            <TableHead className="hidden md:table-cell">Email</TableHead>
+                            <TableHead className="hidden lg:table-cell">Tanggal Bergabung</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {staff.map((member) => (
+                            <TableRow key={member.id}>
+                                <TableCell className="font-medium">
+                                    <div>{member.name}</div>
+                                    <div className="text-xs text-slate-500 md:hidden">{member.email}</div>
+                                </TableCell>
+                                <TableCell>
+                                    <div>{member.position}</div>
+                                    <div className="text-xs text-slate-500 lg:hidden">{member.join_date ?? '-'}</div>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell text-slate-600">{member.email}</TableCell>
+                                <TableCell className="hidden lg:table-cell text-slate-600">{member.join_date ?? '-'}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 }
@@ -234,13 +240,13 @@ function DivisionVacancySection({
 }) {
     if (division.is_hiring && division.job_title) {
         return (
-            <div className="space-y-4 rounded-xl border border-green-200 bg-green-50 p-4">
+            <div className="space-y-3 md:space-y-4 rounded-xl border border-green-200 bg-green-50 p-3 md:p-4">
                 <div className="flex items-start justify-between gap-3">
                     <div>
-                        <h4 className="text-lg font-semibold text-green-900">{division.job_title}</h4>
-                        <p className="text-sm text-slate-700">{division.job_description}</p>
+                        <h4 className="text-base md:text-lg font-semibold text-green-900">{division.job_title}</h4>
+                        <p className="text-xs md:text-sm text-slate-700">{division.job_description}</p>
                         {division.job_requirements.length > 0 && (
-                            <ul className="mt-3 space-y-1 text-sm text-slate-700">
+                            <ul className="mt-2 md:mt-3 space-y-1 text-xs md:text-sm text-slate-700">
                                 {division.job_requirements.map((requirement, index) => (
                                     <li key={index} className="flex items-start gap-2">
                                         <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-600" />

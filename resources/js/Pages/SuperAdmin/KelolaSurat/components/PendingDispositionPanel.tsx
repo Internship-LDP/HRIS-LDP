@@ -44,20 +44,20 @@ export default function PendingDispositionPanel({
 }: PendingDispositionPanelProps) {
     return (
         <Card className="overflow-hidden border border-slate-100 bg-white">
-            <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/60 to-transparent px-6 py-6">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-start gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-                            <MailCheck className="h-5 w-5" />
+            <div className="flex flex-col gap-3 md:gap-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/60 to-transparent px-3 md:px-6 py-4 md:py-6">
+                <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-start gap-2 md:gap-3">
+                        <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                            <MailCheck className="h-4 w-4 md:h-5 md:w-5" />
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                            <p className="text-[10px] md:text-xs font-semibold uppercase tracking-wide text-blue-600">
                                 Menunggu Disposisi HR
                             </p>
-                            <p className="text-lg font-semibold text-slate-900">
+                            <p className="text-sm md:text-lg font-semibold text-slate-900">
                                 Surat staff yang harus diteruskan ke divisi tujuan
                             </p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-xs md:text-sm text-slate-500">
                                 Pilih beberapa surat sekaligus dan kirim dalam satu kali proses.
                             </p>
                         </div>
@@ -96,102 +96,112 @@ export default function PendingDispositionPanel({
             </div>
 
             {pendingDisposition.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                    <MailCheck className="h-10 w-10 text-blue-400" />
-                    <p className="text-base font-semibold text-slate-900">Semua surat sudah dialihkan</p>
-                    <p className="text-sm text-slate-500">Tidak ada surat yang menunggu disposisi saat ini.</p>
+                <div className="flex flex-col items-center justify-center gap-3 px-3 md:px-6 py-12 md:py-16 text-center">
+                    <MailCheck className="h-8 w-8 md:h-10 md:w-10 text-blue-400" />
+                    <p className="text-sm md:text-base font-semibold text-slate-900">Semua surat sudah dialihkan</p>
+                    <p className="text-xs md:text-sm text-slate-500">Tidak ada surat yang menunggu disposisi saat ini.</p>
                 </div>
             ) : (
                 <>
-                    <Table className="text-sm text-slate-700">
-                        <TableHeader>
-                            <TableRow className="text-slate-500">
-                                <TableHead className="w-10">
-                                    <Checkbox
-                                        checked={headerCheckboxState}
-                                        onCheckedChange={(value) => onHeaderCheckboxChange(value === true)}
-                                        aria-label="Pilih semua surat"
-                                    />
-                                </TableHead>
-                                <TableHead>Nomor</TableHead>
-                                <TableHead>Pengirim</TableHead>
-                                <TableHead>Divisi Tujuan</TableHead>
-                                <TableHead>Prioritas</TableHead>
-                                <TableHead>Subjek</TableHead>
-                                <TableHead>Lampiran</TableHead>
-                                <TableHead>Tanggal</TableHead>
-                                <TableHead className="text-right">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                {pendingDisposition.map((letter) => {
-                                const isSelected = selectedIds.includes(letter.id);
-                                const latestReply =
-                                    letter.replyHistory && letter.replyHistory.length > 0
-                                        ? letter.replyHistory[letter.replyHistory.length - 1]
-                                        : undefined;
-                                const replyPreview = latestReply?.note ?? letter.replyNote ?? null;
+                    <div className="overflow-x-auto">
+                        <Table className="text-xs md:text-sm text-slate-700">
+                            <TableHeader>
+                                <TableRow className="text-slate-500">
+                                    <TableHead className="w-10">
+                                        <Checkbox
+                                            checked={headerCheckboxState}
+                                            onCheckedChange={(value) => onHeaderCheckboxChange(value === true)}
+                                            aria-label="Pilih semua surat"
+                                        />
+                                    </TableHead>
+                                    <TableHead>Nomor</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Pengirim</TableHead>
+                                    <TableHead className="hidden md:table-cell">Divisi Tujuan</TableHead>
+                                    <TableHead className="hidden lg:table-cell">Prioritas</TableHead>
+                                    <TableHead>Subjek</TableHead>
+                                    <TableHead className="hidden xl:table-cell">Lampiran</TableHead>
+                                    <TableHead className="hidden lg:table-cell">Tanggal</TableHead>
+                                    <TableHead className="text-right">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {pendingDisposition.map((letter) => {
+                                    const isSelected = selectedIds.includes(letter.id);
+                                    const latestReply =
+                                        letter.replyHistory && letter.replyHistory.length > 0
+                                            ? letter.replyHistory[letter.replyHistory.length - 1]
+                                            : undefined;
+                                    const replyPreview = latestReply?.note ?? letter.replyNote ?? null;
 
-                                return (
-                                    <TableRow
-                                        key={letter.id}
-                                        data-state={isSelected ? 'selected' : undefined}
-                                        className={cn('text-sm', isSelected && 'bg-blue-50/70')}
-                                    >
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={isSelected}
-                                                onCheckedChange={(value) =>
-                                                    onToggleSelect(letter.id, value === true)
-                                                }
-                                                aria-label={`Pilih surat ${letter.letterNumber}`}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-semibold text-slate-900">
-                                            {letter.letterNumber}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="text-sm font-medium text-slate-900">
-                                                    {letter.senderName}
-                                                </p>
-                                                <p className="text-xs text-slate-500">
-                                                    {letter.senderDivision}
-                                                </p>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{letter.targetDivision ?? '-'}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <PriorityBadge priority={letter.priority} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="max-w-[240px]">
-                                                <p className="truncate">{letter.subject}</p>
-                                                {replyPreview && (
-                                                    <p className="mt-1 line-clamp-2 text-[11px] text-emerald-700">
-                                                        Balasan: {replyPreview}
+                                    return (
+                                        <TableRow
+                                            key={letter.id}
+                                            data-state={isSelected ? 'selected' : undefined}
+                                            className={cn('text-xs md:text-sm', isSelected && 'bg-blue-50/70')}
+                                        >
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    onCheckedChange={(value) =>
+                                                        onToggleSelect(letter.id, value === true)
+                                                    }
+                                                    aria-label={`Pilih surat ${letter.letterNumber}`}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="font-semibold text-slate-900 whitespace-nowrap">
+                                                {letter.letterNumber}
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                                <div>
+                                                    <p className="text-xs md:text-sm font-medium text-slate-900">
+                                                        {letter.senderName}
                                                     </p>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {letter.attachment?.url ? (
-                                                <div className="flex items-center gap-2">
-                                                    <FileText className="h-4 w-4 text-blue-500" />
-                                                    <span className="max-w-[150px] truncate text-xs font-semibold text-slate-600">
-                                                        {letter.attachment?.name ?? 'Lampiran'}
-                                                    </span>
+                                                    <p className="text-[10px] md:text-xs text-slate-500">
+                                                        {letter.senderDivision}
+                                                    </p>
                                                 </div>
-                                            ) : (
-                                                <span className="text-xs text-slate-400">-</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{letter.date}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {/* {letter.attachment?.url && (
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell">
+                                                <Badge variant="outline">{letter.targetDivision ?? '-'}</Badge>
+                                            </TableCell>
+                                            <TableCell className="hidden lg:table-cell">
+                                                <PriorityBadge priority={letter.priority} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="max-w-[200px] md:max-w-[240px]">
+                                                    <p className="truncate text-xs md:text-sm">{letter.subject}</p>
+                                                    {replyPreview && (
+                                                        <p className="mt-1 line-clamp-2 text-[10px] md:text-[11px] text-emerald-700">
+                                                            Balasan: {replyPreview}
+                                                        </p>
+                                                    )}
+                                                    <div className="sm:hidden text-[10px] text-slate-500 mt-1">
+                                                        {letter.senderName}
+                                                    </div>
+                                                    <div className="md:hidden mt-1">
+                                                        <Badge variant="outline" className="text-[10px]">{letter.targetDivision ?? '-'}</Badge>
+                                                    </div>
+                                                    <div className="lg:hidden mt-1">
+                                                        <PriorityBadge priority={letter.priority} />
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="hidden xl:table-cell">
+                                                {letter.attachment?.url ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <FileText className="h-4 w-4 text-blue-500" />
+                                                        <span className="max-w-[150px] truncate text-xs font-semibold text-slate-600">
+                                                            {letter.attachment?.name ?? 'Lampiran'}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">-</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="hidden lg:table-cell">{letter.date}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {/* {letter.attachment?.url && (
                                                     <>
                                                         <Button variant="ghost" size="icon" className="text-slate-500" asChild>
                                                             <a href={letter.attachment.url} target="_blank" rel="noreferrer">
@@ -212,23 +222,24 @@ export default function PendingDispositionPanel({
                                                         </Button>
                                                     </>
                                                 )} */}
-                                                <Button
-                                                    size="sm"
-                                                    className="bg-blue-500 text-white hover:bg-blue-600"
-                                                    onClick={() => onOpenDialog(letter)}
-                                                >
-                                                    Disposisi
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-blue-500 text-white hover:bg-blue-600 text-xs md:text-sm"
+                                                        onClick={() => onOpenDialog(letter)}
+                                                    >
+                                                        Disposisi
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <Separator />
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
-                        <p className="text-sm text-slate-500">
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-3 md:px-6 py-3 md:py-4">
+                        <p className="text-xs md:text-sm text-slate-500">
                             {selectedCount > 0
                                 ? `${selectedCount} surat siap didisposisi`
                                 : 'Pilih minimal satu surat untuk meneruskan.'}
@@ -244,15 +255,15 @@ export default function PendingDispositionPanel({
                                 {isAllSelected ? 'Batalkan Pilihan' : 'Pilih Semua'}
                             </Button>
                             <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                        disabled={selectedCount === 0}
-                        onClick={() => onOpenDialog()}
-                    >
-                        <SendHorizontal className="mr-2 h-4 w-4" />
-                        Disposisi Terpilih
-                    </Button>
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                disabled={selectedCount === 0}
+                                onClick={() => onOpenDialog()}
+                            >
+                                <SendHorizontal className="mr-2 h-4 w-4" />
+                                Disposisi Terpilih
+                            </Button>
                         </div>
                     </div>
                 </>

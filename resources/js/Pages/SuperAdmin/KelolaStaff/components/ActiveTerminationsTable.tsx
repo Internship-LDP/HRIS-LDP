@@ -97,9 +97,9 @@ export default function ActiveTerminationsTable({
                                 termination={request}
                                 checklistTemplate={checklistTemplate}
                                 trigger={
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="h-7 text-xs px-2"
                                         title="Checklist Offboarding"
                                     >
@@ -110,9 +110,9 @@ export default function ActiveTerminationsTable({
                             <TerminationDetailDialog
                                 termination={request}
                                 trigger={
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="h-7 text-xs px-2"
                                         title="Lihat Detail"
                                     >
@@ -122,9 +122,9 @@ export default function ActiveTerminationsTable({
                             />
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="h-7 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                                         title="Batalkan Offboarding"
                                     >
@@ -218,8 +218,8 @@ export default function ActiveTerminationsTable({
                                             termination={request}
                                             checklistTemplate={checklistTemplate}
                                             trigger={
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     title="Checklist Offboarding"
                                                 >
@@ -230,8 +230,8 @@ export default function ActiveTerminationsTable({
                                         <TerminationDetailDialog
                                             termination={request}
                                             trigger={
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     title="Lihat Detail"
                                                 >
@@ -241,8 +241,8 @@ export default function ActiveTerminationsTable({
                                         />
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
-                                                <Button 
-                                                    variant="ghost" 
+                                                <Button
+                                                    variant="ghost"
                                                     size="sm"
                                                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                                     title="Batalkan Offboarding"

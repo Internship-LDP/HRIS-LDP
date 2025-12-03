@@ -4,7 +4,7 @@ import AdminStaffLayout from '@/Pages/AdminStaff/Layout';
 import type { PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 
-interface RecruitmentPageProps extends Record<string, unknown> {
+interface RecruitmentPageProps extends Record<string, unknown>{
     applications: Array<{
         id: number;
         name: string;
@@ -44,21 +44,20 @@ export default function AdminStaffRecruitment() {
         >
             <Head title="Rekrutmen Baru" />
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            {/* STATUS OVERVIEW */}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4">
                 {statusBreakdown.map((item) => (
-                    <Card key={item.status} className="p-5">
+                    <Card key={item.status} className="p-5 text-center md:text-left">
                         <p className="text-sm text-slate-500">{item.status}</p>
-                        <p className="text-2xl font-semibold text-blue-900">
-                            {item.count}
-                        </p>
+                        <p className="text-2xl font-semibold text-blue-900">{item.count}</p>
                     </Card>
                 ))}
             </div>
 
+            {/* LIST PELAMAR */}
             <Card className="p-6">
-                <h3 className="mb-4 text-lg font-semibold text-blue-900">
-                    Daftar Pelamar
-                </h3>
+                <h3 className="mb-4 text-lg font-semibold text-blue-900">Daftar Pelamar</h3>
+
                 {applications.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-sm text-slate-500">
                         Belum ada pelamar baru.
@@ -67,23 +66,23 @@ export default function AdminStaffRecruitment() {
                     <div className="space-y-4">
                         {applications.map((candidate) => (
                             <div key={candidate.id} className="rounded-lg border border-slate-200 p-4">
-                                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                     <div>
-                                        <p className="text-lg font-semibold text-slate-900">
+                                        <p className="text-lg font-semibold text-slate-900 break-words">
                                             {candidate.name}
                                         </p>
-                                        <p className="text-sm text-slate-500">
+                                        <p className="text-sm text-slate-500 break-words">
                                             {candidate.position}
                                         </p>
                                     </div>
+
                                     <Badge
-                                        className={
-                                            statusColor[candidate.status] ?? 'bg-slate-100 text-slate-700'
-                                        }
+                                        className={statusColor[candidate.status] ?? 'bg-slate-100 text-slate-700'}
                                     >
                                         {candidate.status}
                                     </Badge>
                                 </div>
+
                                 <div className="mt-3 grid gap-2 text-sm text-slate-500 md:grid-cols-3">
                                     <p>Email: {candidate.email}</p>
                                     {candidate.phone && <p>Telp: {candidate.phone}</p>}

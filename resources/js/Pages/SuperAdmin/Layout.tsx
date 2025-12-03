@@ -63,26 +63,26 @@ export default function SuperAdminLayout({
         <div className="flex min-h-screen bg-slate-50 text-slate-900">
             {/* Mobile overlay */}
             {isMobileMenuOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={closeMobileMenu}
                 />
             )}
 
-            <Sidebar 
-                isOpen={isSidebarOpen} 
+            <Sidebar
+                isOpen={isSidebarOpen}
                 onToggle={toggleSidebar}
                 isMobileOpen={isMobileMenuOpen}
                 onMobileClose={closeMobileMenu}
             />
-            
+
             <div className={cn(
-                "flex-1 flex flex-col min-h-screen transition-[margin] duration-300 ease-in-out will-change-[margin]",
+                "flex-1 flex flex-col min-h-screen max-w-full overflow-x-hidden transition-[margin] duration-300 ease-in-out will-change-[margin]",
                 "ml-0 md:ml-52",
                 !isSidebarOpen && "md:ml-16"
             )}>
                 {/* Mobile header */}
-                <div className="sticky top-0 z-30 flex items-center gap-4 bg-white border-b border-slate-200 px-4 py-3 md:hidden">
+                <div className="sticky top-0 z-30 flex items-center gap-4 bg-white border-b border-slate-200 px-4 py-3 md:hidden w-full max-w-full">
                     <button
                         onClick={toggleMobileMenu}
                         className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
@@ -95,16 +95,16 @@ export default function SuperAdminLayout({
                     </div>
                 </div>
 
-                <div className="flex-1 p-4 md:p-6 lg:p-10">
+                <div className="flex-1 p-4 md:p-6 lg:p-10 max-w-full overflow-x-hidden">
                     {breadcrumbs && breadcrumbs.length > 0 && (
                         <div className="mb-4">
                             <Breadcrumbs items={breadcrumbs} />
                         </div>
                     )}
 
-                    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h1 className="text-xl md:text-2xl font-semibold text-blue-900">
+                    <div className="mb-4 md:mb-6 flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between w-full">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-xl md:text-2xl font-semibold text-blue-900 break-words">
                                 {title}
                             </h1>
                             {description && (
@@ -116,7 +116,7 @@ export default function SuperAdminLayout({
                         {actions}
                     </div>
 
-                    <div className="space-y-6">{children}</div>
+                    <div className="space-y-4 md:space-y-6 w-full max-w-full">{children}</div>
                 </div>
 
                 {/* Quick actions - hidden on mobile */}

@@ -121,120 +121,133 @@ export default function LettersTable({
 
     if (letters.length === 0) {
         return (
-            <div className="py-10 text-center text-slate-500">
+            <div className="py-8 md:py-10 text-center text-xs md:text-sm text-slate-500">
                 Tidak ada data surat pada tab ini.
             </div>
         );
     }
 
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>{isInbox ? 'ID Surat' : 'Nomor Surat'}</TableHead>
-                    <TableHead>{isInbox ? 'Dari' : 'Pengirim'}</TableHead>
-                    <TableHead>{isInbox ? 'Pengirim' : 'Kepada'}</TableHead>
-                    <TableHead>Subjek</TableHead>
-                    <TableHead>Divisi Tujuan</TableHead>
-                    {!isInbox && <TableHead>Jenis Surat</TableHead>}
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Prioritas</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {letters.map((letter) => {
-                    const latestReply =
-                        letter.replyHistory && letter.replyHistory.length > 0
-                            ? letter.replyHistory[letter.replyHistory.length - 1]
-                            : undefined;
-                    const hasReply = Boolean(latestReply || letter.replyNote);
-
-                    return (
-                    <TableRow key={letter.id}>
-                        <TableCell>
-                            {isInbox ? letter.id : letter.letterNumber}
-                        </TableCell>
-                        <TableCell>
-                            <p className="text-sm font-medium text-slate-900">
-                                {isInbox ? letter.senderDivision : letter.senderName}
-                            </p>
-                        </TableCell>
-                        <TableCell>
-                            <p className="text-sm text-slate-900">
-                                {isInbox ? letter.senderName : letter.recipientName}
-                            </p>
-                            {letter.senderPosition && (
-                                <p className="text-xs text-slate-500">
-                                    {letter.senderPosition}
-                                </p>
-                            )}
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <span className="line-clamp-1 text-sm">
-                                    {letter.subject}
-                                </span>
-                                {letter.attachment && (
-                                    <FileText className="h-4 w-4 text-slate-400" />
-                                )}
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <p className="text-sm font-medium text-slate-900">
-                                {letter.targetDivision ?? letter.recipientName ?? '-'}
-                            </p>
-                            {letter.targetDivision && letter.recipientName && letter.targetDivision !== letter.recipientName && (
-                                <p className="text-[11px] text-slate-500">Penerima: {letter.recipientName}</p>
-                            )}
-                        </TableCell>
-                        {!isInbox && (
-                            <TableCell>
-                                <Badge variant="outline">{letter.letterType}</Badge>
-                            </TableCell>
-                        )}
-                        <TableCell>
-                            <Badge variant="outline">{letter.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                            <PriorityBadge priority={letter.priority} />
-                        </TableCell>
-                        <TableCell>{letter.date}</TableCell>
-                        <TableCell>
-                            {getStatusBadge(letter.status)}
-                            {hasReply && (
-                                <p className="mt-1 text-xs font-medium text-emerald-700">
-                                    Balasan tersedia
-                                </p>
-                            )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => onSelect(letter)}
-                                >
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    Detail
-                                </Button>
-                                {onArchive && (
-                                    <ArchiveActionButton
-                                        letter={letter}
-                                        onConfirm={onArchive}
-                                        disabled={archiveProcessing}
-                                        isProcessing={archiveProcessing && archivingId === letter.id}
-                                    />
-                                )}
-                            </div>
-                        </TableCell>
+        <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>{isInbox ? 'ID Surat' : 'Nomor Surat'}</TableHead>
+                        <TableHead className="hidden sm:table-cell">{isInbox ? 'Dari' : 'Pengirim'}</TableHead>
+                        <TableHead>{isInbox ? 'Pengirim' : 'Kepada'}</TableHead>
+                        <TableHead>Subjek</TableHead>
+                        <TableHead className="hidden lg:table-cell">Divisi Tujuan</TableHead>
+                        {!isInbox && <TableHead className="hidden xl:table-cell">Jenis Surat</TableHead>}
+                        <TableHead className="hidden md:table-cell">Kategori</TableHead>
+                        <TableHead className="hidden md:table-cell">Prioritas</TableHead>
+                        <TableHead className="hidden lg:table-cell">Tanggal</TableHead>
+                        <TableHead className="hidden sm:table-cell">Status</TableHead>
+                        <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
-                    );
-                })}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {letters.map((letter) => {
+                        const latestReply =
+                            letter.replyHistory && letter.replyHistory.length > 0
+                                ? letter.replyHistory[letter.replyHistory.length - 1]
+                                : undefined;
+                        const hasReply = Boolean(latestReply || letter.replyNote);
+
+                        return (
+                            <TableRow key={letter.id}>
+                                <TableCell className="font-medium whitespace-nowrap">
+                                    <div>{isInbox ? letter.id : letter.letterNumber}</div>
+                                    <div className="sm:hidden text-xs text-slate-500">
+                                        {getStatusBadge(letter.status)}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                    <p className="text-sm font-medium text-slate-900">
+                                        {isInbox ? letter.senderDivision : letter.senderName}
+                                    </p>
+                                </TableCell>
+                                <TableCell>
+                                    <p className="text-sm text-slate-900">
+                                        {isInbox ? letter.senderName : letter.recipientName}
+                                    </p>
+                                    {letter.senderPosition && (
+                                        <p className="text-xs text-slate-500">
+                                            {letter.senderPosition}
+                                        </p>
+                                    )}
+                                    <div className="sm:hidden text-xs text-slate-500 mt-1">
+                                        {isInbox ? letter.senderDivision : letter.senderName}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <span className="line-clamp-1 text-sm">
+                                            {letter.subject}
+                                        </span>
+                                        {letter.attachment && (
+                                            <FileText className="h-4 w-4 text-slate-400" />
+                                        )}
+                                    </div>
+                                    <div className="md:hidden text-xs mt-1 space-y-0.5">
+                                        <div><PriorityBadge priority={letter.priority} /></div>
+                                        <Badge variant="outline" className="text-[10px]">{letter.category}</Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">
+                                    <p className="text-sm font-medium text-slate-900">
+                                        {letter.targetDivision ?? letter.recipientName ?? '-'}
+                                    </p>
+                                    {letter.targetDivision && letter.recipientName && letter.targetDivision !== letter.recipientName && (
+                                        <p className="text-[11px] text-slate-500">Penerima: {letter.recipientName}</p>
+                                    )}
+                                </TableCell>
+                                {!isInbox && (
+                                    <TableCell className="hidden xl:table-cell">
+                                        <Badge variant="outline">{letter.letterType}</Badge>
+                                    </TableCell>
+                                )}
+                                <TableCell className="hidden md:table-cell">
+                                    <Badge variant="outline">{letter.category}</Badge>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                    <PriorityBadge priority={letter.priority} />
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell whitespace-nowrap">{letter.date}</TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                    {getStatusBadge(letter.status)}
+                                    {hasReply && (
+                                        <p className="mt-1 text-xs font-medium text-emerald-700">
+                                            Balasan tersedia
+                                        </p>
+                                    )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => onSelect(letter)}
+                                            className="text-xs md:text-sm"
+                                        >
+                                            <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                                            <span className="hidden md:inline">Detail</span>
+                                        </Button>
+                                        {onArchive && (
+                                            <ArchiveActionButton
+                                                letter={letter}
+                                                onConfirm={onArchive}
+                                                disabled={archiveProcessing}
+                                                isProcessing={archiveProcessing && archivingId === letter.id}
+                                            />
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </div>
     );
 }
 
