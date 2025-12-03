@@ -56,8 +56,8 @@ export default function ComplaintFilters({
     ]);
 
     return (
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row">
-            <div className="relative flex-1">
+        <div className="mb-6 space-y-3 md:grid md:grid-cols-2 md:items-start md:gap-3 md:space-y-0">
+            <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                     value={searchTerm}
@@ -68,7 +68,7 @@ export default function ComplaintFilters({
                     className="pl-10"
                 />
             </div>
-            <div className="flex flex-1 flex-wrap gap-2 lg:flex-none">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 <FilterSelect
                     value={statusFilter}
                     onChange={onStatusChange}
@@ -112,7 +112,7 @@ function FilterSelect({
 }: FilterSelectProps) {
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-full min-w-[160px] lg:w-40">
+            <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
