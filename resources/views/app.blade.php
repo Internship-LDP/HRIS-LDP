@@ -13,6 +13,15 @@
 
         <!-- Scripts -->
         @routes
+        <style>
+            html {
+                overflow-y: scroll;
+                scrollbar-gutter: stable;
+            }
+            body {
+                overflow-y: scroll;
+            }
+        </style>
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
         @inertiaHead
