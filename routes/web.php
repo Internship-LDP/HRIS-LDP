@@ -16,6 +16,7 @@ use App\Http\Controllers\SuperAdmin\ComplaintController as SuperAdminComplaintCo
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\DivisionController;
 use App\Http\Controllers\SuperAdmin\LetterController;
+use App\Http\Controllers\SuperAdmin\NotificationController;
 use App\Http\Controllers\SuperAdmin\RecruitmentController; // Pastikan ini di-import
 use App\Http\Controllers\SuperAdmin\StaffTerminationController;
 use App\Models\User;
@@ -97,6 +98,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', SuperAdminDashboardController::class)->name('dashboard');
         Route::get('/admin-hr/dashboard', AdminHrDashboardController::class)->name('admin-hr.dashboard');
+        
+        // Notifications API
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         
          // RECRUITMENT ROUTES
         Route::get('/recruitment', RecruitmentController::class)
