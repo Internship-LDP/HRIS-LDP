@@ -11,6 +11,7 @@ import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
+import NotificationDropdown from '@/Pages/SuperAdmin/components/NotificationDropdown';
 
 interface SuperAdminLayoutProps {
     title: string;
@@ -26,7 +27,7 @@ export default function SuperAdminLayout({
     actions,
     children,
 }: PropsWithChildren<SuperAdminLayoutProps>) {
-    const { props: { auth } } = usePage<PageProps>();
+    const { props: { auth, sidebarNotifications = {} } } = usePage<PageProps<{ sidebarNotifications?: Record<string, number> }>>();
     const user = auth?.user;
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -39,7 +40,12 @@ export default function SuperAdminLayout({
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [notificationCount] = useState(3); // This can be connected to real notification data later
+    
+    // State untuk notifikasi real-time
+    const [liveNotifications, setLiveNotifications] = useState<Record<string, number>>(sidebarNotifications);
+    
+    // Hitung total notifikasi
+    const totalNotifications = Object.values(liveNotifications).reduce((sum, count) => sum + count, 0);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -51,6 +57,99 @@ export default function SuperAdminLayout({
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Update notifications saat props berubah
+    useEffect(() => {
+        setLiveNotifications(sidebarNotifications);
+    }, [sidebarNotifications]);
+
+    // Setup real-time notification listeners
+    useEffect(() => {
+        if (!window.Echo) {
+            return;
+        }
+
+        const pendingStatuses = ['Menunggu HR', 'Diajukan', 'Diproses'];
+        const lettersBadgeKey = 'super-admin.letters.index';
+        const recruitmentBadgeKey = 'super-admin.recruitment';
+        const staffBadgeKey = 'super-admin.staff.index';
+        const complaintsBadgeKey = 'super-admin.complaints.index';
+
+        // Listen to Letters channel
+        const lettersChannel = window.Echo.private('super-admin.letters');
+        const handleLetterUpdated = (payload: { letter?: { status?: string; currentRecipient?: string } }) => {
+            const letter = payload?.letter;
+            if (!letter) return;
+
+            const shouldCount = pendingStatuses.includes(letter.status ?? '') && letter.currentRecipient === 'hr';
+            setLiveNotifications((prev) => {
+                const current = prev[lettersBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [lettersBadgeKey]: next };
+            });
+        };
+
+        // Listen to Recruitment channel
+        const recruitmentChannel = window.Echo.private('super-admin.recruitment');
+        const handleApplicationUpdated = (payload: { application?: { status?: string } }) => {
+            const application = payload?.application;
+            if (!application) return;
+
+            const shouldCount = ['Applied', 'Screening'].includes(application.status ?? '');
+            setLiveNotifications((prev) => {
+                const current = prev[recruitmentBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [recruitmentBadgeKey]: next };
+            });
+        };
+
+        // Listen to Staff Termination channel
+        const staffChannel = window.Echo.private('super-admin.staff');
+        const handleTerminationUpdated = (payload: { termination?: { status?: string } }) => {
+            const termination = payload?.termination;
+            if (!termination) return;
+
+            const shouldCount = ['Diajukan', 'Proses'].includes(termination.status ?? '');
+            setLiveNotifications((prev) => {
+                const current = prev[staffBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [staffBadgeKey]: next };
+            });
+        };
+
+        // Listen to Complaints channel
+        const complaintsChannel = window.Echo.private('super-admin.complaints');
+        const handleComplaintUpdated = (payload: { complaint?: { status?: string } }) => {
+            const complaint = payload?.complaint;
+            if (!complaint) return;
+
+            const shouldCount = complaint.status === 'Baru';
+            setLiveNotifications((prev) => {
+                const current = prev[complaintsBadgeKey] ?? 0;
+                const next = shouldCount ? current + 1 : Math.max(current - 1, 0);
+                return { ...prev, [complaintsBadgeKey]: next };
+            });
+        };
+
+        // Register all event listeners
+        lettersChannel.listen('LetterUpdated', handleLetterUpdated);
+        recruitmentChannel.listen('ApplicationUpdated', handleApplicationUpdated);
+        staffChannel.listen('TerminationUpdated', handleTerminationUpdated);
+        complaintsChannel.listen('ComplaintUpdated', handleComplaintUpdated);
+
+        // Cleanup function
+        return () => {
+            lettersChannel.stopListening('LetterUpdated');
+            recruitmentChannel.stopListening('ApplicationUpdated');
+            staffChannel.stopListening('TerminationUpdated');
+            complaintsChannel.stopListening('ComplaintUpdated');
+            
+            window.Echo?.leave('super-admin.letters');
+            window.Echo?.leave('super-admin.recruitment');
+            window.Echo?.leave('super-admin.staff');
+            window.Echo?.leave('super-admin.complaints');
+        };
     }, []);
 
     const toggleSidebar = () => {
@@ -108,14 +207,16 @@ export default function SuperAdminLayout({
                     {/* Right side - Notifications & User Menu (Desktop only) */}
                     <div className="hidden md:flex items-center gap-3">
                         {/* Notifications */}
-                        <Button variant="ghost" size="icon" className="relative">
-                            <Bell className="w-5 h-5" />
-                            {notificationCount > 0 && (
-                                <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-red-500 text-xs">
-                                    {notificationCount}
-                                </Badge>
-                            )}
-                        </Button>
+                        <NotificationDropdown totalCount={totalNotifications}>
+                            <Button variant="ghost" size="icon" className="relative">
+                                <Bell className="w-5 h-5" />
+                                {totalNotifications > 0 && (
+                                    <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-red-500 text-xs">
+                                        {totalNotifications > 99 ? '99+' : totalNotifications}
+                                    </Badge>
+                                )}
+                            </Button>
+                        </NotificationDropdown>
 
                         {/* User Profile Display */}
                         <div className="flex items-center gap-2">
