@@ -8,6 +8,7 @@ import ApplicantProfileDialog from './components/ApplicantProfileDialog';
 import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
 import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
+import InterviewDetailDialog from './components/InterviewDetailDialog';
 import {
     ApplicantRecord,
     ApplicantStatus,
@@ -43,6 +44,7 @@ export default function KelolaRekrutmenIndex({
 
     const [scheduleOpen, setScheduleOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [interviewDetailOpen, setInterviewDetailOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
 
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -69,11 +71,11 @@ export default function KelolaRekrutmenIndex({
     const normalizedSearch = searchTerm.trim().toLowerCase();
     const visibleApplications = normalizedSearch
         ? filteredByDate.filter(
-              (application) =>
-                  application.name.toLowerCase().includes(normalizedSearch) ||
-                  application.position.toLowerCase().includes(normalizedSearch) ||
-                  application.email.toLowerCase().includes(normalizedSearch),
-          )
+            (application) =>
+                application.name.toLowerCase().includes(normalizedSearch) ||
+                application.position.toLowerCase().includes(normalizedSearch) ||
+                application.email.toLowerCase().includes(normalizedSearch),
+        )
         : filteredByDate;
 
     const statusSummary: StatusSummary = applications.reduce((acc, application) => {
@@ -160,6 +162,13 @@ export default function KelolaRekrutmenIndex({
         setScheduleOpen(true);
     };
 
+    const handleViewInterviewDetails = () => {
+        if (!selectedApplicant) return;
+
+        setProfileOpen(false);
+        setInterviewDetailOpen(true);
+    };
+
     const isHumanCapitalAdmin =
         auth.user?.role === 'Admin' &&
         typeof auth.user?.division === 'string' &&
@@ -167,13 +176,13 @@ export default function KelolaRekrutmenIndex({
 
     const breadcrumbs = isHumanCapitalAdmin
         ? [
-              { label: 'Admin', href: route('admin-staff.dashboard') },
-              { label: 'Recruitment & Onboarding' },
-          ]
+            { label: 'Admin', href: route('admin-staff.dashboard') },
+            { label: 'Recruitment & Onboarding' },
+        ]
         : [
-              { label: 'Super Admin', href: route('super-admin.dashboard') },
-              { label: 'Recruitment & Onboarding' },
-          ];
+            { label: 'Super Admin', href: route('super-admin.dashboard') },
+            { label: 'Recruitment & Onboarding' },
+        ];
 
     // -----------------------------------------
     // RENDER PAGE
@@ -231,6 +240,7 @@ export default function KelolaRekrutmenIndex({
                     onAccept={handleAcceptFromProfile}
                     onReject={handleRejectFromProfile}
                     onScheduleInterview={handleScheduleFromProfile}
+                    onViewInterviewDetails={handleViewInterviewDetails}
                     isUpdatingStatus={isUpdatingStatus}
                 />
                 <ScheduleInterviewDialog
@@ -239,6 +249,10 @@ export default function KelolaRekrutmenIndex({
                     applicant={selectedApplicant}
                     onSuccessSubmit={handleScheduleSuccess}
                     existingInterviews={interviews}
+                />
+                <InterviewDetailDialog
+                    applicant={interviewDetailOpen ? selectedApplicant : null}
+                    onClose={() => setInterviewDetailOpen(false)}
                 />
             </SuperAdminLayout>
         </>

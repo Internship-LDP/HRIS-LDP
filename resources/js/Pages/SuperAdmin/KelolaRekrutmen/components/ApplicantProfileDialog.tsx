@@ -14,6 +14,7 @@ interface ApplicantProfileDialogProps {
     onAccept?: () => void;
     onReject?: (reason: string) => void;
     onScheduleInterview?: () => void;
+    onViewInterviewDetails?: () => void;
     isUpdatingStatus?: boolean;
 }
 
@@ -24,9 +25,10 @@ export default function ApplicantProfileDialog({
     onAccept,
     onReject,
     onScheduleInterview,
+    onViewInterviewDetails,
     isUpdatingStatus = false,
 }: ApplicantProfileDialogProps) {
-    
+
     if (!applicant) return null;
 
     return (
@@ -41,6 +43,7 @@ export default function ApplicantProfileDialog({
                         onAccept={onAccept}
                         onReject={onReject}
                         onScheduleInterview={onScheduleInterview}
+                        onViewInterviewDetails={onViewInterviewDetails}
                         isUpdatingStatus={isUpdatingStatus}
                     />
                 </div>

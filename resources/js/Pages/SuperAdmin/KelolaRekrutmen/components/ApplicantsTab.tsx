@@ -38,6 +38,7 @@ import {
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import RejectionModal from './RejectionModal';
+import InterviewDetailDialog from './InterviewDetailDialog';
 
 interface ApplicantsTabProps {
     statusOptions: string[];
@@ -114,7 +115,8 @@ export default function ApplicantsTab({
     onViewProfile,
 }: ApplicantsTabProps) {
     const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
-    const [selectedApplicant, setSelectedApplicant] = useState<ApplicantRecord | null>(null);
+    const [rejectingApplicant, setRejectingApplicant] = useState<ApplicantRecord | null>(null);
+    const [viewingInterview, setViewingInterview] = useState<ApplicantRecord | null>(null);
     const [datePickerMonth, setDatePickerMonth] = useState<Date | undefined>(
         dateRange.from ?? dateRange.to ?? new Date(),
     );
@@ -140,13 +142,13 @@ export default function ApplicantsTab({
     };
 
     const handleReject = (application: ApplicantRecord) => {
-        setSelectedApplicant(application);
+        setRejectingApplicant(application);
         setIsRejectionModalOpen(true);
     };
 
     const handleConfirmReject = (reason: string) => {
-        if (selectedApplicant) {
-            onReject(selectedApplicant.id, reason);
+        if (rejectingApplicant) {
+            onReject(rejectingApplicant.id, reason);
         }
     };
 
@@ -359,11 +361,16 @@ export default function ApplicantsTab({
                 isOpen={isRejectionModalOpen}
                 onClose={() => {
                     setIsRejectionModalOpen(false);
-                    setSelectedApplicant(null);
+                    setRejectingApplicant(null);
                 }}
                 onConfirm={handleConfirmReject}
-                applicant={selectedApplicant}
+                applicant={rejectingApplicant}
                 isSubmitting={isUpdatingStatus}
+            />
+
+            <InterviewDetailDialog
+                applicant={viewingInterview}
+                onClose={() => setViewingInterview(null)}
             />
         </>
     );

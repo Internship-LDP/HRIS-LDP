@@ -1,13 +1,46 @@
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { InterviewSchedule } from '../types';
+import { InterviewSchedule, ApplicantRecord } from '../types';
 import { Calendar as CalendarIcon, Clock, Eye } from 'lucide-react';
+import { useState } from 'react';
+import InterviewDetailDialog from './InterviewDetailDialog';
 
 interface InterviewsTabProps {
     interviews: InterviewSchedule[];
+    onViewDetails?: (applicationId: number) => void;
 }
 
-export default function InterviewsTab({ interviews }: InterviewsTabProps) {
+export default function InterviewsTab({ interviews, onViewDetails }: InterviewsTabProps) {
+    const [selectedInterview, setSelectedInterview] = useState<InterviewSchedule | null>(null);
+
+    const handleViewDetail = (interview: InterviewSchedule) => {
+        if (onViewDetails && interview.application_id) {
+            onViewDetails(interview.application_id);
+        } else {
+            setSelectedInterview(interview);
+        }
+    };
+
+    // Convert InterviewSchedule to ApplicantRecord format for dialog
+    const getApplicantFromInterview = (interview: InterviewSchedule): ApplicantRecord | null => {
+        if (!interview) return null;
+
+        return {
+            id: interview.application_id || 0,
+            name: interview.candidate,
+            email: '',
+            position: interview.position,
+            status: 'Interview' as any,
+            date: interview.date,
+            submitted_date: interview.date,
+            has_interview_schedule: true,
+            interview_date: interview.date,
+            interview_time: interview.time,
+            interview_end_time: interview.end_time,
+            interview_mode: interview.mode,
+            interviewer_name: interview.interviewer,
+        } as ApplicantRecord;
+    };
     return (
         <Card className="space-y-6 p-6">
             {interviews.length === 0 ? (
@@ -48,7 +81,12 @@ export default function InterviewsTab({ interviews }: InterviewsTabProps) {
                                             {interview.interviewer}
                                         </p>
                                     </div>
-                                    <Button variant="outline" size="sm" className="gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-2"
+                                        onClick={() => handleViewDetail(interview)}
+                                    >
                                         <Eye className="h-4 w-4" />
                                         Detail
                                     </Button>
@@ -58,6 +96,12 @@ export default function InterviewsTab({ interviews }: InterviewsTabProps) {
                     ))}
                 </div>
             )}
+
+            {/* Interview Detail Dialog */}
+            <InterviewDetailDialog
+                applicant={selectedInterview ? getApplicantFromInterview(selectedInterview) : null}
+                onClose={() => setSelectedInterview(null)}
+            />
         </Card>
     );
 }

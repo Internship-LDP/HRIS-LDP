@@ -4,11 +4,11 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Separator } from '@/Components/ui/separator';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
   Calendar,
   Briefcase,
   GraduationCap,
@@ -29,19 +29,21 @@ interface ApplicantProfileViewProps {
   onAccept?: () => void;
   onReject?: (reason: string) => void;
   onScheduleInterview?: () => void;
+  onViewInterviewDetails?: () => void;
   isUpdatingStatus?: boolean;
 }
 
-export function ApplicantProfileView({ 
-  applicant, 
-  onAccept, 
-  onReject, 
+export function ApplicantProfileView({
+  applicant,
+  onAccept,
+  onReject,
   onScheduleInterview,
+  onViewInterviewDetails,
   isUpdatingStatus = false
 }: ApplicantProfileViewProps) {
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [isAcceptanceModalOpen, setIsAcceptanceModalOpen] = useState(false);
-  
+
   const educations = applicant.educations ?? [];
   const experiences = applicant.experiences ?? [];
   const profileName = applicant.profile_name ?? applicant.name;
@@ -60,7 +62,7 @@ export function ApplicantProfileView({
     applicant.status === 'Interview' ||
     Boolean(applicant.interview_date || applicant.interview_time || applicant.interview_mode);
   const scheduleButtonLabel = hasInterviewSchedule ? 'Edit Jadwal Interview' : 'Jadwalkan Interview';
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Applied':
@@ -113,8 +115,8 @@ export function ApplicantProfileView({
             <div className="relative">
               <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden">
                 {applicant.profile_photo_url ? (
-                  <img 
-                    src={applicant.profile_photo_url} 
+                  <img
+                    src={applicant.profile_photo_url}
                     alt={applicant.name}
                     className="w-full h-full object-cover"
                   />
@@ -126,7 +128,7 @@ export function ApplicantProfileView({
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
             </div>
-            
+
             {/* Profile Info */}
             <div className="flex-1 mt-4 sm:mt-0">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -134,7 +136,7 @@ export function ApplicantProfileView({
                   <div>
                     <h2 className="text-gray-900 mb-1">{profileName}</h2>
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-blue-900 hover:bg-blue-800">ID: APL{String(applicant.id).padStart(3, '0')}</Badge>
                     {getStatusBadge(applicant.status)}
@@ -142,7 +144,7 @@ export function ApplicantProfileView({
                       {applicant.position}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1.5 hover:text-blue-900 transition-colors">
                       <Mail className="w-4 h-4" />
@@ -171,7 +173,7 @@ export function ApplicantProfileView({
       {/* Modern Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {applicant.cv_url && (
-          <Button 
+          <Button
             variant="outline"
             className="shadow-sm hover:shadow-md transition-all hover:bg-gray-50"
             onClick={() => applicant.cv_url && window.open(applicant.cv_url, '_blank')}
@@ -181,9 +183,9 @@ export function ApplicantProfileView({
           </Button>
         )}
         {onScheduleInterview && !isHired && !isRejected && (
-          <Button 
-            onClick={onScheduleInterview} 
-            variant="outline" 
+          <Button
+            onClick={onScheduleInterview}
+            variant="outline"
             className="border-blue-900 text-blue-900 hover:bg-blue-50 shadow-sm hover:shadow-md transition-all"
             title={hasInterviewSchedule ? 'Edit jadwal interview yang sudah dibuat' : 'Buat jadwal interview'}
           >
@@ -191,9 +193,20 @@ export function ApplicantProfileView({
             {scheduleButtonLabel}
           </Button>
         )}
+        {onViewInterviewDetails && hasInterviewSchedule && !isHired && !isRejected && (
+          <Button
+            onClick={onViewInterviewDetails}
+            variant="outline"
+            className="border-purple-600 text-purple-700 hover:bg-purple-50 shadow-sm hover:shadow-md transition-all"
+            title="Lihat detail jadwal interview"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            Detail Interview
+          </Button>
+        )}
         {onAccept && !isHired && !isRejected && (
-          <Button 
-            onClick={handleAcceptClick} 
+          <Button
+            onClick={handleAcceptClick}
             className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
             disabled={isUpdatingStatus}
           >
@@ -202,9 +215,9 @@ export function ApplicantProfileView({
           </Button>
         )}
         {onReject && !isHired && !isRejected && (
-          <Button 
-            onClick={handleRejectClick} 
-            variant="outline" 
+          <Button
+            onClick={handleRejectClick}
+            variant="outline"
             className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 shadow-sm hover:shadow-md transition-all"
             disabled={isUpdatingStatus}
           >
@@ -244,7 +257,7 @@ export function ApplicantProfileView({
                 </div>
                 <h3 className="text-blue-900">Informasi Pribadi</h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">Nama Lengkap</p>
