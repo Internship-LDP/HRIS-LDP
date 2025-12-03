@@ -1,24 +1,28 @@
-import InputError from '@/Components/InputError';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { gsap } from 'gsap';
-import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
-import { FormEventHandler, useEffect, useRef, useState } from 'react';
+import InputError from "@/Components/InputError";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { gsap } from "gsap";
+import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { FormEventHandler, useEffect, useRef, useState } from "react";
 
-const logo = '/img/LogoLDP.png';
+const logo = "/img/LogoLDP.png";
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+        name: "",
+        email: "",
+        password: "",
+        password_confirmation: "",
     });
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
+
+    // Regex validasi nama: hanya huruf, spasi, petik atas, dan strip
+    const nameRegex = /^[A-Za-z\s'-]+$/;
 
     useEffect(() => {
         if (containerRef.current) {
@@ -34,16 +38,15 @@ export default function Register() {
                 y: 30,
                 duration: 0.8,
                 delay: 0.15,
-                ease: 'power3.out',
+                ease: "power3.out",
             });
         }
     }, []);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
+        post(route("register"), {
+            onFinish: () => reset("password", "password_confirmation"),
         });
     };
 
@@ -55,7 +58,7 @@ export default function Register() {
                 <div className="pointer-events-none absolute top-16 right-12 w-72 h-72 rounded-full bg-cyan-500/15 blur-3xl" />
                 <div
                     className="pointer-events-none absolute bottom-10 left-10 h-96 w-96 rounded-full bg-purple-500/15 blur-3xl"
-                    style={{ animationDelay: '0.5s' }}
+                    style={{ animationDelay: "0.5s" }}
                 />
 
                 <div
@@ -92,6 +95,7 @@ export default function Register() {
                             </div>
 
                             <form onSubmit={submit} className="space-y-6">
+                                {/* VALIDASI NAMA */}
                                 <div className="space-y-2">
                                     <label
                                         htmlFor="name"
@@ -99,20 +103,31 @@ export default function Register() {
                                     >
                                         Nama Lengkap
                                     </label>
+
                                     <div className="relative">
                                         <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
+
                                         <Input
                                             id="name"
                                             name="name"
                                             value={data.name}
                                             autoComplete="name"
                                             className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
-                                            onChange={(e) =>
-                                                setData('name', e.target.value)
-                                            }
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+
+                                                // validasi: hanya huruf, spasi, petik atas, strip
+                                                if (
+                                                    value === "" ||
+                                                    nameRegex.test(value)
+                                                ) {
+                                                    setData("name", value);
+                                                }
+                                            }}
                                             required
                                         />
                                     </div>
+
                                     <InputError
                                         message={errors.name}
                                         className="text-sm text-red-300"
@@ -136,7 +151,7 @@ export default function Register() {
                                             autoComplete="username"
                                             className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
-                                                setData('email', e.target.value)
+                                                setData("email", e.target.value)
                                             }
                                             required
                                         />
@@ -158,13 +173,20 @@ export default function Register() {
                                         <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                                         <Input
                                             id="password"
-                                            type={showPassword ? 'text' : 'password'}
+                                            type={
+                                                showPassword
+                                                    ? "text"
+                                                    : "password"
+                                            }
                                             name="password"
                                             value={data.password}
                                             autoComplete="new-password"
                                             className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 pr-12 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
-                                                setData('password', e.target.value)
+                                                setData(
+                                                    "password",
+                                                    e.target.value
+                                                )
                                             }
                                             required
                                         />
@@ -201,8 +223,8 @@ export default function Register() {
                                             id="password_confirmation"
                                             type={
                                                 showConfirmPassword
-                                                    ? 'text'
-                                                    : 'password'
+                                                    ? "text"
+                                                    : "password"
                                             }
                                             name="password_confirmation"
                                             value={data.password_confirmation}
@@ -210,8 +232,8 @@ export default function Register() {
                                             className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 pr-12 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
                                                 setData(
-                                                    'password_confirmation',
-                                                    e.target.value,
+                                                    "password_confirmation",
+                                                    e.target.value
                                                 )
                                             }
                                             required
@@ -220,7 +242,7 @@ export default function Register() {
                                             type="button"
                                             onClick={() =>
                                                 setShowConfirmPassword(
-                                                    (prev) => !prev,
+                                                    (prev) => !prev
                                                 )
                                             }
                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 transition hover:text-white/80"
@@ -239,14 +261,14 @@ export default function Register() {
                                 </div>
 
                                 <div className="text-xs text-white/70">
-                                    Dengan mendaftar, Anda menyetujui{' '}
+                                    Dengan mendaftar, Anda menyetujui{" "}
                                     <span className="font-medium text-cyan-300">
                                         Syarat & Ketentuan
-                                    </span>{' '}
-                                    dan{' '}
+                                    </span>{" "}
+                                    dan{" "}
                                     <span className="font-medium text-cyan-300">
                                         Kebijakan Privasi
-                                    </span>{' '}
+                                    </span>{" "}
                                     Lintas Data Prima.
                                 </div>
 
@@ -255,14 +277,16 @@ export default function Register() {
                                     disabled={processing}
                                     className="h-12 w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-base font-semibold text-white shadow-[0_8px_32px_rgba(34,211,238,0.5)] border border-cyan-400/30 rounded-[20px]"
                                 >
-                                    {processing ? 'Memproses...' : 'Daftar Sekarang'}
+                                    {processing
+                                        ? "Memproses..."
+                                        : "Daftar Sekarang"}
                                 </Button>
                             </form>
 
                             <div className="mt-8 text-center text-sm text-white/80">
-                                Sudah punya akun?{' '}
+                                Sudah punya akun?{" "}
                                 <Link
-                                    href={route('login')}
+                                    href={route("login")}
                                     className="font-semibold text-cyan-300 hover:text-cyan-200"
                                 >
                                     Masuk di sini
