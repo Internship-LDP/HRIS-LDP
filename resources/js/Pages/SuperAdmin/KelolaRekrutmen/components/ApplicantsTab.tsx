@@ -160,193 +160,211 @@ export default function ApplicantsTab({
 
     return (
         <>
-        <Card className="space-y-4 md:space-y-6 p-3 md:p-6">
-            <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
-                <div className="flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-500 shrink-0" />
-                    <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-                        <SelectTrigger className="w-full md:w-[180px] h-9 md:h-10 text-xs md:text-sm">
-                            <SelectValue placeholder="Semua status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Semua Status</SelectItem>
-                            {statusOrder.map((status) => (
-                                <SelectItem key={status} value={status}>
-                                    {status}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+            <Card className="space-y-4 md:space-y-6 p-3 md:p-6">
+                <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 md:gap-3">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-500 shrink-0" />
+                        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+                            <SelectTrigger className="w-full md:w-[135px] h-9 md:h-10 text-xs md:text-sm">
+                                <SelectValue placeholder="Semua status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Status</SelectItem>
+                                {statusOrder.map((status) => (
+                                    <SelectItem key={status} value={status}>
+                                        {status}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-                <div className="flex items-center gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="flex items-center gap-1 md:gap-2 h-9 md:h-10 text-xs md:text-sm w-full md:w-auto"
-                            >
-                                <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                <span className="truncate">{displayDateRange}</span>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-2 md:p-3" align="start">
-                            <Calendar
-                                mode="range"
-                                numberOfMonths={1}
-                                month={datePickerMonth}
-                                onMonthChange={setDatePickerMonth}
-                                selected={dateRange as DateRange}
-                                onSelect={(range: DateRange | undefined) => {
-                                    if (!range) {
-                                        onDateRangeChange({ from: null, to: null });
-                                        return;
-                                    }
-                                    onDateRangeChange({
-                                        from: range.from ?? null,
-                                        to: range.to ?? null,
-                                    });
-                                }}
-                                className="text-xs md:text-sm [&_.rdp-caption]:text-xs [&_.rdp-caption]:md:text-sm [&_.rdp-cell]:w-8 [&_.rdp-cell]:h-8 [&_.rdp-cell]:md:w-9 [&_.rdp-cell]:md:h-9 [&_.rdp-head_cell]:w-8 [&_.rdp-head_cell]:md:w-9 [&_.rdp-button]:h-8 [&_.rdp-button]:w-8 [&_.rdp-button]:md:h-9 [&_.rdp-button]:md:w-9 [&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
-                            />
-                            <div className="mt-2 md:mt-3 flex justify-end">
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
                                 <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="gap-1 h-7 md:h-8 text-xs"
-                                    onClick={() => onDateRangeChange({ from: null, to: null })}
+                                    variant="outline"
+                                    className="flex items-center gap-1 md:gap-2 h-9 md:h-10 text-xs md:text-sm w-full md:w-auto"
                                 >
-                                    <X className="h-3.5 w-3.5 md:h-4 md:w-4" /> Reset
+                                    <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                    <span className="truncate">{displayDateRange}</span>
                                 </Button>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-
-                <div className="relative w-full md:max-w-xs">
-                    <Search className="absolute left-2.5 md:left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-slate-400" />
-                    <Input
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        placeholder="Cari pelamar..."
-                        className="pl-8 md:pl-9 h-9 md:h-10 text-xs md:text-sm"
-                    />
-                </div>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="block md:hidden space-y-3">
-                {visibleApplications.length === 0 ? (
-                    <p className="py-6 text-center text-xs text-slate-500">Tidak ada data pelamar.</p>
-                ) : (
-                    visibleApplications.map((application) => {
-                        const isCurrentlyUpdating = isUpdatingStatus && updatingApplicantId === application.id;
-                        return (
-                            <div key={application.id} className="rounded-lg border p-3 space-y-2">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-xs text-slate-900 truncate">{application.name}</p>
-                                        <p className="text-[10px] text-slate-500 truncate">{application.email}</p>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2 max-h-[80vh] overflow-auto" align="start">
+                                <div className="flex flex-col md:flex-row gap-2 md:gap-3">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-semibold text-slate-600">Mulai</p>
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateRange.from ?? undefined}
+                                            onSelect={(date) => {
+                                                onDateRangeChange({
+                                                    from: date ?? null,
+                                                    to: dateRange.to,
+                                                });
+                                            }}
+                                            disabled={(date) =>
+                                                dateRange.to ? date > dateRange.to : false
+                                            }
+                                            className="text-[9px] md:text-[10px] [&_.rdp-caption]:text-[9px] [&_.rdp-caption]:md:text-[10px] [&_.rdp-cell]:w-4 [&_.rdp-cell]:h-4 [&_.rdp-cell]:md:w-5 [&_.rdp-cell]:md:h-5 [&_.rdp-head_cell]:w-4 [&_.rdp-head_cell]:md:w-5 [&_.rdp-button]:h-4 [&_.rdp-button]:w-4 [&_.rdp-button]:md:h-5 [&_.rdp-button]:md:w-5 [&_.rdp-nav_button]:h-4 [&_.rdp-nav_button]:w-4"
+                                        />
                                     </div>
-                                    {statusBadge(application.status)}
-                                </div>
-                                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                                    <div>
-                                        <p className="text-[10px] text-slate-400">ID Lamaran</p>
-                                        <p className="text-[11px] text-blue-900 font-semibold">{formatApplicationId(application.id)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-slate-400">Posisi</p>
-                                        <p className="text-[11px] text-slate-700 truncate">{application.position}</p>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-semibold text-slate-600">Selesai</p>
+                                        <Calendar
+                                            mode="single"
+                                            selected={dateRange.to ?? undefined}
+                                            onSelect={(date) => {
+                                                onDateRangeChange({
+                                                    from: dateRange.from,
+                                                    to: date ?? null,
+                                                });
+                                            }}
+                                            disabled={(date) =>
+                                                dateRange.from ? date < dateRange.from : false
+                                            }
+                                            className="text-[9px] md:text-[10px] [&_.rdp-caption]:text-[9px] [&_.rdp-caption]:md:text-[10px] [&_.rdp-cell]:w-4 [&_.rdp-cell]:h-4 [&_.rdp-cell]:md:w-5 [&_.rdp-cell]:md:h-5 [&_.rdp-head_cell]:w-4 [&_.rdp-head_cell]:md:w-5 [&_.rdp-button]:h-4 [&_.rdp-button]:w-4 [&_.rdp-button]:md:h-5 [&_.rdp-button]:md:w-5 [&_.rdp-nav_button]:h-4 [&_.rdp-nav_button]:w-4"
+                                        />
                                     </div>
                                 </div>
-                                {onViewProfile && (
-                                    <div className="pt-1.5 border-t border-slate-100">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => onViewProfile(application)}
-                                            disabled={isCurrentlyUpdating}
-                                            className="h-7 text-xs px-2 w-full justify-center"
-                                        >
-                                            <User className="h-3 w-3 mr-1 text-blue-600" />
-                                            Lihat Profil
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })
-                )}
-            </div>
+                                <div className="mt-2 flex justify-end border-t pt-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="gap-1 h-6 text-[10px]"
+                                        onClick={() => onDateRangeChange({ from: null, to: null })}
+                                    >
+                                        <X className="h-3 w-3" /> Reset
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
 
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200">
-                <Table>
-                    <TableHeader className="bg-slate-50">
-                        <TableRow>
-                            <TableHead>ID Lamaran</TableHead>
-                            <TableHead>Pelamar</TableHead>
-                            <TableHead>Posisi</TableHead>
-                            <TableHead className="w-[120px]">Status</TableHead>
-                            <TableHead className="text-right w-[280px]">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
+                    <div className="relative w-full md:max-w-xs">
+                        <Search className="absolute left-2.5 md:left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-slate-400" />
+                        <Input
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            placeholder="Cari pelamar..."
+                            className="pl-8 md:pl-9 h-9 md:h-10 text-xs md:text-sm"
+                        />
+                    </div>
+                </div>
 
-                    <TableBody>
-                        {visibleApplications.map((application) => {
-                            const isCurrentlyUpdating =
-                                isUpdatingStatus && updatingApplicantId === application.id;
-
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-3">
+                    {visibleApplications.length === 0 ? (
+                        <p className="py-6 text-center text-xs text-slate-500">Tidak ada data pelamar.</p>
+                    ) : (
+                        visibleApplications.map((application) => {
+                            const isCurrentlyUpdating = isUpdatingStatus && updatingApplicantId === application.id;
                             return (
-                                <TableRow key={application.id}>
-                                    <TableCell className="font-semibold text-blue-900">
-                                        {formatApplicationId(application.id)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <p className="font-medium text-slate-900">
-                                            {application.name}
-                                        </p>
-                                        <p className="text-sm text-slate-500">
-                                            {application.email}
-                                        </p>
-                                    </TableCell>
-                                    <TableCell>{application.position}</TableCell>
-                                    <TableCell>{statusBadge(application.status)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap items-center justify-end gap-2">
-                                            {onViewProfile && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => onViewProfile(application)}
-                                                    disabled={isCurrentlyUpdating}
-                                                    title="Lihat Profil Lengkap"
-                                                >
-                                                    <User className="h-4 w-4 mr-2 text-blue-600" />
-                                                    Profil
-                                                </Button>
-                                            )}
+                                <div key={application.id} className="rounded-lg border p-3 space-y-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-xs text-slate-900 truncate">{application.name}</p>
+                                            <p className="text-[10px] text-slate-500 truncate">{application.email}</p>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
+                                        {statusBadge(application.status)}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">ID Lamaran</p>
+                                            <p className="text-[11px] text-blue-900 font-semibold">{formatApplicationId(application.id)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">Posisi</p>
+                                            <p className="text-[11px] text-slate-700 truncate">{application.position}</p>
+                                        </div>
+                                    </div>
+                                    {onViewProfile && (
+                                        <div className="pt-1.5 border-t border-slate-100">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => onViewProfile(application)}
+                                                disabled={isCurrentlyUpdating}
+                                                className="h-7 text-xs px-2 w-full justify-center"
+                                            >
+                                                <User className="h-3 w-3 mr-1 text-blue-600" />
+                                                Lihat Profil
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             );
-                        })}
-                    </TableBody>
-                </Table>
-            </div>
-        </Card>
+                        })
+                    )}
+                </div>
 
-        <RejectionModal
-            isOpen={isRejectionModalOpen}
-            onClose={() => {
-                setIsRejectionModalOpen(false);
-                setSelectedApplicant(null);
-            }}
-            onConfirm={handleConfirmReject}
-            applicant={selectedApplicant}
-            isSubmitting={isUpdatingStatus}
-        />
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200">
+                    <Table>
+                        <TableHeader className="bg-slate-50">
+                            <TableRow>
+                                <TableHead>ID Lamaran</TableHead>
+                                <TableHead>Pelamar</TableHead>
+                                <TableHead>Posisi</TableHead>
+                                <TableHead className="w-[90px]">Status</TableHead>
+                                <TableHead className="text-right w-[210px]">Aksi</TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            {visibleApplications.map((application) => {
+                                const isCurrentlyUpdating =
+                                    isUpdatingStatus && updatingApplicantId === application.id;
+
+                                return (
+                                    <TableRow key={application.id}>
+                                        <TableCell className="font-semibold text-blue-900">
+                                            {formatApplicationId(application.id)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <p className="font-medium text-slate-900">
+                                                {application.name}
+                                            </p>
+                                            <p className="text-sm text-slate-500">
+                                                {application.email}
+                                            </p>
+                                        </TableCell>
+                                        <TableCell>{application.position}</TableCell>
+                                        <TableCell>{statusBadge(application.status)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                                {onViewProfile && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => onViewProfile(application)}
+                                                        disabled={isCurrentlyUpdating}
+                                                        title="Lihat Profil Lengkap"
+                                                    >
+                                                        <User className="h-4 w-4 mr-2 text-blue-600" />
+                                                        Profil
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </div>
+            </Card>
+
+            <RejectionModal
+                isOpen={isRejectionModalOpen}
+                onClose={() => {
+                    setIsRejectionModalOpen(false);
+                    setSelectedApplicant(null);
+                }}
+                onConfirm={handleConfirmReject}
+                applicant={selectedApplicant}
+                isSubmitting={isUpdatingStatus}
+            />
         </>
     );
 }

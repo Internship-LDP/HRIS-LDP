@@ -14,14 +14,14 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { ApplicantRecord, InterviewSchedule } from '../types';
 import { useForm } from '@inertiajs/react';
-import { 
-    Loader2, 
-    Calendar, 
-    Clock, 
-    Video, 
-    MapPin, 
-    Link as LinkIcon, 
-    User, 
+import {
+    Loader2,
+    Calendar,
+    Clock,
+    Video,
+    MapPin,
+    Link as LinkIcon,
+    User,
     FileText,
     AlertCircle,
     ArrowRight
@@ -39,7 +39,7 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, index) => {
     return `${hours}:${mins}`;
 });
 
-interface ScheduleData extends Record<string, any> { 
+interface ScheduleData extends Record<string, any> {
     date: string;
     time: string;
     end_time: string;
@@ -53,7 +53,7 @@ interface ScheduleInterviewDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     applicant: ApplicantRecord | null;
-    onSuccessSubmit: (applicantId: number) => void; 
+    onSuccessSubmit: (applicantId: number) => void;
     existingInterviews?: InterviewSchedule[];
 }
 
@@ -260,11 +260,11 @@ export default function ScheduleInterviewDialog({
     const startMinutes = toMinutes(data.time) || 0;
 
     return (
-        <Dialog 
-            open={open} 
+        <Dialog
+            open={open}
             onOpenChange={onOpenChange}
         >
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="mb-4">
                     <DialogTitle className="text-xl font-bold tracking-tight">
                         {isEditing ? 'Edit Jadwal Wawancara' : 'Jadwalkan Wawancara'}
@@ -275,7 +275,7 @@ export default function ScheduleInterviewDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid gap-5">
-                    
+
                     {/* SECTION 1: WAKTU */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="grid gap-2">
@@ -386,9 +386,9 @@ export default function ScheduleInterviewDialog({
                                 {data.mode === 'Online' ? <Video className="w-4 h-4 text-primary" /> : <MapPin className="w-4 h-4 text-primary" />}
                                 Mode Interview
                             </Label>
-                            <Select 
-                                value={data.mode} 
-                                onValueChange={(value) => setData('mode', value)} 
+                            <Select
+                                value={data.mode}
+                                onValueChange={(value) => setData('mode', value)}
                                 disabled={processing}
                             >
                                 <SelectTrigger>
@@ -435,7 +435,7 @@ export default function ScheduleInterviewDialog({
                         />
                         {errors['interviewer'] && <p className="text-xs text-red-500">{errors['interviewer']}</p>}
                     </div>
-                    
+
                     <div className="grid gap-2">
                         <Label htmlFor="notes" className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-muted-foreground" />
@@ -453,17 +453,17 @@ export default function ScheduleInterviewDialog({
                     </div>
 
                     <DialogFooter className="mt-4 gap-2 sm:gap-0">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
+                        <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => onOpenChange(false)}
                         >
                             Batal
                         </Button>
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             disabled={processing}
-                            className="min-w-[140px]"
+                            className="min-w-[105px]"
                         >
                             {processing ? (
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />

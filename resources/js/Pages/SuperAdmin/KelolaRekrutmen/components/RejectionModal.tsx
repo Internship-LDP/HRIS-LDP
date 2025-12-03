@@ -49,7 +49,7 @@ export default function RejectionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[540px] gap-5">
+            <DialogContent className="sm:max-w-[405px] gap-5">
                 <DialogHeader className="space-y-3">
                     <div className="flex items-start gap-4">
                         {/* <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100">
@@ -101,9 +101,8 @@ export default function RejectionModal({
                                 setReason(e.target.value);
                                 if (error) setError('');
                             }}
-                            className={`min-h-[110px] resize-none text-sm ${
-                                error ? 'border-red-500 focus-visible:ring-red-500' : ''
-                            }`}
+                            className={`min-h-[110px] resize-none text-sm ${error ? 'border-red-500 focus-visible:ring-red-500' : ''
+                                }`}
                             disabled={isSubmitting}
                         />
                         {error && (
@@ -124,7 +123,7 @@ export default function RejectionModal({
                         variant="outline"
                         onClick={handleClose}
                         disabled={isSubmitting}
-                        className="min-w-[100px]"
+                        className="min-w-[75px]"
                     >
                         Batal
                     </Button>
@@ -132,7 +131,7 @@ export default function RejectionModal({
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="min-w-[160px] bg-red-600 hover:bg-red-700 focus-visible:ring-red-600"
+                        className="min-w-[120px] bg-red-600 hover:bg-red-700 focus-visible:ring-red-600"
                     >
                         {isSubmitting ? 'Memproses...' : 'Konfirmasi Penolakan'}
                     </Button>

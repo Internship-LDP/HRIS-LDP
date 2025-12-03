@@ -27,7 +27,7 @@ export default function AcceptanceModal({
 }: AcceptanceModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[480px] gap-6">
+            <DialogContent className="sm:max-w-[360px] gap-6">
                 <DialogHeader className="space-y-3">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100">
@@ -66,7 +66,7 @@ export default function AcceptanceModal({
                             </div>
                         </div>
                     )}
-                    
+
                     <div className="rounded-md bg-blue-50 p-3">
                         <p className="text-sm text-blue-700">
                             <span className="font-semibold">Catatan:</span> Status pelamar akan diubah menjadi <span className="font-semibold">Hired</span> dan proses onboarding akan dimulai.
@@ -80,7 +80,7 @@ export default function AcceptanceModal({
                         variant="outline"
                         onClick={onClose}
                         disabled={isSubmitting}
-                        className="min-w-[100px]"
+                        className="min-w-[75px]"
                     >
                         Batal
                     </Button>
@@ -88,7 +88,7 @@ export default function AcceptanceModal({
                         type="button"
                         onClick={onConfirm}
                         disabled={isSubmitting}
-                        className="min-w-[140px] bg-green-600 hover:bg-green-700 focus-visible:ring-green-600"
+                        className="min-w-[105px] bg-green-600 hover:bg-green-700 focus-visible:ring-green-600"
                     >
                         {isSubmitting ? 'Memproses...' : 'Konfirmasi Terima'}
                     </Button>
