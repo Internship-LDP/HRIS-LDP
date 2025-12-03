@@ -1,9 +1,6 @@
 ﻿import { Head, router, usePage } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import PelamarLayout from '@/Pages/Pelamar/Layout';
-import UpcomingInterviewCard, {
-    UpcomingInterview,
-} from '@/Pages/Pelamar/components/dashboard/UpcomingInterviewCard';
 import DocumentsCard, {
     ApplicationItem,
 } from '@/Pages/Pelamar/components/dashboard/DocumentsCard';
@@ -51,14 +48,12 @@ type DashboardPageProps = PageProps<{
     applicationsStatus: ApplicationStatus[];
     applications: ApplicationItem[];
     stats: DashboardStats;
-    upcomingInterview?: UpcomingInterview | null;
 }>;
 
 export default function Dashboard({
     applicationsStatus,
     applications,
     stats,
-    upcomingInterview,
 }: DashboardPageProps) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
@@ -136,9 +131,8 @@ export default function Dashboard({
                     getStatusBadge={getStatusBadge}
                 />
 
-                {/* Bottom Section */}
-                <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <UpcomingInterviewCard interview={upcomingInterview} />
+                {/* Documents Section */}
+                <div className="mt-6">
                     <DocumentsCard
                         applications={applications}
                         onNewApplication={navigateToApplications}
