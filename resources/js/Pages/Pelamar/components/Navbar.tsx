@@ -105,7 +105,7 @@ export default function Navbar({ }: NavbarProps) {
                                 className="h-10 w-10 object-contain"
                             />
                             <div className="hidden sm:block">
-                                <p className="text-[9px] uppercase tracking-widest text-blue-600 font-semibold">
+                                <p className="text-[9px] uppercase tracking-widest text-blue-900 font-semibold">
                                     PT. Lintas Data Prima
                                 </p>
                                 <p className="text-sm font-bold text-slate-900">Portal Pelamar</p>
@@ -141,21 +141,21 @@ export default function Navbar({ }: NavbarProps) {
 
                     {/* User Profile & Mobile Toggle - Right */}
                     <div className="flex items-center gap-2 ml-auto">
-                        {/* Desktop User Menu */}
+                        {/* Profile Menu - Responsive */}
                         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="hidden md:flex items-center gap-2 px-3 py-2 h-auto"
+                                    className="flex items-center gap-2 px-2 md:px-3 py-2 h-auto"
                                 >
                                     <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
                                         <User className="h-4 w-4 text-white" />
                                     </div>
-                                    <div className="text-left">
+                                    <div className="hidden md:block text-left">
                                         <p className="text-xs font-semibold text-slate-900">{user?.name}</p>
                                         <p className="text-[10px] text-slate-500">{user?.email}</p>
                                     </div>
-                                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                                    <ChevronDown className="hidden md:block h-4 w-4 text-slate-400" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
@@ -226,20 +226,6 @@ export default function Navbar({ }: NavbarProps) {
                                 </Link>
                             );
                         })}
-
-                        <div className="pt-3 mt-3 border-t border-slate-200">
-                            <div className="px-3 py-2 mb-2">
-                                <p className="text-xs font-semibold text-slate-900">{user?.name}</p>
-                                <p className="text-[10px] text-slate-500">{user?.email}</p>
-                            </div>
-                            <button
-                                onClick={() => router.post(route('logout'))}
-                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50"
-                            >
-                                <LogOut className="h-4 w-4" />
-                                Keluar
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}

@@ -25,7 +25,9 @@ class RecruitmentController extends Controller
     {
         $this->ensureAuthorized($request->user());
 
-        $applicationCollection = Application::with('user.applicantProfile')->latest('submitted_at')->get();
+        $applicationCollection = Application::with('user.applicantProfile')
+            ->latest('submitted_at')
+            ->get();
 
         // ============================
         // LIST SEMUA PELAMAR
