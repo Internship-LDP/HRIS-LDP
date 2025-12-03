@@ -33,14 +33,15 @@ export default function ComplaintFilters({
     onCategoryChange,
     onPriorityChange,
 }: ComplaintFiltersProps) {
-    const categoryOptions = withFallback(filters.categories, [
+    // Use a static list of categories to ensure all options are always available
+    const categoryOptions = [
         'Lingkungan Kerja',
         'Kompensasi & Benefit',
         'Fasilitas',
         'Relasi Kerja',
         'Kebijakan Perusahaan',
         'Lainnya',
-    ]);
+    ];
 
     const statusOptions = withFallback(filters.statuses, [
         'Menunggu HR',
