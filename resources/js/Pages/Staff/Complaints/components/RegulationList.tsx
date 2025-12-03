@@ -22,7 +22,7 @@ export default function RegulationList({ regulations }: RegulationListProps) {
             {regulations.map((regulation) => (
                 <div
                     key={regulation.id}
-                    className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3"
+                    className="flex flex-col gap-3 rounded-lg bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                     <div className="flex items-center gap-3">
                         <span className="rounded-lg bg-blue-900/10 p-2 text-blue-900">
@@ -33,7 +33,7 @@ export default function RegulationList({ regulations }: RegulationListProps) {
                                 {regulation.title}
                             </p>
                             <p className="text-xs text-slate-500">
-                                {regulation.category} • Upload: {regulation.uploadDate}
+                                {regulation.category} - Upload: {regulation.uploadDate}
                             </p>
                         </div>
                     </div>

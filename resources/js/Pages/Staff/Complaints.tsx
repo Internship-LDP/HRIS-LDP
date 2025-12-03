@@ -83,7 +83,7 @@ export default function StaffComplaints() {
                 ]}
                 actions={
                     <Button
-                        className="bg-blue-900 hover:bg-blue-800 text-white"
+                        className="bg-blue-900 text-white hover:bg-blue-800"
                         onClick={() => setComposerOpen(true)}
                     >
                         <MessageSquare className="mr-2 h-4 w-4" />
@@ -91,15 +91,13 @@ export default function StaffComplaints() {
                     </Button>
                 }
             >
-                <div className="overflow-x-auto">
-                    <Tabs
-                        value={activeTab}
-                        onValueChange={(v) =>
-                            setActiveTab(v as typeof activeTab)
-                        }
-                        className="mt-6 min-w-max"
-                    >
-                        <TabsList className="flex gap-2">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(v) => setActiveTab(v as typeof activeTab)}
+                    className="mt-6"
+                >
+                    <div className="overflow-x-auto">
+                        <TabsList className="flex min-w-[320px] justify-start gap-2 sm:min-w-0">
                             <TabsTrigger value="complaints">
                                 Pengaduan
                             </TabsTrigger>
@@ -108,21 +106,19 @@ export default function StaffComplaints() {
                             </TabsTrigger>
                             <TabsTrigger value="forum">Forum</TabsTrigger>
                         </TabsList>
-                    </Tabs>
-                </div>
+                    </div>
 
-                <Tabs value={activeTab} className="mt-4">
-                    <TabsContent value="complaints">
-                        <Card className="p-4 md:p-6">
+                    <TabsContent value="complaints" className="mt-4">
+                        <Card className="p-4 sm:p-5 md:p-6">
                             <ComplaintFilters
                                 searchTerm={searchTerm}
                                 statusFilter={statusFilter}
                                 categoryFilter={categoryFilter}
                                 priorityFilter={priorityFilter}
-                                // 🔥 categories kosong supaya ComplaintFilters pakai fallback FE default
+                                // Kosongkan categories agar fallback FE dipakai di FE
                                 filters={{
                                     ...filters,
-                                    categories: [], // <<— FIX UTAMA
+                                    categories: [],
                                 }}
                                 onSearchChange={setSearchTerm}
                                 onStatusChange={setStatusFilter}
@@ -139,11 +135,11 @@ export default function StaffComplaints() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="regulations">
+                    <TabsContent value="regulations" className="mt-4">
                         <RegulationList regulations={regulations} />
                     </TabsContent>
 
-                    <TabsContent value="forum">
+                    <TabsContent value="forum" className="mt-4">
                         <AnnouncementList announcements={announcements} />
                     </TabsContent>
                 </Tabs>
@@ -154,7 +150,7 @@ export default function StaffComplaints() {
                 open={composerOpen}
                 filters={{
                     ...filters,
-                    categories: [], // <<— FIX UTAMA
+                    categories: [],
                 }}
                 onOpenChange={setComposerOpen}
             />
