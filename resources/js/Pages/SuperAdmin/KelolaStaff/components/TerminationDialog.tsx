@@ -144,14 +144,14 @@ export default function TerminationDialog({
                         <Button
                             type="button"
                             variant="outline"
-                            className="md:min-w-[120px]"
+                            className="md:min-w-[90px]"
                             onClick={() => setOpen(false)}
                         >
                             Batal
                         </Button>
                         <Button
                             type="submit"
-                            className="bg-blue-900 hover:bg-blue-800 md:min-w-[160px] text-white"
+                            className="bg-blue-900 hover:bg-blue-800 md:min-w-[120px] text-white"
                             disabled={form.processing}
                         >
                             {form.processing ? 'Menyimpan...' : 'Simpan'}

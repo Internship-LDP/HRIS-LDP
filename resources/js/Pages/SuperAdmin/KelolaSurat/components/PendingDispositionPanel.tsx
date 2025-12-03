@@ -168,7 +168,7 @@ export default function PendingDispositionPanel({
                                                 <PriorityBadge priority={letter.priority} />
                                             </TableCell>
                                             <TableCell>
-                                                <div className="max-w-[200px] md:max-w-[240px]">
+                                                <div className="max-w-[150px] md:max-w-[180px]">
                                                     <p className="truncate text-xs md:text-sm">{letter.subject}</p>
                                                     {replyPreview && (
                                                         <p className="mt-1 line-clamp-2 text-[10px] md:text-[11px] text-emerald-700">
@@ -190,7 +190,7 @@ export default function PendingDispositionPanel({
                                                 {letter.attachment?.url ? (
                                                     <div className="flex items-center gap-2">
                                                         <FileText className="h-4 w-4 text-blue-500" />
-                                                        <span className="max-w-[150px] truncate text-xs font-semibold text-slate-600">
+                                                        <span className="max-w-[112px] truncate text-xs font-semibold text-slate-600">
                                                             {letter.attachment?.name ?? 'Lampiran'}
                                                         </span>
                                                     </div>

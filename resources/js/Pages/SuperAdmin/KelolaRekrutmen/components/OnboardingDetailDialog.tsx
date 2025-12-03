@@ -82,7 +82,7 @@ export default function OnboardingDetailDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[450px]">
                 <DialogHeader>
                     <DialogTitle>Detail Onboarding</DialogTitle>
                 </DialogHeader>
@@ -221,7 +221,7 @@ export default function OnboardingDetailDialog({
                             <div className="mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
                                 <CheckCircle className="h-5 w-5" />
                                 <span className="font-medium">
-                                    Semua checklist telah selesai! 
+                                    Semua checklist telah selesai!
                                 </span>
                             </div>
                         )}
