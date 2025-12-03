@@ -99,7 +99,8 @@ class RecruitmentController extends Controller
 
                 return [
                     'id' => $application->id,
-                    'name' => $application->full_name,
+                    // Use latest applicant profile data for display
+                    'name' => $profileFullName,
                     'position' => $application->position,
                     'education' => $educationSummary ?: $application->education,
                     'experience' => $experienceSummary ?: $application->experience,
@@ -125,6 +126,7 @@ class RecruitmentController extends Controller
                     'status' => $application->status,
                     'date' => optional($application->submitted_at)->format('d M Y'),
                     'submitted_date' => optional($application->submitted_at)->format('Y-m-d'),
+                    // Keep original contact fields for backward compatibility
                     'email' => $application->email,
                     'phone' => $application->phone,
                     'skills' => $application->skills,
@@ -176,14 +178,14 @@ class RecruitmentController extends Controller
             ->map(function (Application $application) {
                 // Load checklist dari database
                 $checklist = OnboardingChecklist::where('application_id', $application->id)->first();
-                
+
                 $contractDone = $checklist?->contract_signed ?? false;
                 $inventoryDone = $checklist?->inventory_handover ?? false;
                 $trainingDone = $checklist?->training_orientation ?? false;
-                
+
                 // Hitung status: jika semua selesai, status = Selesai
                 $allComplete = $contractDone && $inventoryDone && $trainingDone;
-                
+
                 return [
                     'application_id' => $application->id,
                     'name' => $application->full_name,
@@ -371,7 +373,7 @@ class RecruitmentController extends Controller
 
         $user = $application->user;
 
-        if (! $user) {
+        if (!$user) {
             return redirect()->back()->withErrors(['message' => 'User tidak ditemukan.']);
         }
 
@@ -395,12 +397,12 @@ class RecruitmentController extends Controller
                 // Determine education level
                 $educationLevel = 'Lainnya';
                 $educations = $applicantProfile->educations ?? [];
-                
-                if (! empty($educations)) {
+
+                if (!empty($educations)) {
                     // Ambil pendidikan terakhir (asumsi array urut atau ambil index 0)
                     // Idealnya kita cek tahun lulus atau logic lain, tapi untuk simpel ambil yg pertama
                     $firstDegree = $educations[0]['degree'] ?? '';
-                    
+
                     // Mapping sederhana
                     if (in_array($firstDegree, StaffProfile::EDUCATION_LEVELS)) {
                         $educationLevel = $firstDegree;

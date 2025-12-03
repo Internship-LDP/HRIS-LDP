@@ -153,14 +153,14 @@ export default function ComplaintComposerDialog({
                                 label="Kategori"
                                 placeholder="Pilih kategori"
                                 value={form.data.category}
-                                options={applyFallback(filters.categories, [
-                                    'Lingkungan Kerja',
-                                    'Kompensasi & Benefit',
-                                    'Fasilitas',
-                                    'Relasi Kerja',
-                                    'Kebijakan Perusahaan',
-                                    'Lainnya',
-                                ])}
+                                options={[
+                                    { value: 'Lingkungan Kerja', label: 'Lingkungan Kerja' },
+                                    { value: 'Kompensasi & Benefit', label: 'Kompensasi & Benefit' },
+                                    { value: 'Fasilitas', label: 'Fasilitas' },
+                                    { value: 'Relasi Kerja', label: 'Relasi Kerja' },
+                                    { value: 'Kebijakan Perusahaan', label: 'Kebijakan Perusahaan' },
+                                    { value: 'Lainnya', label: 'Lainnya' },
+                                ]}
                                 onChange={(value) => {
                                     form.setData('category', value);
                                     form.clearErrors('category');
