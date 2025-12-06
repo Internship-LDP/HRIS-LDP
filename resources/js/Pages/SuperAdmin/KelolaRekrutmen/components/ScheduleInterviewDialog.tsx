@@ -264,42 +264,65 @@ export default function ScheduleInterviewDialog({
             open={open}
             onOpenChange={onOpenChange}
         >
-            <DialogContent className="sm:max-w-[450px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="mb-4">
-                    <DialogTitle className="text-xl font-bold tracking-tight">
-                        {isEditing ? 'Edit Jadwal Wawancara' : 'Jadwalkan Wawancara'}
-                    </DialogTitle>
-                    <DialogDescription className="text-muted-foreground">
-                        Atur detail waktu wawancara untuk <span className="font-semibold text-foreground">{applicant.name}</span> ({applicant.position}).
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-6 transition-all duration-200">
+                <DialogHeader className="mb-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">
+                            {isEditing ? 'Edit Jadwal Wawancara' : 'Jadwalkan Wawancara'}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-sm text-slate-500 leading-relaxed">
+                        Atur detail waktu wawancara untuk <span className="font-semibold text-slate-900">{applicant.name}</span> ({applicant.position}).
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="grid gap-5">
+                <form onSubmit={handleSubmit} className="space-y-6">
 
                     {/* SECTION 1: WAKTU */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="date" className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-muted-foreground" />
-                                Tanggal
-                            </Label>
-                            <Input
-                                id="date"
-                                type="date"
-                                value={data.date}
-                                onChange={(e) => handleDateChange(e.target.value)}
-                                required
-                                min={new Date().toISOString().split('T')[0]}
-                                className="w-full"
-                            />
-                            {errors['date'] && <p className="text-xs text-red-500">{errors['date']}</p>}
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="date" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    Tanggal
+                                </Label>
+                                <Input
+                                    id="date"
+                                    type="date"
+                                    value={data.date}
+                                    onChange={(e) => handleDateChange(e.target.value)}
+                                    required
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="w-full h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                                />
+                                {errors['date'] && <p className="text-xs text-red-500 font-medium">{errors['date']}</p>}
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="mode" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    {data.mode === 'Online' ? <Video className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
+                                    Mode
+                                </Label>
+                                <Select
+                                    value={data.mode}
+                                    onValueChange={(value) => setData('mode', value)}
+                                    disabled={processing}
+                                >
+                                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors">
+                                        <SelectValue placeholder="Pilih Mode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Online">Online (Zoom/GMeet)</SelectItem>
+                                        <SelectItem value="Offline">Offline (Kantor)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         {/* Wrapper Waktu Mulai & Selesai agar sejajar */}
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="time" className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                <Label htmlFor="time" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5" />
                                     Mulai
                                 </Label>
                                 <Select
@@ -314,7 +337,7 @@ export default function ScheduleInterviewDialog({
                                         setTimeRangeError('');
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors">
                                         <SelectValue placeholder="Jam" />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[200px]">
@@ -332,8 +355,8 @@ export default function ScheduleInterviewDialog({
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="end_time" className="flex items-center gap-2">
-                                    <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                                <Label htmlFor="end_time" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <ArrowRight className="w-3.5 h-3.5" />
                                     Selesai
                                 </Label>
                                 <Select
@@ -344,7 +367,7 @@ export default function ScheduleInterviewDialog({
                                         setTimeRangeError('');
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors">
                                         <SelectValue placeholder="Jam" />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[200px]">
@@ -371,41 +394,19 @@ export default function ScheduleInterviewDialog({
 
                     {/* Error Message Container */}
                     {timeErrorMessage && (
-                        <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-md">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            <p>{timeErrorMessage}</p>
+                        <div className="flex items-start gap-3 p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <p className="font-medium">{timeErrorMessage}</p>
                         </div>
                     )}
 
-                    <div className="border-t border-border/50 my-1"></div>
 
                     {/* SECTION 2: TEKNIS & LOKASI */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="mode" className="flex items-center gap-2">
-                                {data.mode === 'Online' ? <Video className="w-4 h-4 text-primary" /> : <MapPin className="w-4 h-4 text-primary" />}
-                                Mode Interview
-                            </Label>
-                            <Select
-                                value={data.mode}
-                                onValueChange={(value) => setData('mode', value)}
-                                disabled={processing}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Mode" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Online">Online (Zoom/GMeet)</SelectItem>
-                                    <SelectItem value="Offline">Offline (Kantor)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {errors['mode'] && <p className="text-xs text-red-500">{errors['mode']}</p>}
-                        </div>
-
+                    <div className="space-y-4">
                         {data.mode === 'Online' && (
-                            <div className="grid gap-2">
-                                <Label htmlFor="meeting_link" className="flex items-center gap-2">
-                                    <LinkIcon className="w-4 h-4 text-muted-foreground" />
+                            <div className="grid gap-2 animate-in fade-in slide-in-from-top-2">
+                                <Label htmlFor="meeting_link" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <LinkIcon className="w-3.5 h-3.5" />
                                     Link Meeting
                                 </Label>
                                 <Input
@@ -414,56 +415,60 @@ export default function ScheduleInterviewDialog({
                                     onChange={(e) => setData('meeting_link', e.target.value)}
                                     placeholder="https://meet.google.com/..."
                                     required
+                                    className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                 />
-                                {errors['meeting_link'] && <p className="text-xs text-red-500">{errors['meeting_link']}</p>}
+                                {errors['meeting_link'] && <p className="text-xs text-red-500 font-medium">{errors['meeting_link']}</p>}
                             </div>
                         )}
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="interviewer" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <User className="w-3.5 h-3.5" />
+                                Pewawancara
+                            </Label>
+                            <Input
+                                id="interviewer"
+                                value={data.interviewer}
+                                onChange={(e) => setData('interviewer', e.target.value)}
+                                required
+                                disabled={processing}
+                                placeholder="Nama Pewawancara / Tim HR"
+                                className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                            />
+                            {errors['interviewer'] && <p className="text-xs text-red-500 font-medium">{errors['interviewer']}</p>}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="notes" className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5" />
+                                Catatan Tambahan
+                            </Label>
+                            <Textarea
+                                id="notes"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                placeholder="Contoh: Harap siapkan portofolio, berpakaian formal..."
+                                required
+                                className="min-h-[100px] resize-none bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                            />
+                            {errors['notes'] && <p className="text-xs text-red-500 font-medium">{errors['notes']}</p>}
+                        </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="interviewer" className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-muted-foreground" />
-                            Pewawancara
-                        </Label>
-                        <Input
-                            id="interviewer"
-                            value={data.interviewer}
-                            onChange={(e) => setData('interviewer', e.target.value)}
-                            required
-                            disabled={processing}
-                            placeholder="Nama Pewawancara / Tim HR"
-                        />
-                        {errors['interviewer'] && <p className="text-xs text-red-500">{errors['interviewer']}</p>}
-                    </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="notes" className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                            Catatan Tambahan
-                        </Label>
-                        <Textarea
-                            id="notes"
-                            value={data.notes}
-                            onChange={(e) => setData('notes', e.target.value)}
-                            placeholder="Contoh: Harap siapkan portofolio, berpakaian formal..."
-                            required
-                            className="min-h-[80px]"
-                        />
-                        {errors['notes'] && <p className="text-xs text-red-500">{errors['notes']}</p>}
-                    </div>
-
-                    <DialogFooter className="mt-4 gap-2 sm:gap-0">
+                    <DialogFooter className="pt-2">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
+                            className="h-10 px-8"
                         >
                             Batal
                         </Button>
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="min-w-[105px]"
+                            className="h-10 px-8 bg-blue-600 hover:bg-blue-700 text-white min-w-[140px]"
                         >
                             {processing ? (
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
