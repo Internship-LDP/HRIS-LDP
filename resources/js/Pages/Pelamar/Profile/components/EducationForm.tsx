@@ -251,16 +251,18 @@ export default function EducationForm({
                 ))}
             </div>
 
-            <div className="mt-6">
-                <Button
-                    onClick={onSave}
-                    disabled={processing || disabled}
-                    className="bg-blue-900 hover:bg-blue-800"
-                >
-                    <Save className="mr-2 h-4 w-4" />
-                    Simpan Pendidikan
-                </Button>
-            </div>
+            {!disabled && (
+                <div className="mt-6">
+                    <Button
+                        onClick={onSave}
+                        disabled={processing}
+                        className="bg-blue-900 hover:bg-blue-800"
+                    >
+                        <Save className="mr-2 h-4 w-4" />
+                        Simpan Pendidikan
+                    </Button>
+                </div>
+            )}
         </Card>
     );
 }

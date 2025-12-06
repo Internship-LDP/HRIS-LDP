@@ -9,16 +9,17 @@ import {
     TabsTrigger,
 } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
-import { Edit, X } from 'lucide-react';
+import { Edit, X, Lock, AlertTriangle } from 'lucide-react';
 import ProfileHeader from './Profile/components/ProfileHeader';
 import PersonalForm from './Profile/components/PersonalForm';
 import EducationForm from './Profile/components/EducationForm';
 import ExperienceForm from './Profile/components/ExperienceForm';
 import { useProfileForm } from './Profile/useProfileForm';
-import { ApplicantProfilePayload } from './Profile/profileTypes';
+import { ApplicantProfilePayload, SectionKey } from './Profile/profileTypes';
 import {
     AlertDialog,
     AlertDialogAction,
+    AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -29,6 +30,7 @@ import {
 type ProfilePageProps = PageProps<{
     profile: ApplicantProfilePayload;
     profileReminderMessage?: string | null;
+    hasApplications?: boolean;
 }>;
 
 const AVATAR_SIZE = 160;
@@ -36,6 +38,7 @@ const AVATAR_SIZE = 160;
 export default function Profile({
     profile,
     profileReminderMessage,
+    hasApplications = false,
 }: ProfilePageProps) {
     const {
         form,
@@ -61,11 +64,59 @@ export default function Profile({
         Boolean(profileReminderMessage),
     );
     const [isEditing, setIsEditing] = useState(false);
-    
+    const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+    const [pendingSaveSection, setPendingSaveSection] = useState<SectionKey | null>(null);
+
     useEffect(() => {
         setReminderOpen(Boolean(profileReminderMessage));
     }, [profileReminderMessage]);
     const flatErrors = form.errors as Record<string, string>;
+
+    // Check section completion status
+    const isPersonalComplete = Boolean(
+        form.data.personal.full_name &&
+        form.data.personal.email &&
+        form.data.personal.phone &&
+        form.data.personal.date_of_birth &&
+        form.data.personal.gender &&
+        form.data.personal.religion &&
+        form.data.personal.address &&
+        form.data.personal.city &&
+        form.data.personal.province
+    );
+
+    const isEducationComplete = form.data.educations.length > 0 &&
+        form.data.educations.every(edu =>
+            edu.institution && edu.degree && edu.field_of_study && edu.start_year && edu.end_year
+        );
+
+    // Experience is optional, so it's "complete" if empty or all filled
+    const isExperienceComplete = form.data.experiences.length === 0 ||
+        form.data.experiences.every(exp =>
+            exp.company && exp.position && exp.start_date
+        );
+
+    // Get tab style class
+    const getTabClassName = (isComplete: boolean) => {
+        if (isComplete) {
+            return 'data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700 data-[state=inactive]:bg-emerald-50 data-[state=inactive]:text-emerald-600 border border-emerald-200';
+        }
+        return 'data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700 data-[state=inactive]:bg-amber-50 data-[state=inactive]:text-amber-600 border border-amber-200';
+    };
+
+    // Handle save with confirmation
+    const handleSaveWithConfirmation = (section: SectionKey) => {
+        setPendingSaveSection(section);
+        setConfirmSaveOpen(true);
+    };
+
+    const confirmAndSave = () => {
+        if (pendingSaveSection) {
+            submitSection(pendingSaveSection);
+        }
+        setConfirmSaveOpen(false);
+        setPendingSaveSection(null);
+    };
 
     return (
         <>
@@ -74,7 +125,6 @@ export default function Profile({
                 title="Profil Pelamar"
                 description="Lengkapi informasi diri untuk dapat mengajukan lamaran"
                 breadcrumbs={['Dashboard', 'Profil']}
-                showProfileReminder={false}
             >
                 <ProfileHeader
                     avatarSize={AVATAR_SIZE}
@@ -87,34 +137,61 @@ export default function Profile({
                     email={form.data.personal.email}
                     completion={completionPercentage}
                     savingPhoto={form.processing && submittingSection === 'photo'}
+                    disabled={hasApplications}
                 />
+
+                {/* Locked Profile Warning */}
+                {hasApplications && (
+                    <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                        <Lock className="h-5 w-5 text-amber-600" />
+                        <div>
+                            <p className="font-medium text-amber-800">Profil Terkunci</p>
+                            <p className="text-sm text-amber-700">
+                                Anda sudah mengajukan lamaran. Profil tidak dapat diubah untuk menjaga konsistensi data.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Edit Mode Toggle Button */}
                 <div className="mb-6 flex justify-end">
-                    <Button
-                        onClick={() => setIsEditing(!isEditing)}
-                        variant={isEditing ? "destructive" : "default"}
-                        className={isEditing ? "" : "bg-blue-900 hover:bg-blue-800"}
-                    >
-                        {isEditing ? (
-                            <>
-                                <X className="mr-2 h-4 w-4" />
-                                Batalkan Edit
-                            </>
-                        ) : (
-                            <>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Profil
-                            </>
-                        )}
-                    </Button>
+                    {hasApplications ? (
+                        <Button disabled variant="outline" className="cursor-not-allowed opacity-60">
+                            <Lock className="mr-2 h-4 w-4" />
+                            Profil Terkunci
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={() => setIsEditing(!isEditing)}
+                            variant={isEditing ? "destructive" : "default"}
+                            className={isEditing ? "" : "bg-blue-900 hover:bg-blue-800"}
+                        >
+                            {isEditing ? (
+                                <>
+                                    <X className="mr-2 h-4 w-4" />
+                                    Batalkan Edit
+                                </>
+                            ) : (
+                                <>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Profil
+                                </>
+                            )}
+                        </Button>
+                    )}
                 </div>
 
                 <Tabs defaultValue="personal" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="personal">Data Pribadi</TabsTrigger>
-                        <TabsTrigger value="education">Pendidikan</TabsTrigger>
-                        <TabsTrigger value="experience">Pengalaman</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 gap-1 bg-transparent">
+                        <TabsTrigger value="personal" className={getTabClassName(isPersonalComplete)}>
+                            Data Pribadi
+                        </TabsTrigger>
+                        <TabsTrigger value="education" className={getTabClassName(isEducationComplete)}>
+                            Pendidikan
+                        </TabsTrigger>
+                        <TabsTrigger value="experience" className={getTabClassName(false)}>
+                            Pengalaman
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="personal">
@@ -122,12 +199,12 @@ export default function Profile({
                             data={form.data.personal}
                             errors={form.errors as Record<string, string>}
                             onChange={setPersonalField}
-                            onSave={() => submitSection('personal')}
+                            onSave={() => handleSaveWithConfirmation('personal')}
                             onReset={handleReset}
                             processing={
                                 form.processing && submittingSection === 'personal'
                             }
-                            disabled={!isEditing}
+                            disabled={!isEditing || hasApplications}
                         />
                     </TabsContent>
 
@@ -139,12 +216,12 @@ export default function Profile({
                             onChange={handleEducationChange}
                             onAdd={addEducation}
                             onRemove={removeEducation}
-                            onSave={() => submitSection('education')}
+                            onSave={() => handleSaveWithConfirmation('education')}
                             processing={
                                 form.processing && submittingSection === 'education'
                             }
                             getFieldError={getEducationError}
-                            disabled={!isEditing}
+                            disabled={!isEditing || hasApplications}
                         />
                     </TabsContent>
 
@@ -154,15 +231,17 @@ export default function Profile({
                             onChange={handleExperienceChange}
                             onAdd={addExperience}
                             onRemove={removeExperience}
-                            onSave={() => submitSection('experience')}
+                            onSave={() => handleSaveWithConfirmation('experience')}
                             processing={
                                 form.processing && submittingSection === 'experience'
                             }
-                            disabled={!isEditing}
+                            disabled={!isEditing || hasApplications}
                         />
                     </TabsContent>
                 </Tabs>
             </PelamarLayout>
+
+            {/* Profile Reminder Dialog */}
             <AlertDialog open={reminderOpen} onOpenChange={setReminderOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -178,6 +257,38 @@ export default function Profile({
                             onClick={() => setReminderOpen(false)}
                         >
                             Mengerti
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Confirmation Dialog Before Save */}
+            <AlertDialog open={confirmSaveOpen} onOpenChange={setConfirmSaveOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                            <AlertTriangle className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <AlertDialogTitle className="text-center">
+                            Konfirmasi Simpan Data
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center">
+                            Apakah data yang Anda masukkan sudah benar?
+                            <br /><br />
+                            <span className="font-medium text-amber-700">
+                                Perhatian: Setelah Anda mengajukan lamaran pekerjaan, profil tidak dapat diubah kembali.
+                            </span>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+                        <AlertDialogCancel className="flex-1">
+                            Periksa Kembali
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                            onClick={confirmAndSave}
+                        >
+                            Ya, Simpan Data
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

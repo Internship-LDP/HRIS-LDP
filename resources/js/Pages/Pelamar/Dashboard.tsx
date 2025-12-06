@@ -11,7 +11,17 @@ import ApplicationStatusSection from '@/Pages/Pelamar/components/ApplicationStat
 import ApplicationDetailDialog from '@/Pages/Pelamar/components/ApplicationDetailDialog';
 import InterviewScheduleDialog from '@/Pages/Pelamar/components/InterviewScheduleDialog';
 import { Badge } from '@/Components/ui/badge';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/Components/ui/alert-dialog';
+import { UserCircle, ArrowRight } from 'lucide-react';
 
 interface DashboardStats {
     totalApplications: number;
@@ -48,12 +58,16 @@ type DashboardPageProps = PageProps<{
     applicationsStatus: ApplicationStatus[];
     applications: ApplicationItem[];
     stats: DashboardStats;
+    isProfileComplete?: boolean;
+    showProfileReminder?: boolean;
 }>;
 
 export default function Dashboard({
     applicationsStatus,
     applications,
     stats,
+    isProfileComplete = true,
+    showProfileReminder = false,
 }: DashboardPageProps) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
@@ -63,6 +77,11 @@ export default function Dashboard({
 
     const [detailApp, setDetailApp] = useState<ApplicationStatus | null>(null);
     const [interviewApp, setInterviewApp] = useState<ApplicationStatus | null>(null);
+    const [profileReminderOpen, setProfileReminderOpen] = useState(showProfileReminder);
+
+    useEffect(() => {
+        setProfileReminderOpen(showProfileReminder);
+    }, [showProfileReminder]);
 
     // Calculate Stats
     const totalApplications = applicationsStatus.length;
@@ -185,6 +204,44 @@ export default function Dashboard({
                     application={interviewApp}
                     onClose={() => setInterviewApp(null)}
                 />
+
+                {/* Profile Reminder Modal for New Users */}
+                <AlertDialog open={profileReminderOpen} onOpenChange={setProfileReminderOpen}>
+                    <AlertDialogContent className="max-w-md">
+                        <AlertDialogHeader>
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                                <UserCircle className="h-10 w-10 text-blue-600" />
+                            </div>
+                            <AlertDialogTitle className="text-center text-xl">
+                                Selamat Datang! 👋
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-center text-gray-600">
+                                Sebelum mengajukan lamaran pekerjaan, lengkapi profil Anda terlebih dahulu.
+                                <br /><br />
+                                <span className="font-medium text-gray-700">
+                                    Data yang perlu dilengkapi:
+                                </span>
+                                <ul className="mt-2 text-left text-sm space-y-1">
+                                    <li>• Data Pribadi (nama, kontak, alamat)</li>
+                                    <li>• Pendidikan (minimal 1 data pendidikan)</li>
+                                    <li>• Pengalaman Kerja (opsional)</li>
+                                </ul>
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+                            <AlertDialogAction
+                                className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                                onClick={() => {
+                                    setProfileReminderOpen(false);
+                                    router.visit(route('pelamar.profile'));
+                                }}
+                            >
+                                Lengkapi Profil
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </PelamarLayout>
         </>
     );

@@ -38,6 +38,9 @@ class ProfileController extends Controller
 
         $completion = (int) round(($filledCount / count($requiredFields)) * 100);
 
+        // Check if user has any applications
+        $hasApplications = \App\Models\Application::where('user_id', $user->id)->exists();
+
         return Inertia::render('Pelamar/Profile', [
             'profile' => [
                 'id' => $profile->id,
@@ -57,6 +60,7 @@ class ProfileController extends Controller
                 'completion_percentage' => max(min($completion, 100), 0),
             ],
             'profileReminderMessage' => session('profile_reminder'),
+            'hasApplications' => $hasApplications,
         ]);
     }
 
@@ -64,6 +68,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['pelamar'], 403);
+
+        // Block updates if user has already applied
+        $hasApplications = \App\Models\Application::where('user_id', $user->id)->exists();
+        if ($hasApplications) {
+            return redirect()
+                ->back()
+                ->with('error', 'Profil tidak dapat diubah karena Anda sudah mengajukan lamaran.');
+        }
 
         $profile = $user->ensureApplicantProfile();
 

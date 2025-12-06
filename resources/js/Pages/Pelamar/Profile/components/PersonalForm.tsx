@@ -259,19 +259,18 @@ export default function PersonalForm({
                 </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-                <Button
-                    onClick={onSave}
-                    disabled={processing || disabled}
-                    className="bg-blue-900 hover:bg-blue-800"
-                >
-                    <Save className="mr-2 h-4 w-4" />
-                    Simpan Data Pribadi
-                </Button>
-                <Button type="button" variant="outline" onClick={onReset} disabled={disabled}>
-                    Batalkan
-                </Button>
-            </div>
+            {!disabled && (
+                <div className="mt-6 flex flex-wrap gap-3">
+                    <Button
+                        onClick={onSave}
+                        disabled={processing}
+                        className="bg-blue-900 hover:bg-blue-800"
+                    >
+                        <Save className="mr-2 h-4 w-4" />
+                        Simpan Data Pribadi
+                    </Button>
+                </div>
+            )}
         </Card>
     );
 }

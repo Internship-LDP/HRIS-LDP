@@ -126,6 +126,13 @@ class DashboardController extends Controller
             ])
             ->all();
 
+        // Check if profile is complete for first-login guidance
+        $profile = $user->applicantProfile;
+        $isProfileComplete = $profile && $profile->is_complete;
+        
+        // Show reminder if profile is incomplete and user has no applications yet
+        $showProfileReminder = !$isProfileComplete && $applications->isEmpty();
+
         return Inertia::render('Pelamar/Dashboard', [
             'applicationsStatus' => $applicationsStatus,
             'applications' => $applicationsData,
@@ -135,6 +142,8 @@ class DashboardController extends Controller
                 'rejectionReason' => $latestApplication->rejection_reason ?? null,
             ],
             'upcomingInterview' => $upcomingInterview,
+            'isProfileComplete' => $isProfileComplete,
+            'showProfileReminder' => $showProfileReminder,
         ]);
     }
 }

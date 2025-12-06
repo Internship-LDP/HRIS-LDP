@@ -13,6 +13,7 @@ interface ProfileHeaderProps {
     email: string;
     completion: number;
     savingPhoto: boolean;
+    disabled?: boolean;
 }
 
 export default function ProfileHeader({
@@ -26,6 +27,7 @@ export default function ProfileHeader({
     email,
     completion,
     savingPhoto,
+    disabled = false,
 }: ProfileHeaderProps) {
     return (
         <Card className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
@@ -46,23 +48,25 @@ export default function ProfileHeader({
                         </div>
                     )}
                 </div>
-                <label
-                    htmlFor="profile-photo"
-                    className="absolute bottom-2 right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-blue-900 text-white shadow"
-                >
-                    <Camera className="h-4 w-4" />
-                    <input
-                        id="profile-photo"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={onPhotoChange}
-                    />
-                </label>
+                {!disabled && (
+                    <label
+                        htmlFor="profile-photo"
+                        className="absolute bottom-2 right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-blue-900 text-white shadow"
+                    >
+                        <Camera className="h-4 w-4" />
+                        <input
+                            id="profile-photo"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={onPhotoChange}
+                        />
+                    </label>
+                )}
             </div>
-            
+
             {/* Save/Cancel buttons for photo */}
-            {photoChanged && (
+            {photoChanged && !disabled && (
                 <div className="flex gap-2 mt-4">
                     <button
                         onClick={onPhotoSave}
