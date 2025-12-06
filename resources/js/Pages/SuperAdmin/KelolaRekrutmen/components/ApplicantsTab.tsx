@@ -120,6 +120,21 @@ export default function ApplicantsTab({
     const [datePickerMonth, setDatePickerMonth] = useState<Date | undefined>(
         dateRange.from ?? dateRange.to ?? new Date(),
     );
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter, searchTerm, dateRange]);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(visibleApplications.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedApplications = visibleApplications.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
     const displayDateRange = useMemo(() => {
         const { from, to } = dateRange;
         const formatDate = (date: Date) => format(date, 'd MMM yyyy');
@@ -256,10 +271,10 @@ export default function ApplicantsTab({
 
                 {/* Mobile Card View */}
                 <div className="block md:hidden space-y-3">
-                    {visibleApplications.length === 0 ? (
+                    {paginatedApplications.length === 0 ? (
                         <p className="py-6 text-center text-xs text-slate-500">Tidak ada data pelamar.</p>
                     ) : (
-                        visibleApplications.map((application) => {
+                        paginatedApplications.map((application) => {
                             const isCurrentlyUpdating = isUpdatingStatus && updatingApplicantId === application.id;
                             return (
                                 <div key={application.id} className="rounded-lg border p-3 space-y-2">
@@ -305,6 +320,7 @@ export default function ApplicantsTab({
                     <Table>
                         <TableHeader className="bg-slate-50">
                             <TableRow>
+                                <TableHead className="w-[50px]">No</TableHead>
                                 <TableHead>ID Lamaran</TableHead>
                                 <TableHead>Pelamar</TableHead>
                                 <TableHead>Posisi</TableHead>
@@ -314,12 +330,15 @@ export default function ApplicantsTab({
                         </TableHeader>
 
                         <TableBody>
-                            {visibleApplications.map((application) => {
+                            {paginatedApplications.map((application, index) => {
                                 const isCurrentlyUpdating =
                                     isUpdatingStatus && updatingApplicantId === application.id;
 
                                 return (
                                     <TableRow key={application.id}>
+                                        <TableCell className="font-medium text-slate-900">
+                                            {startIndex + index + 1}
+                                        </TableCell>
                                         <TableCell className="font-semibold text-blue-900">
                                             {formatApplicationId(application.id)}
                                         </TableCell>
@@ -355,6 +374,50 @@ export default function ApplicantsTab({
                         </TableBody>
                     </Table>
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <div className="text-xs text-slate-500">
+                            Menampilkan {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, visibleApplications.length)} dari {visibleApplications.length} pelamar
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8 p-0"
+                            >
+                                <span className="sr-only">Previous</span>
+                                <span aria-hidden="true">«</span>
+                            </Button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <Button
+                                        key={page}
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setCurrentPage(page)}
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8 p-0"
+                            >
+                                <span className="sr-only">Next</span>
+                                <span aria-hidden="true">»</span>
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Card>
 
             <RejectionModal

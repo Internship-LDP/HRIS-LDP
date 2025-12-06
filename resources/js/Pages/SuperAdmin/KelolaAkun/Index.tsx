@@ -212,6 +212,7 @@ export default function Index(props: IndexPageProps) {
                     <AccountTable
                         users={accountRows}
                         links={paginationLinks}
+                        from={users.from ?? 1}
                         onView={openDetail}
                         onEdit={(user) =>
                             router.visit(

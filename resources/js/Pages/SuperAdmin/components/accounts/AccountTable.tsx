@@ -17,6 +17,7 @@ import { AccountRecord, PaginationLink } from './types';
 interface AccountTableProps {
     users: AccountRecord[];
     links: PaginationLink[];
+    from?: number;
     onView: (user: AccountRecord) => void;
     onEdit: (user: AccountRecord) => void;
     onToggleStatus: (user: AccountRecord) => void;
@@ -26,6 +27,7 @@ interface AccountTableProps {
 export default function AccountTable({
     users,
     links,
+    from = 1,
     onView,
     onEdit,
     onToggleStatus,
@@ -44,16 +46,18 @@ export default function AccountTable({
                         {users.map((user) => (
                             <div key={user.id} className="p-3 space-y-2">
                                 <div className="flex items-start justify-between gap-2">
+                                    <div className="mr-2 font-medium text-slate-900 border-r pr-2">
+                                        {(from ?? 1) + users.indexOf(user)}
+                                    </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="font-semibold text-xs text-slate-900 truncate">{user.name}</p>
                                         <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                                     </div>
                                     <span
-                                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold shrink-0 ${
-                                            user.status === 'Active'
+                                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold shrink-0 ${user.status === 'Active'
                                                 ? 'bg-green-100 text-green-700'
                                                 : 'bg-slate-200 text-slate-600'
-                                        }`}
+                                            }`}
                                     >
                                         {user.status}
                                     </span>
@@ -87,7 +91,7 @@ export default function AccountTable({
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <div className="inline-block">
-                                                <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => {}} size="sm">
+                                                <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => { }} size="sm">
                                                     <ToggleLeft className={`h-3.5 w-3.5 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
                                                 </IconButton>
                                             </div>
@@ -104,7 +108,7 @@ export default function AccountTable({
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                <AlertDialogAction 
+                                                <AlertDialogAction
                                                     onClick={() => onToggleStatus(user)}
                                                     className={user.status === 'Active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}
                                                 >
@@ -136,6 +140,7 @@ export default function AccountTable({
                 <table className="min-w-full divide-y divide-slate-100 text-sm">
                     <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                         <tr>
+                            <th className="px-4 py-3 w-[50px]">No</th>
                             <th className="px-4 py-3">User ID</th>
                             <th className="px-4 py-3">Nama</th>
                             <th className="px-4 py-3">Email</th>
@@ -158,8 +163,11 @@ export default function AccountTable({
                                 </td>
                             </tr>
                         )}
-                        {users.map((user) => (
+                        {users.map((user, index) => (
                             <tr key={user.id} className="hover:bg-slate-50/60">
+                                <td className="px-4 py-3 font-medium text-slate-900">
+                                    {(from ?? 1) + index}
+                                </td>
                                 <td className="px-4 py-3 font-medium">
                                     {user.employee_code ?? '-'}
                                 </td>
@@ -173,11 +181,10 @@ export default function AccountTable({
                                 <td className="px-4 py-3">{user.division ?? '-'}</td>
                                 <td className="px-4 py-3">
                                     <span
-                                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                            user.status === 'Active'
+                                        className={`rounded-full px-3 py-1 text-xs font-semibold ${user.status === 'Active'
                                                 ? 'bg-green-100 text-green-700'
                                                 : 'bg-slate-200 text-slate-600'
-                                        }`}
+                                            }`}
                                     >
                                         {user.status}
                                     </span>
@@ -206,7 +213,7 @@ export default function AccountTable({
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <div className="inline-block">
-                                                    <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => {}}>
+                                                    <IconButton label={user.status === 'Active' ? 'Nonaktifkan Akun' : 'Aktifkan Akun'} onClick={() => { }}>
                                                         <ToggleLeft className={`h-4 w-4 ${user.status === 'Active' ? 'text-orange-500' : 'text-green-600'}`} />
                                                     </IconButton>
                                                 </div>
@@ -223,7 +230,7 @@ export default function AccountTable({
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction 
+                                                    <AlertDialogAction
                                                         onClick={() => onToggleStatus(user)}
                                                         className={user.status === 'Active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'}
                                                     >
@@ -270,13 +277,12 @@ export default function AccountTable({
                                         event.preventDefault();
                                     }
                                 }}
-                                className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${
-                                    link.active
+                                className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${link.active
                                         ? 'bg-blue-900 text-white'
                                         : link.url
-                                          ? 'text-blue-900 hover:bg-blue-50'
-                                          : 'text-slate-400'
-                                }`}
+                                            ? 'text-blue-900 hover:bg-blue-50'
+                                            : 'text-slate-400'
+                                    }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}
@@ -303,9 +309,8 @@ function IconButton({
             type="button"
             onClick={onClick}
             title={label}
-            className={`rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-blue-900 ${
-                size === 'sm' ? 'p-1.5' : 'p-2'
-            }`}
+            className={`rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-blue-900 ${size === 'sm' ? 'p-1.5' : 'p-2'
+                }`}
         >
             {children}
         </button>

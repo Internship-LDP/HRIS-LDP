@@ -30,6 +30,7 @@ import {
     Settings,
     XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 
 type DivisionTabsProps = {
     divisions: DivisionRecord[];
@@ -50,23 +51,16 @@ export function DivisionTabs({
 }: DivisionTabsProps) {
     return (
         <Tabs value={activeDivisionId} onValueChange={onTabChange}>
-            <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+            <TabsList className="w-full justify-start overflow-x-auto flex-nowrap bg-transparent p-0 gap-2">
                 {divisions.map((division) => (
                     <TabsTrigger
                         key={division.id}
                         value={division.id.toString()}
-                        className="rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 whitespace-nowrap"
+                        className="rounded-full px-4 py-2 text-sm font-medium border border-slate-200 bg-white text-slate-600 data-[state=active]:bg-blue-900 data-[state=active]:text-white data-[state=active]:border-blue-900 transition-all hover:bg-slate-50 hover:text-slate-900 shadow-sm"
                     >
-                        <div className="flex items-center gap-1 md:gap-2">
-                            <Building2 className="h-3 w-3 md:h-4 md:w-4 text-blue-800" />
-                            <span
-                                className={`rounded-full px-2 md:px-3 py-0.5 md:py-1 text-xs md:text-sm font-semibold ${division.is_hiring
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'text-slate-700'
-                                    }`}
-                            >
-                                {division.name}
-                            </span>
+                        <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4" />
+                            <span>{division.name}</span>
                         </div>
                     </TabsTrigger>
                 ))}
@@ -187,6 +181,10 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 }
 
 function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 8;
+    const totalPages = Math.ceil(staff.length / ITEMS_PER_PAGE);
+
     if (staff.length === 0) {
         return (
             <div className="rounded-lg border border-dashed p-4 md:p-8 text-center text-slate-500">
@@ -195,12 +193,20 @@ function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
         );
     }
 
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedStaff = staff.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
     return (
-        <div className="rounded-xl border overflow-hidden">
+        <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[50px]">No</TableHead>
                             <TableHead>Nama</TableHead>
                             <TableHead>Posisi</TableHead>
                             <TableHead className="hidden md:table-cell">Email</TableHead>
@@ -208,8 +214,11 @@ function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {staff.map((member) => (
+                        {paginatedStaff.map((member, index) => (
                             <TableRow key={member.id}>
+                                <TableCell className="font-medium text-slate-900">
+                                    {startIndex + index + 1}
+                                </TableCell>
                                 <TableCell className="font-medium">
                                     <div>{member.name}</div>
                                     <div className="text-xs text-slate-500 md:hidden">{member.email}</div>
@@ -225,6 +234,50 @@ function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t px-4 py-3">
+                    <div className="text-xs text-slate-500">
+                        Menampilkan {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, staff.length)} dari {staff.length} staff
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0"
+                        >
+                            <span className="sr-only">Previous</span>
+                            <span aria-hidden="true">«</span>
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => handlePageChange(page)}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0"
+                        >
+                            <span className="sr-only">Next</span>
+                            <span aria-hidden="true">»</span>
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
