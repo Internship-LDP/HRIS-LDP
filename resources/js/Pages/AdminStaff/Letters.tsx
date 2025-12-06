@@ -102,6 +102,9 @@ interface LetterRecord {
     approvalDate?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
+    isFinalized?: boolean;
+    dispositionDocumentUrl?: string | null;
+    dispositionDocumentName?: string | null;
 }
 
 interface LettersPageProps extends Record<string, unknown> {
@@ -166,21 +169,21 @@ export default function AdminStaffLetters() {
     const archiveForm = useForm({});
     const unarchiveForm = useForm({});
 
-useEffect(() => {
-    replyForm.reset();
-    replyForm.clearErrors();
-    setReplyOpen(false);
-    setDetailTab('detail');
-}, [selectedLetter]);
-
-useEffect(() => {
-    if (!detailOpen) {
-        setReplyOpen(false);
+    useEffect(() => {
         replyForm.reset();
         replyForm.clearErrors();
+        setReplyOpen(false);
         setDetailTab('detail');
-    }
-}, [detailOpen]);
+    }, [selectedLetter]);
+
+    useEffect(() => {
+        if (!detailOpen) {
+            setReplyOpen(false);
+            replyForm.reset();
+            replyForm.clearErrors();
+            setDetailTab('detail');
+        }
+    }, [detailOpen]);
 
     const filteredLetters = useMemo(() => {
         const filterList = (items: LetterRecord[]) => {
@@ -218,11 +221,11 @@ useEffect(() => {
         });
     };
 
-const openDetail = (letter: LetterRecord) => {
-    setSelectedLetter(letter);
-    setDetailOpen(true);
-    setDetailTab('detail');
-};
+    const openDetail = (letter: LetterRecord) => {
+        setSelectedLetter(letter);
+        setDetailOpen(true);
+        setDetailTab('detail');
+    };
 
     const handleArchive = (letter: LetterRecord) => {
         if (!letter || archiveForm.processing) {
@@ -424,36 +427,36 @@ const openDetail = (letter: LetterRecord) => {
                         </TabsTrigger>
                     </TabsList>
 
-                <TabsContent value="inbox">
-                    <LettersTable
-                        letters={activeLetters}
-                        onViewDetail={openDetail}
-                        onArchive={handleArchive}
-                        archivingId={archivingLetterId}
-                        archiveProcessing={archiveForm.processing}
-                    />
-                </TabsContent>
-                <TabsContent value="outbox">
-                    <LettersTable
-                        letters={activeLetters}
-                        variant="outbox"
-                        onViewDetail={openDetail}
-                        onArchive={handleArchive}
-                        archivingId={archivingLetterId}
-                        archiveProcessing={archiveForm.processing}
-                    />
-                </TabsContent>
-                <TabsContent value="archive">
-                    <LettersTable
-                        letters={activeLetters}
-                        variant="archive"
-                        onViewDetail={openDetail}
-                        onUnarchive={handleUnarchive}
-                        unarchivingId={unarchivingLetterId}
-                        unarchiveProcessing={unarchiveForm.processing}
-                    />
-                </TabsContent>
-            </Tabs>
+                    <TabsContent value="inbox">
+                        <LettersTable
+                            letters={activeLetters}
+                            onViewDetail={openDetail}
+                            onArchive={handleArchive}
+                            archivingId={archivingLetterId}
+                            archiveProcessing={archiveForm.processing}
+                        />
+                    </TabsContent>
+                    <TabsContent value="outbox">
+                        <LettersTable
+                            letters={activeLetters}
+                            variant="outbox"
+                            onViewDetail={openDetail}
+                            onArchive={handleArchive}
+                            archivingId={archivingLetterId}
+                            archiveProcessing={archiveForm.processing}
+                        />
+                    </TabsContent>
+                    <TabsContent value="archive">
+                        <LettersTable
+                            letters={activeLetters}
+                            variant="archive"
+                            onViewDetail={openDetail}
+                            onUnarchive={handleUnarchive}
+                            unarchivingId={unarchivingLetterId}
+                            unarchiveProcessing={unarchiveForm.processing}
+                        />
+                    </TabsContent>
+                </Tabs>
             </Card>
 
             {/* <Card className="p-6">
@@ -515,10 +518,21 @@ const openDetail = (letter: LetterRecord) => {
                                             Balas Surat
                                         </Button>
                                     )}
+                                    {selectedLetter.isFinalized && (
+                                        <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300">
+                                            <CheckCircle className="mr-1 h-3 w-3" />
+                                            Disposisi Final
+                                        </Badge>
+                                    )}
                                 </div>
                                 <p className="mt-1 text-xs text-slate-500">
                                     Diterima pada {selectedLetter.date}
                                 </p>
+                                {selectedLetter.isFinalized && (
+                                    <p className="mt-2 text-xs text-emerald-600 bg-emerald-50 rounded px-2 py-1 inline-block">
+                                        Surat ini bersifat final dan tidak dapat dibalas.
+                                    </p>
+                                )}
 
                                 <Tabs
                                     value={detailTab}
@@ -613,6 +627,33 @@ const openDetail = (letter: LetterRecord) => {
                                                 </section>
                                             )}
 
+                                            {/* Disposition Document for finalized letters */}
+                                            {selectedLetter.isFinalized && selectedLetter.dispositionDocumentUrl && (
+                                                <section className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-xs uppercase tracking-wide text-emerald-600">
+                                                                Lampiran Disposisi Final
+                                                            </p>
+                                                            <p className="mt-1 text-sm font-semibold text-slate-900">
+                                                                {selectedLetter.dispositionDocumentName ?? 'Surat Disposisi.docx'}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+                                                                <a
+                                                                    href={selectedLetter.dispositionDocumentUrl}
+                                                                    download
+                                                                >
+                                                                    <Download className="mr-2 h-4 w-4" />
+                                                                    Unduh Template
+                                                                </a>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </section>
+                                            )}
+
                                             {selectedLetter.dispositionNote && (
                                                 <section
                                                     className={
@@ -653,7 +694,7 @@ const openDetail = (letter: LetterRecord) => {
                                                     selectedLetter.replyHistory && selectedLetter.replyHistory.length > 0
                                                         ? selectedLetter.replyHistory
                                                         : selectedLetter.replyNote
-                                                          ? [
+                                                            ? [
                                                                 {
                                                                     id: null,
                                                                     note: selectedLetter.replyNote,
@@ -664,7 +705,7 @@ const openDetail = (letter: LetterRecord) => {
                                                                     timestamp: selectedLetter.replyAt,
                                                                 },
                                                             ]
-                                                          : [];
+                                                            : [];
                                                 if (history.length === 0) {
                                                     return null;
                                                 }
@@ -825,20 +866,18 @@ function LetterTrackingView({ letter }: { letter: LetterRecord }) {
                         <div key={step.id} className="relative flex gap-4">
                             {!isLast && (
                                 <div
-                                    className={`absolute left-4 top-8 h-full w-0.5 ${
-                                        step.completed ? 'bg-blue-900' : 'bg-slate-300'
-                                    }`}
+                                    className={`absolute left-4 top-8 h-full w-0.5 ${step.completed ? 'bg-blue-900' : 'bg-slate-300'
+                                        }`}
                                 />
                             )}
                             <div className="relative z-10 flex-shrink-0">
                                 <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                                        step.completed
-                                            ? 'bg-blue-900 text-white'
-                                            : isCurrent
-                                                ? 'animate-pulse bg-amber-500 text-white'
-                                                : 'bg-slate-200 text-slate-400'
-                                    }`}
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full ${step.completed
+                                        ? 'bg-blue-900 text-white'
+                                        : isCurrent
+                                            ? 'animate-pulse bg-amber-500 text-white'
+                                            : 'bg-slate-200 text-slate-400'
+                                        }`}
                                 >
                                     {step.completed ? (
                                         <CheckCircle className="h-5 w-5" />
@@ -851,20 +890,18 @@ function LetterTrackingView({ letter }: { letter: LetterRecord }) {
                             </div>
                             <div className="flex-1 pb-8">
                                 <div
-                                    className={`rounded-xl border-2 p-4 ${
-                                        step.completed
-                                            ? 'border-blue-200 bg-blue-50'
-                                            : isCurrent
-                                                ? 'border-amber-200 bg-amber-50'
-                                                : 'border-slate-200 bg-white'
-                                    }`}
+                                    className={`rounded-xl border-2 p-4 ${step.completed
+                                        ? 'border-blue-200 bg-blue-50'
+                                        : isCurrent
+                                            ? 'border-amber-200 bg-amber-50'
+                                            : 'border-slate-200 bg-white'
+                                        }`}
                                 >
                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div>
                                             <p
-                                                className={`text-sm font-semibold ${
-                                                    step.completed || isCurrent ? 'text-blue-900' : 'text-slate-600'
-                                                }`}
+                                                className={`text-sm font-semibold ${step.completed || isCurrent ? 'text-blue-900' : 'text-slate-600'
+                                                    }`}
                                             >
                                                 {step.status}
                                             </p>
@@ -913,7 +950,7 @@ function buildTrackingSteps(letter: LetterRecord): TrackingStep[] {
         letter.replyHistory && letter.replyHistory.length > 0
             ? letter.replyHistory
             : letter.replyNote
-              ? [
+                ? [
                     {
                         id: null,
                         note: letter.replyNote,
@@ -923,7 +960,7 @@ function buildTrackingSteps(letter: LetterRecord): TrackingStep[] {
                         timestamp: letter.replyAt,
                     },
                 ]
-              : [];
+                : [];
     const lastReply = replyHistory[replyHistory.length - 1];
     const replyCompleted = replyHistory.length > 0;
 
@@ -990,10 +1027,10 @@ function buildTrackingSteps(letter: LetterRecord): TrackingStep[] {
                 letter.currentRecipient === 'hr'
                     ? 'Human Capital'
                     : letter.currentRecipient === 'division'
-                      ? letter.targetDivision ?? letter.recipient ?? 'Divisi terkait'
-                      : letter.currentRecipient === 'archive'
-                        ? 'Arsip Sistem'
-                        : letter.targetDivision ?? letter.recipient ?? '-',
+                        ? letter.targetDivision ?? letter.recipient ?? 'Divisi terkait'
+                        : letter.currentRecipient === 'archive'
+                            ? 'Arsip Sistem'
+                            : letter.targetDivision ?? letter.recipient ?? '-',
             timestamp: letter.updatedAt ?? lastReply?.timestamp ?? letter.replyAt ?? letter.disposedAt ?? creationTimestamp,
             person: lastReply?.author ?? letter.replyBy ?? letter.disposedBy ?? letter.sender,
             completed:
@@ -1052,68 +1089,68 @@ function LettersTable({
                     const hasReply = Boolean(latestReply || letter.replyNote);
 
                     return (
-                    <TableRow key={letter.id}>
-                        <TableCell>{letter.letterNumber}</TableCell>
-                        <TableCell>
-                            <div>
-                                <p className="text-sm font-semibold text-slate-900">
-                                    {letter.sender}
-                                </p>
-                                <p className="text-xs text-slate-500">{letter.from}</p>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <span>{letter.subject}</span>
-                                {letter.hasAttachment && (
-                                    <FileText className="h-4 w-4 text-slate-400" />
-                                )}
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant="outline">{letter.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                            <PriorityBadge priority={letter.priority} />
-                        </TableCell>
-                        <TableCell>{letter.date}</TableCell>
-                        <TableCell>
-                            <StatusBadge status={letter.status} />
-                            {/* {letter.dispositionNote && (
+                        <TableRow key={letter.id}>
+                            <TableCell>{letter.letterNumber}</TableCell>
+                            <TableCell>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-900">
+                                        {letter.sender}
+                                    </p>
+                                    <p className="text-xs text-slate-500">{letter.from}</p>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <span>{letter.subject}</span>
+                                    {letter.hasAttachment && (
+                                        <FileText className="h-4 w-4 text-slate-400" />
+                                    )}
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <Badge variant="outline">{letter.category}</Badge>
+                            </TableCell>
+                            <TableCell>
+                                <PriorityBadge priority={letter.priority} />
+                            </TableCell>
+                            <TableCell>{letter.date}</TableCell>
+                            <TableCell>
+                                <StatusBadge status={letter.status} />
+                                {/* {letter.dispositionNote && (
                                 <p className="mt-1 text-[11px] font-medium text-rose-600">
                                     Catatan HR tersedia
                                 </p>
                             )} */}
-                            {hasReply && (
-                                <p className="mt-1 text-[11px] font-medium text-emerald-600">
-                                    Balasan dikirim
-                                </p>
-                            )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
-                                    Detail
-                                </Button>
-                                {onArchive && variant !== 'archive' && (
-                                    <ArchiveConfirmButton
-                                        letter={letter}
-                                        onConfirm={onArchive}
-                                        disabled={archiveProcessing}
-                                        isProcessing={archiveProcessing && archivingId === letter.id}
-                                    />
+                                {hasReply && (
+                                    <p className="mt-1 text-[11px] font-medium text-emerald-600">
+                                        Balasan dikirim
+                                    </p>
                                 )}
-                                {onUnarchive && variant === 'archive' && (
-                                    <UnarchiveConfirmButton
-                                        letter={letter}
-                                        onConfirm={onUnarchive}
-                                        disabled={unarchiveProcessing}
-                                        isProcessing={unarchiveProcessing && unarchivingId === letter.id}
-                                    />
-                                )}
-                            </div>
-                        </TableCell>
-                    </TableRow>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
+                                        Detail
+                                    </Button>
+                                    {onArchive && variant !== 'archive' && (
+                                        <ArchiveConfirmButton
+                                            letter={letter}
+                                            onConfirm={onArchive}
+                                            disabled={archiveProcessing}
+                                            isProcessing={archiveProcessing && archivingId === letter.id}
+                                        />
+                                    )}
+                                    {onUnarchive && variant === 'archive' && (
+                                        <UnarchiveConfirmButton
+                                            letter={letter}
+                                            onConfirm={onUnarchive}
+                                            disabled={unarchiveProcessing}
+                                            isProcessing={unarchiveProcessing && unarchivingId === letter.id}
+                                        />
+                                    )}
+                                </div>
+                            </TableCell>
+                        </TableRow>
                     );
                 })}
             </TableBody>

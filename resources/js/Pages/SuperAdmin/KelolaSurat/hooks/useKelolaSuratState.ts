@@ -195,7 +195,7 @@ export function useKelolaSuratState({
         });
     };
 
-    const handleDispositionSubmit = (mode: 'forward' | 'reject') => {
+    const handleDispositionSubmit = (mode: 'forward' | 'reject' | 'final') => {
         const letterIds = dispositionTargets.map((letter) => letter.id);
 
         if (letterIds.length === 0) {
@@ -208,10 +208,14 @@ export function useKelolaSuratState({
             return;
         }
 
-        const routeName =
-            mode === 'reject'
-                ? 'super-admin.letters.disposition.reject'
-                : 'super-admin.letters.disposition.bulk';
+        let routeName: string;
+        if (mode === 'reject') {
+            routeName = 'super-admin.letters.disposition.reject';
+        } else if (mode === 'final') {
+            routeName = 'super-admin.letters.disposition.final';
+        } else {
+            routeName = 'super-admin.letters.disposition.bulk';
+        }
 
         dispositionForm.transform((data) => ({
             ...data,
@@ -221,11 +225,15 @@ export function useKelolaSuratState({
         dispositionForm.post(route(routeName), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    mode === 'reject'
-                        ? `${letterIds.length} surat ditolak dan dikembalikan ke pengirim.`
-                        : `${letterIds.length} surat didisposisi ke divisi tujuan.`
-                );
+                let message: string;
+                if (mode === 'reject') {
+                    message = `${letterIds.length} surat ditolak dan dikembalikan ke pengirim.`;
+                } else if (mode === 'final') {
+                    message = `${letterIds.length} surat didisposisi final. Penerima tidak dapat membalas.`;
+                } else {
+                    message = `${letterIds.length} surat didisposisi ke divisi tujuan.`;
+                }
+                toast.success(message);
                 setDispositionOpen(false);
                 setDispositionTargets([]);
                 clearPendingSelection();

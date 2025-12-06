@@ -11,7 +11,7 @@ import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Textarea } from '@/Components/ui/textarea';
-import { Download, Eye, FileText, SendHorizontal } from 'lucide-react';
+import { Download, Eye, FileText, SendHorizontal, CheckCircle } from 'lucide-react';
 import { LetterRecord } from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTable';
 import type { InertiaFormProps } from '@inertiajs/react';
 import { PriorityBadge } from '@/Pages/SuperAdmin/KelolaSurat/components/PriorityBadge';
@@ -24,7 +24,7 @@ interface DispositionDialogProps {
     disposition_note: string;
     letter_ids: number[];
   }>;
-  onSubmit: (mode: 'forward' | 'reject') => void;
+  onSubmit: (mode: 'forward' | 'reject' | 'final') => void;
 }
 
 export default function DispositionDialog({
@@ -177,7 +177,7 @@ export default function DispositionDialog({
                 type="button"
                 variant="outline"
                 className="w-full border-rose-200 text-rose-600 hover:bg-rose-50"
-                disabled={dispositionForm.processing}
+                disabled={dispositionForm.processing || targets.length !== 1}
                 onClick={() => onSubmit('reject')}
               >
                 {dispositionForm.processing ? 'Memproses...' : 'Tolak Surat'}
@@ -193,11 +193,28 @@ export default function DispositionDialog({
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <SendHorizontal className="h-4 w-4" />
-                    Disposisi ke Divisi
+                    Disposisi
                   </span>
                 )}
               </Button>
             </div>
+
+            {/* FINAL BUTTON - marks letter as finalized, recipient cannot reply */}
+            <Button
+              type="button"
+              className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+              disabled={dispositionForm.processing}
+              onClick={() => onSubmit('final')}
+            >
+              {dispositionForm.processing ? (
+                'Memproses...'
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Disposisi Final
+                </span>
+              )}
+            </Button>
           </div>
         ) : (
           <div className="px-6 py-10 text-center text-sm text-slate-500">

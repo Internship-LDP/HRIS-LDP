@@ -45,6 +45,9 @@ class Surat extends Model
         'lampiran_nama',
         'lampiran_mime',
         'lampiran_size',
+        'is_finalized',
+        'disposition_document_path',
+        'disposition_document_name',
     ];
 
     protected $casts = [
@@ -52,6 +55,7 @@ class Surat extends Model
         'tanggal_persetujuan' => 'date',
         'disposed_at' => 'datetime',
         'reply_at' => 'datetime',
+        'is_finalized' => 'boolean',
     ];
 
     /**

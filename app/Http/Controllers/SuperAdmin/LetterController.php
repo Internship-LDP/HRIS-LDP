@@ -319,6 +319,71 @@ class LetterController extends Controller
             );
     }
 
+    /**
+     * Final disposition - marks letters as finalized (recipient cannot reply).
+     */
+    public function finalDisposition(Request $request): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        $validated = $request->validate([
+            'disposition_note' => ['nullable', 'string', 'max:2000'],
+            'letter_ids' => ['required', 'array', 'min:1'],
+            'letter_ids.*' => ['integer', 'exists:surat,surat_id'],
+        ]);
+
+        $letters = Surat::query()
+            ->whereIn('surat_id', $validated['letter_ids'])
+            ->where('current_recipient', 'hr')
+            ->get();
+
+        if ($letters->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Surat tidak ditemukan atau sudah diproses.');
+        }
+
+        $userId = $request->user()?->id;
+        $wordService = new \App\Services\DispositionWordService();
+
+        foreach ($letters as $surat) {
+            // Update disposition note first so it's included in the document
+            $surat->disposition_note = $validated['disposition_note'] ?? $surat->disposition_note;
+            $surat->disposed_by = $userId;
+            $surat->disposed_at = now();
+
+            // Generate the disposition Word document
+            $tempFile = $wordService->generate($surat);
+            $fileName = 'disposisi_final_' . $surat->nomor_surat . '_' . now()->format('Ymd_His') . '.docx';
+            $fileName = preg_replace('/[^a-zA-Z0-9_\-.]/', '_', $fileName);
+            $storagePath = 'disposition_documents/' . $fileName;
+
+            // Store the file
+            \Illuminate\Support\Facades\Storage::disk('public')->put($storagePath, file_get_contents($tempFile));
+
+            // Clean up temp file
+            @unlink($tempFile);
+
+            $surat->forceFill([
+                'current_recipient' => 'division',
+                'penerima' => $surat->target_division ?? $surat->penerima,
+                'status_persetujuan' => 'Didisposisi',
+                'is_finalized' => true,
+                'disposition_document_path' => $storagePath,
+                'disposition_document_name' => $fileName,
+            ])->save();
+
+            LetterUpdated::dispatch($surat->fresh(), 'finalized');
+        }
+
+        return redirect()
+            ->route('super-admin.letters.index')
+            ->with(
+                'success',
+                $letters->count().' surat didisposisi final. Penerima tidak dapat membalas.'
+            );
+    }
+
     public function archive(Request $request, Surat $surat): RedirectResponse
     {
         $this->authorizeAccess($request->user());
@@ -396,6 +461,61 @@ class LetterController extends Controller
         }
 
         return Str::upper(Str::substr($clean, 0, 3));
+    }
+
+    /**
+     * Export disposition as Word document and mark as finalized.
+     */
+    public function exportDispositionWord(Request $request, Surat $surat): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        // Mark letter as disposed and finalized
+        $surat->forceFill([
+            'current_recipient' => 'division',
+            'penerima' => $surat->target_division ?? $surat->penerima,
+            'status_persetujuan' => 'Didisposisi',
+            'disposed_by' => $request->user()->id,
+            'disposed_at' => now(),
+            'is_finalized' => true,
+        ])->save();
+
+        LetterUpdated::dispatch($surat->fresh(), 'disposed');
+
+        // Generate Word document
+        $service = new \App\Services\DispositionWordService();
+        $filePath = $service->generate($surat);
+        $filename = $service->getFilename($surat);
+
+        return response()->download($filePath, $filename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Export FINAL disposition as Word document - recipient cannot reply.
+     * Uses custom template if available.
+     */
+    public function exportFinalDisposition(Request $request, Surat $surat): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        // Mark letter as disposed, finalized (no reply allowed)
+        $surat->forceFill([
+            'current_recipient' => 'division',
+            'penerima' => $surat->target_division ?? $surat->penerima,
+            'status_persetujuan' => 'Didisposisi',
+            'disposed_by' => $request->user()->id,
+            'disposed_at' => now(),
+            'is_finalized' => true, // This prevents replies
+        ])->save();
+
+        LetterUpdated::dispatch($surat->fresh(), 'finalized');
+
+        // Generate Word document (will use custom template if active)
+        $service = new \App\Services\DispositionWordService();
+        $filePath = $service->generate($surat);
+        $filename = $service->getFilename($surat);
+
+        return response()->download($filePath, $filename)->deleteFileAfterSend(true);
     }
 
     private function authorizeAccess(?User $user): void

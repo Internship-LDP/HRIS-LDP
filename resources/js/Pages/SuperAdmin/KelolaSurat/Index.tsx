@@ -7,9 +7,11 @@ import PriorityStatsCards from '@/Pages/SuperAdmin/KelolaSurat/components/Priori
 import PendingDispositionPanel from '@/Pages/SuperAdmin/KelolaSurat/components/PendingDispositionPanel';
 import LettersTabsPanel from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTabsPanel';
 import DispositionDialog from '@/Pages/SuperAdmin/KelolaSurat/components/DispositionDialog';
+import TemplateDialog from '@/Pages/SuperAdmin/KelolaSurat/components/TemplateDialog';
 import { PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
+import { FileText } from 'lucide-react';
 import { useKelolaSuratState } from '@/Pages/SuperAdmin/KelolaSurat/hooks/useKelolaSuratState';
 
 interface KelolaSuratPageProps extends Record<string, unknown> {
@@ -89,6 +91,8 @@ export default function KelolaSuratIndex() {
         pending: pendingDisposition,
         stats,
     });
+
+    const [templateOpen, setTemplateOpen] = useState(false);
 
     useEffect(() => {
         setLiveData({
@@ -225,22 +229,32 @@ export default function KelolaSuratIndex() {
             description="Kelola surat masuk, keluar, dan arsip digital"
             breadcrumbs={breadcrumbs}
             actions={
-                <ComposeLetterDialog
-                    open={isComposeOpen}
-                    onOpenChange={setComposeOpen}
-                    data={form.data}
-                    setData={form.setData}
-                    errors={form.errors}
-                    processing={form.processing}
-                    onSubmit={handleComposeSubmit}
-                    userInfo={{
-                        name: auth.user.name,
-                        division: auth.user.division,
-                        role: auth.user.role,
-                    }}
-                    options={options}
-                    letterNumberPreview={nextLetterNumber}
-                />
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setTemplateOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                        <FileText className="h-4 w-4" />
+                        Template
+                    </button>
+                    <ComposeLetterDialog
+                        open={isComposeOpen}
+                        onOpenChange={setComposeOpen}
+                        data={form.data}
+                        setData={form.setData}
+                        errors={form.errors}
+                        processing={form.processing}
+                        onSubmit={handleComposeSubmit}
+                        userInfo={{
+                            name: auth.user.name,
+                            division: auth.user.division,
+                            role: auth.user.role,
+                        }}
+                        options={options}
+                        letterNumberPreview={nextLetterNumber}
+                    />
+                </div>
             }
         >
             <Head title="Kelola Surat" />
@@ -297,6 +311,11 @@ export default function KelolaSuratIndex() {
                 targets={dispositionTargets}
                 dispositionForm={dispositionForm}
                 onSubmit={handleDispositionSubmit}
+            />
+
+            <TemplateDialog
+                open={templateOpen}
+                onOpenChange={setTemplateOpen}
             />
         </SuperAdminLayout>
     );

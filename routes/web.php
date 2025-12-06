@@ -142,7 +142,20 @@ Route::middleware('auth')->group(function () {
         Route::post('/kelola-surat/{surat}/unarchive', [LetterController::class, 'unarchive'])->name('letters.unarchive');
         Route::post('/kelola-surat/disposition/bulk', [LetterController::class, 'bulkDisposition'])->name('letters.disposition.bulk');
         Route::post('/kelola-surat/disposition/reject', [LetterController::class, 'rejectDisposition'])->name('letters.disposition.reject');
+        Route::post('/kelola-surat/disposition/final', [LetterController::class, 'finalDisposition'])->name('letters.disposition.final');
         Route::post('/kelola-surat/{surat}/disposition', [LetterController::class, 'disposition'])->name('letters.disposition');
+        Route::get('/kelola-surat/{surat}/export-word', [LetterController::class, 'exportDispositionWord'])->name('letters.export-word');
+        Route::get('/kelola-surat/{surat}/export-final', [LetterController::class, 'exportFinalDisposition'])->name('letters.export-final');
+        
+        // Letter Template Routes
+        Route::get('/kelola-surat/templates/list', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'list'])->name('letters.templates.list');
+        Route::get('/kelola-surat/templates/sample', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'downloadSample'])->name('letters.templates.sample');
+        Route::get('/kelola-surat/templates', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'index'])->name('letters.templates.index');
+        Route::post('/kelola-surat/templates', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'store'])->name('letters.templates.store');
+        Route::post('/kelola-surat/templates/{template}/toggle', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'toggleActive'])->name('letters.templates.toggle');
+        Route::delete('/kelola-surat/templates/{template}', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'destroy'])->name('letters.templates.destroy');
+        Route::get('/kelola-surat/templates/{template}/download', [\App\Http\Controllers\SuperAdmin\LetterTemplateController::class, 'download'])->name('letters.templates.download');
+        
         Route::get('/kelola-staff', [StaffTerminationController::class, 'index'])->name('staff.index');
         Route::post('/kelola-staff', [StaffTerminationController::class, 'store'])->name('staff.store');
         Route::patch('/kelola-staff/{termination}', [StaffTerminationController::class, 'update'])->name('staff.update');

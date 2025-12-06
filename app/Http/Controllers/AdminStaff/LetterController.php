@@ -196,6 +196,9 @@ class LetterController extends Controller
 
         abort_if($surat->status_persetujuan === 'Diarsipkan', 403);
 
+    // Block replies on finalized letters
+    abort_if($surat->is_finalized, 403, 'Surat ini bersifat final dan tidak dapat dibalas.');
+
         $validated = $request->validate([
             'reply_note' => ['required', 'string', 'max:2000'],
         ]);
@@ -342,7 +345,8 @@ class LetterController extends Controller
                 'subject' => $surat->perihal ?? '-',
                 'category' => $surat->kategori ?? '-',
                 'date' => optional($surat->tanggal_surat)->format('d M Y') ?? '-',
-                'status' => $surat->status_persetujuan ?? '-',
+                'status' => $surat->is_finalized ? 'Disposisi Final' : ($surat->status_persetujuan ?? '-'),
+                'isFinalized' => (bool) $surat->is_finalized,
                 'priority' => $surat->prioritas ?? 'medium',
                 'hasAttachment' => (bool) $surat->lampiran_path,
                 'attachmentUrl' => $surat->attachmentUrl(),
@@ -361,6 +365,10 @@ class LetterController extends Controller
                 'approvalDate' => optional($surat->tanggal_persetujuan)->format('d M Y H:i'),
                 'createdAt' => optional($surat->created_at)->format('d M Y H:i'),
                 'updatedAt' => optional($surat->updated_at)->format('d M Y H:i'),
+                'dispositionDocumentUrl' => $surat->disposition_document_path
+                    ? \Illuminate\Support\Facades\Storage::url($surat->disposition_document_path)
+                    : null,
+                'dispositionDocumentName' => $surat->disposition_document_name,
             ])
             ->values()
             ->toArray();
@@ -407,6 +415,11 @@ class LetterController extends Controller
 
     private function canReply(Surat $surat): bool
     {
+        // Cannot reply if letter is finalized
+        if ($surat->is_finalized) {
+            return false;
+        }
+
         return $surat->current_recipient === 'division'
             && $surat->status_persetujuan !== 'Diarsipkan';
     }
