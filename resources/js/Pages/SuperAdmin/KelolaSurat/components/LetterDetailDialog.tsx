@@ -8,7 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
-import { FileText, User, Calendar, Tag, AlertCircle, Clock, ArrowRight } from 'lucide-react';
+import { FileText, User, Calendar, Tag, AlertCircle, Clock, ArrowRight, Eye, Download } from 'lucide-react';
 import { LetterRecord } from './LettersTable';
 import { PriorityBadge } from './PriorityBadge';
 import { Separator } from '@/Components/ui/separator';
@@ -113,11 +113,25 @@ export default function LetterDetailDialog({
                                     <p className="text-xs text-slate-500">{letter.attachment.size}</p>
                                 </div>
                                 {letter.attachment.url && (
-                                    <Button variant="outline" size="sm" asChild className="h-8">
-                                        <a href={letter.attachment.url} target="_blank" rel="noopener noreferrer">
-                                            Download
-                                        </a>
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm" asChild className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                            <a href={letter.attachment.url} target="_blank" rel="noopener noreferrer">
+                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                Lihat
+                                            </a>
+                                        </Button>
+                                        <Button variant="outline" size="sm" asChild className="h-8 px-2">
+                                            <a
+                                                href={letter.attachment.url}
+                                                download
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <Download className="mr-1.5 h-3.5 w-3.5" />
+                                                Download
+                                            </a>
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </div>
