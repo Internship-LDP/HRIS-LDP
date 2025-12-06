@@ -646,7 +646,7 @@ export default function AdminStaffLetters() {
                                                                     download
                                                                 >
                                                                     <Download className="mr-2 h-4 w-4" />
-                                                                    Unduh Template
+                                                                    Unduh
                                                                 </a>
                                                             </Button>
                                                         </div>

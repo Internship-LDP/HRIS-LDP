@@ -70,7 +70,7 @@ class DispositionWordService
             '{{nomor_surat}}' => $surat->nomor_surat ?? '-',
             '{{tanggal}}' => optional($surat->tanggal_surat)->format('d F Y') ?? '-',
             '{{pengirim}}' => $surat->user?->name ?? ($surat->alamat_pengirim ?? '-'),
-            '{{divisi_pengirim}}' => $surat->user?->division ?? ($surat->departemen?->nama_departemen ?? '-'),
+            '{{divisi_pengirim}}' => $surat->user?->division ?? ($surat->departemen?->nama ?? '-'),
             '{{penerima}}' => $surat->target_division ?? $surat->penerima ?? '-',
             '{{perihal}}' => $surat->perihal ?? '-',
             '{{isi_surat}}' => $surat->isi_surat ?? '-',
@@ -192,7 +192,7 @@ class DispositionWordService
             ['bold' => true]
         );
         if ($surat->departemen) {
-            $section->addText('Divisi: ' . $surat->departemen->nama_departemen);
+            $section->addText('Divisi: ' . $surat->departemen->nama);
         }
         $section->addTextBreak(2);
 
