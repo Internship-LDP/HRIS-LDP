@@ -1,3 +1,4 @@
+import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -42,6 +43,27 @@ export default function PendingDispositionPanel({
     onSelectAll,
     onClearSelection,
 }: PendingDispositionPanelProps) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(pendingDisposition.length / itemsPerPage);
+
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        } else if (totalPages > 0 && currentPage === 0) {
+            setCurrentPage(1);
+        }
+    }, [pendingDisposition.length, totalPages, currentPage]);
+
+    const paginatedItems = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return pendingDisposition.slice(start, start + itemsPerPage);
+    }, [pendingDisposition, currentPage]);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
     return (
         <Card className="overflow-hidden border border-slate-100 bg-white">
             <div className="flex flex-col gap-3 md:gap-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/60 to-transparent px-3 md:px-6 py-4 md:py-6">
@@ -125,7 +147,7 @@ export default function PendingDispositionPanel({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pendingDisposition.map((letter) => {
+                                {paginatedItems.map((letter) => {
                                     const isSelected = selectedIds.includes(letter.id);
                                     const latestReply =
                                         letter.replyHistory && letter.replyHistory.length > 0
@@ -237,6 +259,48 @@ export default function PendingDispositionPanel({
                             </TableBody>
                         </Table>
                     </div>
+
+                    {totalPages > 1 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-3 md:px-6 py-4 border-t border-slate-100">
+                            <p className="text-xs text-slate-500">
+                                Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, pendingDisposition.length)} dari {pendingDisposition.length} surat
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <span className="sr-only">Sebelumnya</span>
+                                    <span aria-hidden="true">‹</span>
+                                </Button>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <Button
+                                        key={page}
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        className={cn("h-8 w-8 p-0", currentPage === page ? "bg-blue-600 hover:bg-blue-700" : "")}
+                                        onClick={() => handlePageChange(page)}
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    <span className="sr-only">Selanjutnya</span>
+                                    <span aria-hidden="true">›</span>
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
                     <Separator />
                     <div className="flex flex-wrap items-center justify-between gap-3 px-3 md:px-6 py-3 md:py-4">
                         <p className="text-xs md:text-sm text-slate-500">
