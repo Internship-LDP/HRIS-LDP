@@ -61,7 +61,7 @@ export function ApplicantProfileView({
     applicant.has_interview_schedule ||
     applicant.status === 'Interview' ||
     Boolean(applicant.interview_date || applicant.interview_time || applicant.interview_mode);
-  const scheduleButtonLabel = hasInterviewSchedule ? 'Edit Jadwal Interview' : 'Jadwalkan Interview';
+  const scheduleButtonLabel = hasInterviewSchedule ? 'Edit Jadwal' : 'Jadwalkan Interview';
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -171,7 +171,7 @@ export function ApplicantProfileView({
       </Card>
 
       {/* Modern Action Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {applicant.cv_url && (
           <Button
             variant="outline"
@@ -210,8 +210,7 @@ export function ApplicantProfileView({
             className="bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
             disabled={isUpdatingStatus}
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Terima Pelamar
+            Terima
           </Button>
         )}
         {onReject && !isHired && !isRejected && (
@@ -221,8 +220,7 @@ export function ApplicantProfileView({
             className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 shadow-sm hover:shadow-md transition-all"
             disabled={isUpdatingStatus}
           >
-            <XCircle className="w-4 h-4 mr-2" />
-            Tolak Pelamar
+            Tolak
           </Button>
         )}
       </div>
