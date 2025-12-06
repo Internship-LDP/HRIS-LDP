@@ -3,6 +3,7 @@ import ComposeLetterDialog from '@/Pages/SuperAdmin/KelolaSurat/components/Compo
 import LetterDetailDialog from '@/Pages/SuperAdmin/KelolaSurat/components/LetterDetailDialog';
 import { LetterRecord } from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTable';
 import StatsCards from '@/Pages/SuperAdmin/KelolaSurat/components/StatsCards';
+import PriorityStatsCards from '@/Pages/SuperAdmin/KelolaSurat/components/PriorityStatsCards';
 import PendingDispositionPanel from '@/Pages/SuperAdmin/KelolaSurat/components/PendingDispositionPanel';
 import LettersTabsPanel from '@/Pages/SuperAdmin/KelolaSurat/components/LettersTabsPanel';
 import DispositionDialog from '@/Pages/SuperAdmin/KelolaSurat/components/DispositionDialog';
@@ -61,13 +62,13 @@ export default function KelolaSuratIndex() {
         /human\s+(capital|resources)/i.test(auth.user.division);
     const breadcrumbs = isHumanCapitalAdmin
         ? [
-              { label: 'Admin', href: route('admin-staff.dashboard') },
-              { label: 'Kelola Surat' },
-          ]
+            { label: 'Admin', href: route('admin-staff.dashboard') },
+            { label: 'Kelola Surat' },
+        ]
         : [
-              { label: 'Super Admin', href: route('super-admin.dashboard') },
-              { label: 'Kelola Surat' },
-          ];
+            { label: 'Super Admin', href: route('super-admin.dashboard') },
+            { label: 'Kelola Surat' },
+        ];
 
     const appliedFilters = {
         search: filters?.search ?? '',
@@ -201,6 +202,8 @@ export default function KelolaSuratIndex() {
         selectedPendingCount,
         headerCheckboxState,
         isAllPendingSelected,
+        priorityFilter,
+        setPriorityFilter,
         form,
         handleComposeSubmit,
         handleDispositionSubmit,
@@ -244,12 +247,19 @@ export default function KelolaSuratIndex() {
 
             <StatsCards stats={liveData.stats} />
 
+            <PriorityStatsCards
+                pendingDisposition={liveData.pending}
+                activePriority={priorityFilter}
+                onPriorityClick={setPriorityFilter}
+            />
+
             <PendingDispositionPanel
                 pendingDisposition={liveData.pending}
                 selectedIds={selectedDispositionIds}
                 selectedCount={selectedPendingCount}
                 headerCheckboxState={headerCheckboxState}
                 isAllSelected={isAllPendingSelected}
+                priorityFilter={priorityFilter}
                 onHeaderCheckboxChange={handleHeaderCheckboxChange}
                 onToggleSelect={handlePendingSelect}
                 onOpenDialog={openDispositionDialog}

@@ -24,6 +24,7 @@ interface PendingDispositionPanelProps {
     selectedCount: number;
     headerCheckboxState: boolean | 'indeterminate';
     isAllSelected: boolean;
+    priorityFilter: string | null;
     onHeaderCheckboxChange: (checked: boolean) => void;
     onToggleSelect: (id: number, checked: boolean) => void;
     onOpenDialog: (letters?: LetterRecord | LetterRecord[]) => void;
@@ -37,15 +38,21 @@ export default function PendingDispositionPanel({
     selectedCount,
     headerCheckboxState,
     isAllSelected,
+    priorityFilter,
     onHeaderCheckboxChange,
     onToggleSelect,
     onOpenDialog,
     onSelectAll,
     onClearSelection,
 }: PendingDispositionPanelProps) {
+    // Filter by priority if set
+    const filteredByPriority = useMemo(() => {
+        if (!priorityFilter) return pendingDisposition;
+        return pendingDisposition.filter(letter => letter.priority === priorityFilter);
+    }, [pendingDisposition, priorityFilter]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const totalPages = Math.ceil(pendingDisposition.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredByPriority.length / itemsPerPage);
 
     useEffect(() => {
         if (currentPage > totalPages && totalPages > 0) {
@@ -57,8 +64,8 @@ export default function PendingDispositionPanel({
 
     const paginatedItems = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return pendingDisposition.slice(start, start + itemsPerPage);
-    }, [pendingDisposition, currentPage]);
+        return filteredByPriority.slice(start, start + itemsPerPage);
+    }, [filteredByPriority, currentPage]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);

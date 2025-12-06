@@ -27,6 +27,7 @@ export function useKelolaSuratState({
     const [activeTab, setActiveTab] = useState<'inbox' | 'outbox' | 'archive' | 'history'>(appliedFilters.tab);
     const [searchQuery, setSearchQuery] = useState(appliedFilters.search ?? '');
     const [categoryFilter, setCategoryFilter] = useState(appliedFilters.category || 'all');
+    const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
     const [isComposeOpen, setComposeOpen] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState<LetterRecord | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
@@ -93,7 +94,8 @@ export function useKelolaSuratState({
                     (letter.senderName ?? '').toLowerCase().includes(searchLower) ||
                     (letter.senderDivision ?? '').toLowerCase().includes(searchLower);
                 const matchCategory = categoryFilter === 'all' || letter.category === categoryFilter;
-                return matchSearch && matchCategory;
+                const matchPriority = !priorityFilter || letter.priority === priorityFilter;
+                return matchSearch && matchCategory && matchPriority;
             });
         };
 
@@ -103,7 +105,7 @@ export function useKelolaSuratState({
             archive: applyFilter(letters.archive),
             history: applyFilter(historyLetters),
         };
-    }, [letters, searchQuery, categoryFilter, historyLetters]);
+    }, [letters, searchQuery, categoryFilter, priorityFilter, historyLetters]);
 
     useEffect(() => {
         setSelectedDispositionIds((prev) =>
@@ -290,6 +292,8 @@ export function useKelolaSuratState({
         setSearchQuery,
         categoryFilter,
         setCategoryFilter,
+        priorityFilter,
+        setPriorityFilter,
         activeTab,
         setActiveTab,
         filteredLetters,
