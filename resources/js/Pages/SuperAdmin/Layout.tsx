@@ -40,10 +40,10 @@ export default function SuperAdminLayout({
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    
+
     // State untuk notifikasi real-time
     const [liveNotifications, setLiveNotifications] = useState<Record<string, number>>(sidebarNotifications);
-    
+
     // Hitung total notifikasi
     const totalNotifications = Object.values(liveNotifications).reduce((sum, count) => sum + count, 0);
 
@@ -144,7 +144,7 @@ export default function SuperAdminLayout({
             recruitmentChannel.stopListening('ApplicationUpdated');
             staffChannel.stopListening('TerminationUpdated');
             complaintsChannel.stopListening('ComplaintUpdated');
-            
+
             window.Echo?.leave('super-admin.letters');
             window.Echo?.leave('super-admin.recruitment');
             window.Echo?.leave('super-admin.staff');
@@ -226,8 +226,7 @@ export default function SuperAdminLayout({
                                 </span>
                             </div>
                             <div className="text-left hidden lg:block">
-                                <p className="text-sm text-gray-900">{user?.name || 'Super Admin'}</p>
-                                <p className="text-xs text-gray-600">{user?.role || 'Administrator'}</p>
+                                <p className="text-sm font-medium text-gray-900">{user?.name || 'Super Admin'}</p>
                             </div>
                         </div>
                     </div>
