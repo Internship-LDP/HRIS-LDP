@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -19,6 +20,9 @@ interface DispositionHistoryTabProps {
 }
 
 export default function DispositionHistoryTab({ letters, onSelect }: DispositionHistoryTabProps) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const withReplyCount = letters.filter((letter) => (letter.replyHistory?.length ?? 0) > 0).length;
     const archivedCount = letters.filter((letter) =>
         (letter.status ?? '').toLowerCase().includes('arsip')
@@ -34,6 +38,16 @@ export default function DispositionHistoryTab({ letters, onSelect }: Disposition
             </Card>
         );
     }
+
+    const totalPages = Math.ceil(letters.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentLetters = letters.slice(startIndex, startIndex + itemsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
 
     return (
         <Card className="border border-slate-100 bg-white">
@@ -69,6 +83,7 @@ export default function DispositionHistoryTab({ letters, onSelect }: Disposition
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[50px]">No</TableHead>
                             <TableHead>Nomor Surat</TableHead>
                             <TableHead>Pengirim</TableHead>
                             <TableHead>Subjek</TableHead>
@@ -81,11 +96,14 @@ export default function DispositionHistoryTab({ letters, onSelect }: Disposition
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {letters.map((letter) => {
+                        {currentLetters.map((letter, index) => {
                             const { latestEvent, steps } = resolveLatestEvent(letter);
 
                             return (
                                 <TableRow key={letter.id}>
+                                    <TableCell className="font-medium text-slate-900">
+                                        {startIndex + index + 1}
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             {letter.attachment && <FileText className="h-4 w-4 text-blue-500" />}
@@ -154,6 +172,45 @@ export default function DispositionHistoryTab({ letters, onSelect }: Disposition
                     </TableBody>
                 </Table>
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100">
+                    <p className="text-sm text-slate-500">
+                        Menampilkan {startIndex + 1}-{Math.min(startIndex + itemsPerPage, letters.length)} dari {letters.length} data
+                    </p>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            Sebelumnya
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    className="w-8 h-8 p-0"
+                                    onClick={() => handlePageChange(page)}
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Selanjutnya
+                        </Button>
+                    </div>
+                </div>
+            )}
         </Card>
     );
 }
