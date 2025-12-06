@@ -12,6 +12,16 @@ interface InterviewsTabProps {
 
 export default function InterviewsTab({ interviews, onViewDetails }: InterviewsTabProps) {
     const [selectedInterview, setSelectedInterview] = useState<InterviewSchedule | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    const totalPages = Math.ceil(interviews.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedInterviews = interviews.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const handleViewDetail = (interview: InterviewSchedule) => {
         if (onViewDetails && interview.application_id) {
@@ -49,7 +59,7 @@ export default function InterviewsTab({ interviews, onViewDetails }: InterviewsT
                 </p>
             ) : (
                 <div className="grid gap-4">
-                    {interviews.map((interview) => (
+                    {paginatedInterviews.map((interview) => (
                         <div
                             key={`${interview.candidate}-${interview.position}-${interview.time}`}
                             className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
@@ -94,6 +104,50 @@ export default function InterviewsTab({ interviews, onViewDetails }: InterviewsT
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t pt-4">
+                    <div className="text-xs text-slate-500">
+                        Menampilkan {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, interviews.length)} dari {interviews.length} data
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0"
+                        >
+                            <span className="sr-only">Previous</span>
+                            <span aria-hidden="true">«</span>
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => handlePageChange(page)}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0"
+                        >
+                            <span className="sr-only">Next</span>
+                            <span aria-hidden="true">»</span>
+                        </Button>
+                    </div>
                 </div>
             )}
 
