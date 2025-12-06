@@ -7,7 +7,18 @@ import {
     DialogFooter,
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import { Calendar, Clock, Video, FileText } from 'lucide-react';
+import {
+    Calendar,
+    Clock,
+    Video,
+    FileText,
+    MapPin,
+    User,
+    Link as LinkIcon,
+    ExternalLink
+} from 'lucide-react';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { cn } from '@/Components/ui/utils';
 
 interface InterviewData {
     date: string;
@@ -32,102 +43,123 @@ export default function InterviewScheduleDialog({
     application,
     onClose,
 }: InterviewScheduleDialogProps) {
+    const isOnline = application?.interview?.mode?.toLowerCase().includes('online') ||
+        application?.interview?.mode?.toLowerCase().includes('google meet') ||
+        application?.interview?.mode?.toLowerCase().includes('zoom');
+
     return (
         <Dialog open={!!application} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                    <DialogTitle>Jadwal Interview</DialogTitle>
-                    <DialogDescription>
-                        Detail jadwal interview untuk posisi {application?.position}.
+            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden gap-0">
+                <DialogHeader className="px-5 py-4 border-b">
+                    <DialogTitle className="text-lg">Jadwal Interview</DialogTitle>
+                    <DialogDescription className="text-sm">
+                        Detail jadwal dan informasi interview Anda.
                     </DialogDescription>
                 </DialogHeader>
+
                 {application?.interview && (
-                    <div className="space-y-4 rounded-lg bg-blue-50 p-6">
-                        {/* Posisi */}
-                        <div>
-                            <p className="text-xs text-slate-500">Posisi</p>
-                            <p className="text-base font-semibold text-blue-900">
-                                {application.position}
-                            </p>
-                        </div>
+                    <ScrollArea className="max-h-[70vh]">
+                        <div className="px-5 py-5 space-y-6">
 
-                        {/* Tanggal & Waktu */}
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="text-xs text-slate-500">Tanggal</p>
-                                <div className="mt-1 flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-blue-900" />
-                                    <span className="text-slate-800">
-                                        {application.interview.date}
-                                    </span>
+                            {/* Position & Interviewer */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 bg-slate-50 rounded-lg border">
+                                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">Posisi</p>
+                                    <p className="text-sm font-semibold text-slate-900 line-clamp-2">{application.position}</p>
+                                </div>
+                                <div className="p-3 bg-slate-50 rounded-lg border">
+                                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mb-1">Pewawancara</p>
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-3.5 w-3.5 text-slate-400" />
+                                        <p className="text-sm font-semibold text-slate-900 line-clamp-1">{application.interview.interviewer}</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <p className="text-xs text-slate-500">Waktu</p>
-                                <div className="mt-1 flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-blue-900" />
-                                    <span className="text-slate-800">
-                                        {application.interview.time}
-                                    </span>
+                            {/* Time & Date */}
+                            <div className="rounded-lg border bg-blue-50/30 p-4">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center gap-2 text-blue-600">
+                                            <Calendar className="h-4 w-4" />
+                                            <span className="text-xs font-semibold uppercase tracking-wide">Tanggal</span>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-900 pl-6">
+                                            {application.interview.date}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center gap-2 text-blue-600">
+                                            <Clock className="h-4 w-4" />
+                                            <span className="text-xs font-semibold uppercase tracking-wide">Waktu</span>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-900 pl-6">
+                                            {application.interview.time} WIB
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Metode */}
-                        <div>
-                            <p className="text-xs text-slate-500">Metode</p>
-                            <div className="mt-1 flex items-center gap-2">
-                                <Video className="h-4 w-4 text-blue-900" />
-                                <span className="text-slate-800">{application.interview.mode}</span>
-                            </div>
-                        </div>
-
-                        {/* Pewawancara */}
-                        <div>
-                            <p className="text-xs text-slate-500">Pewawancara</p>
-                            <p className="mt-1 text-slate-800">
-                                {application.interview.interviewer}
-                            </p>
-                        </div>
-
-                        {/* Notes */}
-                        {application.interview.notes && (
-                            <div>
-                                <p className="text-xs text-slate-500">Catatan</p>
-                                <div className="mt-1 flex items-start gap-2">
-                                    <FileText className="h-4 w-4 text-blue-900 mt-0.5" />
-                                    <p className="text-slate-800 whitespace-pre-line">
-                                        {application.interview.notes}
-                                    </p>
+                            {/* Method & Location */}
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <div className={cn(
+                                        "p-2 rounded-md",
+                                        isOnline ? "bg-purple-100 text-purple-600" : "bg-orange-100 text-orange-600"
+                                    )}>
+                                        {isOnline ? <Video className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-slate-900">
+                                            {isOnline ? 'Interview Online' : 'Interview Offline'}
+                                        </p>
+                                        <p className="text-sm text-slate-500 mt-0.5">
+                                            {application.interview.mode}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
 
-                        {/* LINK MEETING + JOIN BUTTON */}
-                        {application.interview.link && (
-                            <div className="pt-2 space-y-2">
-                                <a
-                                    href={application.interview.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block text-center text-sm text-blue-700 underline"
-                                >
-                                    {application.interview.link}
-                                </a>
-
-                                <Button
-                                    className="w-full bg-blue-900 hover:bg-blue-800"
-                                    onClick={() => window.open(application.interview?.link!, '_blank')}
-                                >
-                                    Join Interview
-                                </Button>
+                                {/* Link Button if Online */}
+                                {application.interview.link && (
+                                    <div className="pl-11">
+                                        <Button
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                                            onClick={() => window.open(application.interview?.link!, '_blank')}
+                                        >
+                                            <Video className="h-4 w-4" />
+                                            Join Meeting
+                                            <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                                        </Button>
+                                        <p className="text-xs text-center text-slate-400 mt-2">
+                                            Klik tombol di atas untuk bergabung ke ruang interview
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Notes */}
+                            {application.interview.notes && (
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                                    <div className="flex items-start gap-2.5">
+                                        <FileText className="h-4 w-4 text-slate-400 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Catatan</p>
+                                            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                                                {application.interview.notes}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    </ScrollArea>
                 )}
-                <DialogFooter>
-                    <Button onClick={onClose}>Tutup</Button>
+
+                <DialogFooter className="px-5 py-3 border-t bg-slate-50">
+                    <Button onClick={onClose} variant="outline" size="sm" className="w-full sm:w-auto">
+                        Tutup
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
