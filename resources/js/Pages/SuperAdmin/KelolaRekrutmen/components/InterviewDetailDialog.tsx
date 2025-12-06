@@ -3,8 +3,10 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import { Calendar, Clock, MapPin, User, Link as LinkIcon, FileText } from 'lucide-react';
 import { ApplicantRecord } from '../types';
 
@@ -23,12 +25,12 @@ export default function InterviewDetailDialog({
 
     const getModeBadge = (mode: string) => {
         const styles = {
-            'Online': 'bg-blue-100 text-blue-700 border-blue-200',
-            'Offline': 'bg-green-100 text-green-700 border-green-200',
-            'Hybrid': 'bg-purple-100 text-purple-700 border-purple-200',
+            'Online': 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
+            'Offline': 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
+            'Hybrid': 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100',
         };
         return (
-            <Badge variant="outline" className={styles[mode as keyof typeof styles] || 'bg-slate-100 text-slate-700'}>
+            <Badge variant="outline" className={`font-medium px-2.5 py-0.5 ${styles[mode as keyof typeof styles] || 'bg-slate-50 text-slate-700 border-slate-200'}`}>
                 {mode}
             </Badge>
         );
@@ -36,89 +38,90 @@ export default function InterviewDetailDialog({
 
     return (
         <Dialog open={!!applicant} onOpenChange={() => onClose()}>
-            <DialogContent className="sm:max-w-[450px]">
-                <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-blue-900">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-6 transition-all duration-200">
+                <DialogHeader className="mb-2">
+                    <DialogTitle className="text-xl font-bold tracking-tight text-slate-900">
                         Detail Jadwal Interview
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4 mt-2">
-                    {/* Applicant Info */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-blue-900 mb-2">Informasi Pelamar</h3>
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium text-slate-900">{applicant.name}</p>
-                            <p className="text-xs text-slate-600">{applicant.position}</p>
-                            <p className="text-xs text-slate-500">ID: {applicant.id}</p>
+                <div className="space-y-6">
+                    {/* Applicant Info - Integrated Card */}
+                    <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-100">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Informasi Pelamar</h3>
+                                <p className="text-base font-semibold text-slate-900">{applicant.name}</p>
+                                <p className="text-sm text-slate-600">{applicant.position}</p>
+                            </div>
+                            <Badge variant="secondary" className="bg-white border-slate-200 text-slate-600 shadow-sm">
+                                ID: {String(applicant.id).padStart(3, '0')}
+                            </Badge>
                         </div>
                     </div>
 
-                    {/* Interview Schedule */}
-                    <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-slate-900">Jadwal Interview</h3>
-
-                        {/* Date & Time */}
-                        <div className="flex items-start gap-3">
-                            <div className="bg-slate-100 p-2 rounded-lg">
-                                <Calendar className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs text-slate-500">Tanggal</p>
-                                <p className="text-sm font-medium text-slate-900">{applicant.interview_date || '-'}</p>
-                            </div>
+                    {/* Interview Schedule Details */}
+                    <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-100 space-y-5">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                            <h3 className="text-sm font-semibold text-slate-900">Jadwal & Lokasi</h3>
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <div className="bg-slate-100 p-2 rounded-lg">
-                                <Clock className="h-4 w-4 text-slate-600" />
+                        <div className="grid grid-cols-2 gap-6">
+                            {/* Date */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Tanggal</span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-900 pl-5.5">{applicant.interview_date || '-'}</p>
                             </div>
-                            <div className="flex-1">
-                                <p className="text-xs text-slate-500">Waktu</p>
-                                <p className="text-sm font-medium text-slate-900">
+
+                            {/* Time */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Waktu</span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-900 pl-5.5">
                                     {applicant.interview_time || '-'}
-                                    {applicant.interview_end_time && ` - ${applicant.interview_end_time}`}
+                                    {applicant.interview_end_time ? ` - ${applicant.interview_end_time}` : ''}
                                 </p>
                             </div>
-                        </div>
 
-                        {/* Mode */}
-                        <div className="flex items-start gap-3">
-                            <div className="bg-slate-100 p-2 rounded-lg">
-                                <MapPin className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs text-slate-500">Mode Interview</p>
-                                <div className="mt-1">
+                            {/* Mode */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Mode</span>
+                                </div>
+                                <div className="pl-5.5">
                                     {applicant.interview_mode ? getModeBadge(applicant.interview_mode) : '-'}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Interviewer */}
-                        <div className="flex items-start gap-3">
-                            <div className="bg-slate-100 p-2 rounded-lg">
-                                <User className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs text-slate-500">Pewawancara</p>
-                                <p className="text-sm font-medium text-slate-900">{applicant.interviewer_name || '-'}</p>
-                            </div>
-                        </div>
-
-                        {/* Link/Location */}
-                        {(applicant as any).interview_link && (
-                            <div className="flex items-start gap-3">
-                                <div className="bg-slate-100 p-2 rounded-lg">
-                                    <LinkIcon className="h-4 w-4 text-slate-600" />
+                            {/* Interviewer */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <User className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Pewawancara</span>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-xs text-slate-500">Link/Lokasi</p>
+                                <p className="text-sm font-medium text-slate-900 pl-5.5">{applicant.interviewer_name || '-'}</p>
+                            </div>
+                        </div>
+
+                        {/* Link/Location - Full Width */}
+                        {(applicant as any).interview_link && (
+                            <div className="space-y-1.5 pt-2">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <LinkIcon className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Link / Lokasi Detail</span>
+                                </div>
+                                <div className="pl-5.5">
                                     <a
                                         href={(applicant as any).interview_link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all font-medium transition-colors"
                                     >
                                         {(applicant as any).interview_link}
                                     </a>
@@ -128,27 +131,28 @@ export default function InterviewDetailDialog({
 
                         {/* Notes */}
                         {applicant.interview_notes && (
-                            <div className="flex items-start gap-3">
-                                <div className="bg-slate-100 p-2 rounded-lg">
-                                    <FileText className="h-4 w-4 text-slate-600" />
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium uppercase tracking-wide">Catatan Tambahan</span>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-xs text-slate-500">Catatan</p>
-                                    <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{applicant.interview_notes}</p>
+                                <div className="bg-white border border-slate-200 rounded-lg p-3 mx-1">
+                                    <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{applicant.interview_notes}</p>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="flex justify-end mt-4">
-                    <button
+                <DialogFooter className="mt-8">
+                    <Button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+                        variant="default"
+                        className="bg-slate-900 hover:bg-slate-800 text-white min-w-[100px]"
                     >
                         Tutup
-                    </button>
-                </div>
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
