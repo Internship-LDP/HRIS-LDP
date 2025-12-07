@@ -63,18 +63,16 @@ function CustomSelect({
                     {icon}
                 </div>
                 <span
-                    className={`flex-1 text-left transition-colors ${
-                        value === 'all'
-                            ? 'text-slate-400'
-                            : 'text-slate-700 font-semibold'
-                    }`}
+                    className={`flex-1 text-left transition-colors ${value === 'all'
+                        ? 'text-slate-400'
+                        : 'text-slate-700 font-semibold'
+                        }`}
                 >
                     {displayValue}
                 </span>
                 <ChevronDown
-                    className={`h-4 w-4 md:h-5 md:w-5 text-slate-400 transition-all duration-300 ${
-                        isOpen ? 'rotate-180 text-blue-500' : ''
-                    }`}
+                    className={`h-4 w-4 md:h-5 md:w-5 text-slate-400 transition-all duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''
+                        }`}
                 />
             </button>
 
@@ -87,18 +85,16 @@ function CustomSelect({
                                 onChange('all');
                                 setIsOpen(false);
                             }}
-                            className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-xs md:text-sm transition-all duration-200 ${
-                                value === 'all'
-                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                            }`}
+                            className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-xs md:text-sm transition-all duration-200 ${value === 'all'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                }`}
                         >
                             <Sparkles
-                                className={`h-4 w-4 ${
-                                    value === 'all'
-                                        ? 'text-white'
-                                        : 'text-slate-400'
-                                }`}
+                                className={`h-4 w-4 ${value === 'all'
+                                    ? 'text-white'
+                                    : 'text-slate-400'
+                                    }`}
                             />
                             {placeholder}
                         </button>
@@ -111,18 +107,16 @@ function CustomSelect({
                                     onChange(option);
                                     setIsOpen(false);
                                 }}
-                                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-xs md:text-sm font-medium transition-all duration-200 ${
-                                    value === option
-                                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md'
-                                        : 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:translate-x-0.5'
-                                }`}
+                                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-xs md:text-sm font-medium transition-all duration-200 ${value === option
+                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md'
+                                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:translate-x-0.5'
+                                    }`}
                             >
                                 <div
-                                    className={`h-1.5 w-1.5 rounded-full ${
-                                        value === option
-                                            ? 'bg-white'
-                                            : 'bg-blue-400'
-                                    }`}
+                                    className={`h-1.5 w-1.5 rounded-full ${value === option
+                                        ? 'bg-white'
+                                        : 'bg-blue-400'
+                                        }`}
                                 />
                                 {option}
                             </button>

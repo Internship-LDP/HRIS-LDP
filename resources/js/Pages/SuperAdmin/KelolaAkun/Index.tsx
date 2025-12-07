@@ -175,27 +175,28 @@ export default function Index(props: IndexPageProps) {
                 { label: 'Super Admin', href: route('super-admin.dashboard') },
                 { label: 'Kelola Akun' },
             ]}
-            actions={
-                <Link
-                    href={route('super-admin.accounts.create')}
-                    className="inline-flex h-10 md:h-11 items-center justify-center rounded-lg bg-blue-900 px-4 md:px-5 text-xs md:text-sm font-semibold text-white transition hover:bg-blue-800 w-full md:w-auto"
-                >
-                    Tambah Akun
-                </Link>
-            }
+
         >
             <Head title="Kelola Akun" />
 
             <AccountStats stats={stats} />
 
             <div className="rounded-xl md:rounded-2xl border bg-white p-3 md:p-6 shadow-sm">
-                <div className="mb-3 md:mb-6">
-                    <h3 className="text-sm md:text-xl font-semibold text-blue-900">
-                        Daftar Akun Pengguna
-                    </h3>
-                    <p className="text-[10px] md:text-sm text-slate-500">
-                        Pantau status akun, role, dan divisi pengguna sistem
-                    </p>
+                <div className="mb-3 md:mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h3 className="text-sm md:text-xl font-semibold text-blue-900">
+                            Daftar Akun Pengguna
+                        </h3>
+                        <p className="text-[10px] md:text-sm text-slate-500">
+                            Pantau status akun, role, dan divisi pengguna sistem
+                        </p>
+                    </div>
+                    <Link
+                        href={route('super-admin.accounts.create')}
+                        className="inline-flex h-9 md:h-10 items-center justify-center rounded-lg bg-blue-900 px-4 text-xs md:text-sm font-semibold text-white transition hover:bg-blue-800"
+                    >
+                        Tambah Akun
+                    </Link>
                 </div>
                 <div className="space-y-3 md:space-y-6">
                     <AccountFilters
