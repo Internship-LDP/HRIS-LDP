@@ -8,6 +8,7 @@ use App\Models\StaffTermination;
 use App\Models\Surat;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,10 +36,20 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $profilePhotoUrl = null;
+
+        // Get applicant profile photo if user is a pelamar
+        if ($user && $user->role === User::ROLES['pelamar']) {
+            $profile = $user->applicantProfile;
+            if ($profile && $profile->profile_photo_path) {
+                $profilePhotoUrl = $this->photoDataUri($profile->profile_photo_path);
+            }
+        }
 
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $user,
+                'profilePhotoUrl' => $profilePhotoUrl,
             ],
             'flash' => [
                 'success' => session('success'),
@@ -122,5 +133,17 @@ class HandleInertiaRequests extends Middleware
                     ->orWhere('user_id', $user->id);
             })
             ->count();
+    }
+
+    private function photoDataUri(?string $path): ?string
+    {
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $contents = Storage::disk('public')->get($path);
+        $mime = Storage::disk('public')->mimeType($path) ?? 'image/jpeg';
+
+        return 'data:' . $mime . ';base64,' . base64_encode($contents);
     }
 }

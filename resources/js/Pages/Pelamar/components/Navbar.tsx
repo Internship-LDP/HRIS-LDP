@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
 export default function Navbar({ }: NavbarProps) {
     const { props: { auth } } = usePage<PageProps>();
     const user = auth?.user;
+    const profilePhotoUrl = auth?.profilePhotoUrl;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -148,8 +149,16 @@ export default function Navbar({ }: NavbarProps) {
                                     variant="ghost"
                                     className="flex items-center gap-2 px-2 md:px-3 py-2 h-auto"
                                 >
-                                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                                        <User className="h-4 w-4 text-white" />
+                                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center overflow-hidden">
+                                        {profilePhotoUrl ? (
+                                            <img
+                                                src={profilePhotoUrl}
+                                                alt="Foto profil"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <User className="h-4 w-4 text-white" />
+                                        )}
                                     </div>
                                     <div className="hidden md:block text-left">
                                         <p className="text-xs font-semibold text-slate-900">{user?.name}</p>

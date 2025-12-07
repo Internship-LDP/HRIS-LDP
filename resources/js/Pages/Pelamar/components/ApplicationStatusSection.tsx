@@ -86,31 +86,31 @@ export default function ApplicationStatusSection({
             </div>
 
             <Tabs defaultValue="all" className="w-full">
-                <TabsList className="bg-white border p-1 mb-6 rounded-lg h-auto flex-wrap">
+                <TabsList className="h-auto p-1 bg-slate-100 rounded-lg inline-flex mb-6">
                     <TabsTrigger
                         value="all"
-                        className="px-6 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                        className="group rounded-md px-6 py-2.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm data-[state=inactive]:text-slate-600 hover:text-blue-700"
                     >
                         Semua Lamaran
-                        <Badge className="ml-2 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                        <Badge variant="secondary" className="ml-2 rounded-md bg-slate-200 text-slate-700 group-data-[state=active]:bg-blue-50 group-data-[state=active]:text-blue-700">
                             {totalApplications}
                         </Badge>
                     </TabsTrigger>
                     <TabsTrigger
                         value="active"
-                        className="px-6 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                        className="group rounded-md px-6 py-2.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm data-[state=inactive]:text-slate-600 hover:text-blue-700"
                     >
                         Sedang Proses
-                        <Badge className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-200">
+                        <Badge variant="secondary" className="ml-2 rounded-md bg-blue-100 text-blue-700 group-data-[state=active]:bg-blue-50 group-data-[state=active]:text-blue-700">
                             {inProgress}
                         </Badge>
                     </TabsTrigger>
                     <TabsTrigger
                         value="completed"
-                        className="px-6 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                        className="group rounded-md px-6 py-2.5 text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm data-[state=inactive]:text-slate-600 hover:text-blue-700"
                     >
                         Selesai/Arsip
-                        <Badge className="ml-2 bg-gray-100 text-gray-600 hover:bg-gray-200">
+                        <Badge variant="secondary" className="ml-2 rounded-md bg-slate-200 text-slate-600 group-data-[state=active]:bg-blue-50 group-data-[state=active]:text-blue-700">
                             {rejected + hired}
                         </Badge>
                     </TabsTrigger>
@@ -223,15 +223,14 @@ export default function ApplicationStatusSection({
                                                                 className="relative z-10 flex flex-col items-center text-center"
                                                             >
                                                                 <div
-                                                                    className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
-                                                                        isCompleted
-                                                                            ? 'border-green-500 bg-green-500 text-white'
-                                                                            : isCurrent
-                                                                              ? 'border-blue-600 bg-white text-blue-600 ring-4 ring-blue-50'
-                                                                              : isRejected
+                                                                    className={`mb-2 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${isCompleted
+                                                                        ? 'border-green-500 bg-green-500 text-white'
+                                                                        : isCurrent
+                                                                            ? 'border-blue-600 bg-white text-blue-600 ring-4 ring-blue-50'
+                                                                            : isRejected
                                                                                 ? 'border-red-500 bg-red-500 text-white'
                                                                                 : 'border-gray-200 bg-white text-gray-300'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     {isCompleted ? (
                                                                         <CheckCircle2 className="h-5 w-5" />
@@ -244,15 +243,14 @@ export default function ApplicationStatusSection({
                                                                     )}
                                                                 </div>
                                                                 <p
-                                                                    className={`mb-0.5 text-xs font-medium ${
-                                                                        isCurrent
-                                                                            ? 'text-blue-700'
-                                                                            : isCompleted
-                                                                              ? 'text-green-700'
-                                                                              : isRejected
+                                                                    className={`mb-0.5 text-xs font-medium ${isCurrent
+                                                                        ? 'text-blue-700'
+                                                                        : isCompleted
+                                                                            ? 'text-green-700'
+                                                                            : isRejected
                                                                                 ? 'text-red-700'
                                                                                 : 'text-gray-400'
-                                                                    }`}
+                                                                        }`}
                                                                 >
                                                                     {stage.name}
                                                                 </p>

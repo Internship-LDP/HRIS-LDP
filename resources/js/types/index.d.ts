@@ -18,6 +18,7 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        profilePhotoUrl?: string | null;
     };
     sidebarNotifications?: Record<string, number>;
 };
