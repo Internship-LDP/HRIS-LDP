@@ -180,6 +180,18 @@ function InfoCard({ label, value }: { label: string; value: string }) {
     );
 }
 
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/Components/ui/pagination';
+
+// ... (other imports)
+
 function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 8;
@@ -197,7 +209,25 @@ function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
     const paginatedStaff = staff.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) return;
         setCurrentPage(page);
+    };
+
+    // Helper to generate page numbers with ellipsis
+    const getPageNumbers = () => {
+        const pages = [];
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 3) {
+                pages.push(1, 2, 3, 4, 'ellipsis', totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+            }
+        }
+        return pages;
     };
 
     return (
@@ -237,45 +267,46 @@ function DivisionStaffTable({ staff }: { staff: StaffMember[] }) {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t px-4 py-3">
-                    <div className="text-xs text-slate-500">
-                        Menampilkan {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, staff.length)} dari {staff.length} staff
+                <div className="flex flex-col-reverse gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-xs text-slate-500 text-center sm:text-left">
+                        Menampilkan <span className="font-medium">{startIndex + 1}</span> - <span className="font-medium">{Math.min(startIndex + ITEMS_PER_PAGE, staff.length)}</span> dari <span className="font-medium">{staff.length}</span> staff
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className="h-8 w-8 p-0"
-                        >
-                            <span className="sr-only">Previous</span>
-                            <span aria-hidden="true">«</span>
-                        </Button>
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                <Button
-                                    key={page}
-                                    variant={currentPage === page ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => handlePageChange(page)}
-                                    className="h-8 w-8 p-0"
-                                >
-                                    {page}
-                                </Button>
+
+                    <Pagination className="w-auto mx-0 justify-center sm:justify-end">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                                    className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+                                />
+                            </PaginationItem>
+
+                            {getPageNumbers().map((page, idx) => (
+                                <PaginationItem key={idx}>
+                                    {page === 'ellipsis' ? (
+                                        <PaginationEllipsis />
+                                    ) : (
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={currentPage === page}
+                                            onClick={(e) => { e.preventDefault(); typeof page === 'number' && handlePageChange(page); }}
+                                        >
+                                            {page}
+                                        </PaginationLink>
+                                    )}
+                                </PaginationItem>
                             ))}
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages}
-                            className="h-8 w-8 p-0"
-                        >
-                            <span className="sr-only">Next</span>
-                            <span aria-hidden="true">»</span>
-                        </Button>
-                    </div>
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                                    className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             )}
         </div>
