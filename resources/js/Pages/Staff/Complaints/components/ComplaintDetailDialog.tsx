@@ -7,6 +7,8 @@ import {
 } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import { Separator } from '@/Components/ui/separator';
 import type { ComplaintRecord } from '../types';
 
 interface ComplaintDetailDialogProps {
@@ -18,123 +20,129 @@ export default function ComplaintDetailDialog({
     complaint,
     onOpenChange,
 }: ComplaintDetailDialogProps) {
+    if (!complaint) return null;
+
     return (
-        <Dialog open={Boolean(complaint)} onOpenChange={(open) => onOpenChange(open)}>
-            <DialogContent className="max-h-[85vh] max-w-3xl overflow-hidden border-0 bg-white p-0">
-                <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
-                    <DialogTitle>Detail Pengaduan</DialogTitle>
-                    <DialogDescription>
-                        Lihat status penanganan dan catatan penyelesaian pengaduan Anda.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="max-h-[calc(85vh-4.5rem)] overflow-y-auto">
-                    {!complaint ? (
-                        <div className="px-6 py-12 text-center text-sm text-slate-500">
-                            Pilih pengaduan untuk melihat detail lengkap.
+        <Dialog open={Boolean(complaint)} onOpenChange={onOpenChange}>
+            <DialogContent className="flex h-[85vh] max-w-3xl flex-col gap-0 border-0 bg-white p-0 overflow-hidden">
+                <DialogHeader className="shrink-0 border-b border-slate-100 bg-white px-8 py-5 text-left space-y-1">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <DialogTitle className="text-xl font-bold">Detail Pengaduan</DialogTitle>
+                            <DialogDescription className="mt-1.5">
+                                Informasi lengkap status penanganan dan catatan penyelesaian.
+                            </DialogDescription>
                         </div>
-                    ) : (
-                        <div className="space-y-6 px-6 pb-6 pt-4">
-                            <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 md:grid-cols-3">
-                                <DetailInfo label="Nomor" value={complaint.letterNumber ?? '-'} />
+                    </div>
+                </DialogHeader>
+
+                <ScrollArea className="flex-1 w-full bg-white min-h-0">
+                    <div className="flex flex-col gap-8 px-8 pb-8 pt-6">
+
+                        {/* Informasi Utama */}
+                        <section className="space-y-4">
+                            <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                Informasi Pengaduan
+                            </h4>
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-5 rounded-xl border border-slate-200 bg-slate-50/50 p-5 shadow-sm">
+                                <DetailInfo label="Nomor Tiket" value={complaint.letterNumber ?? '-'} />
                                 <DetailInfo label="Kategori" value={complaint.category} />
                                 <DetailInfo label="Tanggal" value={complaint.date} />
                                 <DetailInfo
                                     label="Prioritas"
-                                    value={<Badge className="bg-slate-900 text-white">{complaint.priority}</Badge>}
+                                    value={<PriorityBadge priority={complaint.priority} />}
                                 />
-                                <DetailInfo
-                                    label="Status"
-                                    value={<StatusBadge status={complaint.status} />}
-                                />
-                                {complaint.attachment?.name && (
+                                <div className="col-span-2">
                                     <DetailInfo
-                                        label="Lampiran"
-                                        value={<Badge variant="outline">{complaint.attachment.name}</Badge>}
+                                        label="Status"
+                                        value={<StatusBadge status={complaint.status} />}
                                     />
-                                )}
+                                </div>
+                            </div>
+                        </section>
+
+                        <Separator />
+
+                        {/* Detail Subjek & Deskripsi */}
+                        <div className="grid grid-cols-1 gap-8">
+                            <section className="space-y-3">
+                                <h4 className="text-sm font-semibold text-slate-900">
+                                    Subjek
+                                </h4>
+                                <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 text-sm font-medium text-slate-900 shadow-sm">
+                                    {complaint.subject}
+                                </div>
                             </section>
 
-                        <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/60 p-5">
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                    Subjek
-                                </p>
-                                <p className="mt-1 text-sm font-semibold text-slate-900">
-                                    {complaint.subject}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                    Deskripsi
-                                </p>
-                                <p className="mt-1 whitespace-pre-wrap rounded-md bg-white/70 p-3 text-sm text-slate-700">
+                            <section className="space-y-3">
+                                <h4 className="text-sm font-semibold text-slate-900">
+                                    Deskripsi Masalah
+                                </h4>
+                                <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 text-sm leading-relaxed text-slate-700 shadow-sm whitespace-pre-wrap">
                                     {complaint.description ?? '-'}
-                                </p>
-                            </div>
-                        </section>
-
-                        <section className="space-y-3 rounded-xl border border-slate-200/80 p-5">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">Tindak Lanjut HR</p>
-                                    <p className="text-xs text-slate-500">
-                                        Catatan dari penanggung jawab pengaduan.
-                                    </p>
                                 </div>
-                                {complaint.handler && (
-                                    <Badge variant="outline" className="border-blue-200 text-blue-900">
-                                        {complaint.handler}
-                                    </Badge>
-                                )}
-                            </div>
-                            <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                                {complaint.resolutionNotes?.length
-                                    ? complaint.resolutionNotes
-                                    : 'Belum ada catatan penanganan dari tim HR.'}
-                            </p>
-                        </section>
+                            </section>
+
+                            <section className="space-y-3">
+                                <h4 className="flex items-center justify-between text-sm font-semibold text-slate-900">
+                                    <span>Tindak Lanjut HR</span>
+                                    {complaint.handler && (
+                                        <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                                            {complaint.handler}
+                                        </Badge>
+                                    )}
+                                </h4>
+                                <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 text-sm leading-relaxed text-slate-900 shadow-sm">
+                                    {complaint.resolutionNotes?.length
+                                        ? complaint.resolutionNotes
+                                        : <span className="text-slate-500 italic">Belum ada catatan penanganan dari tim HR.</span>}
+                                </div>
+                            </section>
 
                             {complaint.attachment?.url && (
-                                <section className="rounded-xl border border-slate-200/80 bg-white p-4">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                                <section className="space-y-3">
+                                    <h4 className="text-sm font-semibold text-slate-900">
                                         Lampiran
-                                    </p>
-                                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                                        <div>
-                                            <p className="font-medium text-slate-900">
-                                                {complaint.attachment.name ?? 'Berkas lampiran'}
-                                            </p>
-                                            <p className="text-xs text-slate-500">
-                                                Klik tombol di samping untuk melihat dokumen.
-                                            </p>
+                                    </h4>
+                                    <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-paperclip"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-slate-900 text-sm">
+                                                    {complaint.attachment.name ?? 'Berkas lampiran'}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    Klik tombol untuk melihat dokumen.
+                                                </p>
+                                            </div>
                                         </div>
                                         <Button asChild size="sm" variant="outline">
                                             <a href={complaint.attachment.url} target="_blank" rel="noreferrer">
-                                                Lihat Lampiran
+                                                Lihat
                                             </a>
                                         </Button>
                                     </div>
                                 </section>
                             )}
                         </div>
-                    )}
-                </div>
+                    </div>
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );
 }
 
-function DetailInfo({
-    label,
-    value,
-}: {
-    label: string;
-    value: React.ReactNode;
-}) {
+function DetailInfo({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-            <div className="mt-1 text-sm font-semibold text-slate-900">{value ?? '-'}</div>
+        <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                {label}
+            </p>
+            <div className="text-sm font-semibold text-slate-900">
+                {value}
+            </div>
         </div>
     );
 }
@@ -143,10 +151,32 @@ function StatusBadge({ status }: { status: string }) {
     const normalized = status.toLowerCase();
 
     if (normalized.includes('selesai')) {
-        return <Badge className="bg-emerald-500">Selesai</Badge>;
+        return (
+            <Badge variant="outline" className="bg-emerald-50 border-emerald-200 text-emerald-600">
+                {status}
+            </Badge>
+        );
     }
     if (normalized.includes('tangani') || normalized.includes('proses')) {
-        return <Badge className="bg-amber-500">Ditangani</Badge>;
+        return (
+            <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-600">
+                {status}
+            </Badge>
+        );
     }
-    return <Badge variant="outline">{status}</Badge>;
+    return <Badge variant="outline" className="bg-slate-50 border-blue-200 text-blue-700">{status}</Badge>;
+}
+
+function PriorityBadge({ priority }: { priority: string }) {
+    const normalized = priority.toLowerCase();
+
+    if (normalized.includes('tinggi') || normalized === 'high') {
+        return <Badge className="bg-red-100 hover:bg-red-200 text-red-600 border-0">Tinggi</Badge>;
+    }
+
+    if (normalized.includes('sedang') || normalized === 'medium') {
+        return <Badge className="bg-amber-100 hover:bg-amber-200 text-amber-600 border-0">Sedang</Badge>;
+    }
+
+    return <Badge className="bg-blue-100 hover:bg-blue-200 text-blue-600 border-0">Rendah</Badge>;
 }

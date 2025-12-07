@@ -234,7 +234,7 @@ function StatusBadge({ status }: { status: string }) {
 
     if (normalized.includes('selesai')) {
         return (
-            <Badge variant="outline" className="border-green-500 text-green-600">
+            <Badge variant="outline" className="border-emerald-200 text-emerald-600">
                 {status}
             </Badge>
         );
@@ -242,25 +242,29 @@ function StatusBadge({ status }: { status: string }) {
 
     if (normalized.includes('proses') || normalized.includes('menunggu')) {
         return (
-            <Badge variant="outline" className="border-amber-500 text-amber-600">
+            <Badge variant="outline" className="border-amber-200 text-amber-600">
                 {status}
             </Badge>
         );
     }
 
-    return <Badge variant="outline">{status}</Badge>;
+    return (
+        <Badge variant="outline" className="border-blue-200 text-blue-700">
+            {status}
+        </Badge>
+    );
 }
 
 function PriorityBadge({ priority }: { priority: string }) {
     const normalized = priority.toLowerCase();
 
     if (normalized.includes('tinggi') || normalized === 'high') {
-        return <Badge className="bg-red-500 text-white">Tinggi</Badge>;
+        return <Badge className="bg-red-100 text-red-600 hover:bg-red-200">Tinggi</Badge>;
     }
 
     if (normalized.includes('sedang') || normalized === 'medium') {
-        return <Badge className="bg-orange-500 text-white">Sedang</Badge>;
+        return <Badge className="bg-amber-100 text-amber-600 hover:bg-amber-200">Sedang</Badge>;
     }
 
-    return <Badge className="bg-blue-500 text-white">Rendah</Badge>;
+    return <Badge className="bg-blue-100 text-blue-600 hover:bg-blue-200">Rendah</Badge>;
 }
