@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useForm } from '@inertiajs/react';
 import type { FormDataType } from '@inertiajs/core';
@@ -47,7 +47,13 @@ export default function ComplaintComposerDialog({
     onOpenChange,
 }: ComplaintComposerDialogProps) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [showCamera, setShowCamera] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     const form = useForm<ComplaintFormData>({
         category: '',
@@ -63,6 +69,7 @@ export default function ComplaintComposerDialog({
     const handleClose = () => {
         onOpenChange(false);
         resetForm();
+        stopCameraStream();
     };
 
     const handleOpenChange = (next: boolean) => {
@@ -72,6 +79,7 @@ export default function ComplaintComposerDialog({
             setHasSubmitted(false);
         } else {
             resetForm();
+            stopCameraStream();
         }
     };
 
@@ -82,6 +90,9 @@ export default function ComplaintComposerDialog({
             fileInputRef.current.value = '';
         }
         setHasSubmitted(false);
+        setCameraError(null);
+        setShowCamera(false);
+        setIsPlaying(false);
     };
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -90,6 +101,53 @@ export default function ComplaintComposerDialog({
         if (file) {
             form.clearErrors('attachment');
         }
+    };
+
+    const stopCameraStream = () => {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach((track) => track.stop());
+        }
+        setMediaStream(null);
+        setShowCamera(false);
+        setIsPlaying(false);
+    };
+
+    const handleOpenCamera = async () => {
+        setCameraError(null);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false,
+            });
+            setMediaStream(stream);
+            setShowCamera(true);
+            setIsPlaying(false);
+        } catch (error) {
+            setCameraError('Tidak dapat membuka kamera. Periksa izin kamera atau gunakan unggah file.');
+        }
+    };
+
+    const handleTakePhoto = () => {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        if (!video || !canvas) return;
+
+        const width = video.videoWidth || 1280;
+        const height = video.videoHeight || 720;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.drawImage(video, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+            const file = new File([blob], `photo-${Date.now()}.png`, { type: 'image/png' });
+            form.setData('attachment', file);
+            form.clearErrors('attachment');
+            toast.success('Foto berhasil ditangkap dan dilampirkan.');
+            stopCameraStream();
+        }, 'image/png');
     };
 
     const removeAttachment = () => {
@@ -121,9 +179,41 @@ export default function ComplaintComposerDialog({
         });
     };
 
+    useEffect(() => {
+        return () => {
+            stopCameraStream();
+        };
+    }, []);
+
+    // Bind stream to video and play when ready
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || !mediaStream || !showCamera) return;
+
+        video.srcObject = mediaStream;
+        const handleLoaded = async () => {
+            try {
+                await video.play();
+                setIsPlaying(true);
+            } catch (err) {
+                setCameraError('Gagal memutar kamera. Coba izinkan kamera atau gunakan unggah file.');
+                setIsPlaying(false);
+            }
+        };
+
+        video.addEventListener('loadedmetadata', handleLoaded);
+        return () => {
+            video.removeEventListener('loadedmetadata', handleLoaded);
+        };
+    }, [mediaStream, showCamera]);
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white p-0">
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Buat Pengaduan atau Saran</DialogTitle>
+                    <DialogDescription>Formulir untuk mengirim pengaduan atau saran ke HR.</DialogDescription>
+                </DialogHeader>
                 <div className="flex max-h-[90vh] w-full flex-col gap-4 overflow-y-auto px-6 py-6">
                     {hasErrors && hasSubmitted && (
                         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -227,18 +317,96 @@ export default function ComplaintComposerDialog({
                                         ? 'Ganti lampiran'
                                         : 'Upload bukti pendukung (foto, dokumen, dll)'}
                                 </button>
-                                {form.data.attachment && (
-                                    <div className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
-                                        <span className="max-w-[220px] truncate">
-                                            {form.data.attachment.name}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className="font-semibold text-blue-900 hover:underline"
-                                            onClick={removeAttachment}
-                                        >
-                                            Hapus
-                                        </button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full justify-center border-blue-200 text-blue-900 hover:border-blue-300 hover:bg-blue-50"
+                                    onClick={handleOpenCamera}
+                                >
+                                    Buka Kamera & Ambil Foto
+                                </Button>
+                                {cameraError && (
+                                    <p className="text-xs text-red-500">{cameraError}</p>
+                                )}
+                                {showCamera && (
+                                    <div className="space-y-2 rounded-lg border border-slate-200 p-3 bg-slate-50">
+                                        <p className="text-xs font-semibold text-slate-700">
+                                            Mode Kamera
+                                        </p>
+                                        <video
+                                            ref={videoRef}
+                                            className="w-full rounded-md bg-black"
+                                            playsInline
+                                            autoPlay
+                                            muted
+                                        />
+                                        {!isPlaying && !cameraError && (
+                                            <p className="text-xs text-slate-500">Menghubungkan ke kamera...</p>
+                                        )}
+                                        <div className="flex gap-2">
+                                            <Button
+                                                type="button"
+                                                className="flex-1 bg-blue-900 text-white hover:bg-blue-800"
+                                                onClick={handleTakePhoto}
+                                            >
+                                                Ambil Foto
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="flex-1"
+                                                onClick={stopCameraStream}
+                                            >
+                                                Batal
+                                            </Button>
+                                        </div>
+                                        <canvas ref={canvasRef} className="hidden" />
+                                    </div>
+                                )}
+                        {form.data.attachment && (
+                                    <div className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="max-w-[220px] truncate">
+                                                {form.data.attachment.name}
+                                            </span>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="font-semibold text-blue-900 hover:underline"
+                                                    onClick={() => {
+                                                        // Preview inline if image
+                                                        if (form.data.attachment?.type.startsWith('image/')) {
+                                                            const url = URL.createObjectURL(form.data.attachment);
+                                                            const preview = window.open(url, '_blank');
+                                                            if (preview) {
+                                                                preview.onload = () => URL.revokeObjectURL(url);
+                                                            }
+                                                        } else {
+                                                            toast.info('Pratinjau hanya tersedia untuk gambar.');
+                                                        }
+                                                    }}
+                                                >
+                                                    Lihat
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="font-semibold text-red-600 hover:underline"
+                                                    onClick={removeAttachment}
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {form.data.attachment.type.startsWith('image/') && (
+                                            <div className="overflow-hidden rounded-lg border border-slate-100">
+                                                <img
+                                                    src={URL.createObjectURL(form.data.attachment)}
+                                                    alt="Preview lampiran"
+                                                    className="max-h-48 w-full object-cover"
+                                                    onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 <p className="text-xs text-slate-500">
