@@ -177,7 +177,7 @@ export default function DispositionDialog({
                 type="button"
                 variant="outline"
                 className="w-full border-rose-200 text-rose-600 hover:bg-rose-50"
-                disabled={dispositionForm.processing || targets.length !== 1}
+                disabled={dispositionForm.processing}
                 onClick={() => onSubmit('reject')}
               >
                 {dispositionForm.processing ? 'Memproses...' : 'Tolak Surat'}
