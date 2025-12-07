@@ -3,6 +3,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import AdminStaffLayout from '@/Pages/AdminStaff/Layout';
 import ComposeLetterDialog from '@/Pages/AdminStaff/components/ComposeLetterDialog';
+import StatsCards from '@/Pages/AdminStaff/components/StatsCards';
 import type { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -379,12 +380,7 @@ export default function AdminStaffLetters() {
         >
             <Head title="Kelola Surat" />
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-                <StatCard label="Surat Masuk" value={stats.inbox} icon={<Inbox className="h-5 w-5" />} />
-                <StatCard label="Surat Keluar" value={stats.outbox} icon={<Send className="h-5 w-5" />} color="bg-emerald-50" />
-                <StatCard label="Perlu Diproses" value={stats.pending} icon={<Filter className="h-5 w-5" />} color="bg-amber-50" />
-                <StatCard label="Arsip" value={stats.archived} icon={<Archive className="h-5 w-5" />} color="bg-purple-50" />
-            </div>
+            <StatsCards stats={stats} />
 
             <Card className="p-6">
                 <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -1379,29 +1375,7 @@ function UnarchiveConfirmButton({
     );
 }
 
-function StatCard({
-    label,
-    value,
-    icon,
-    color = 'bg-blue-50',
-}: {
-    label: string;
-    value: number;
-    icon: ReactNode;
-    color?: string;
-}) {
-    return (
-        <Card className="p-5">
-            <div className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs ${color}`}>
-                {icon}
-                <span className="font-medium">{label}</span>
-            </div>
-            <p className="text-2xl font-semibold text-blue-900">
-                {Intl.NumberFormat('id-ID').format(value)}
-            </p>
-        </Card>
-    );
-}
+
 
 function StatusBadge({ status }: { status: string }) {
     const normalized = status.toLowerCase();
