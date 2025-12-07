@@ -18,7 +18,7 @@ import {
     StatusSummary,
 } from './types';
 import { Head, router } from '@inertiajs/react';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, Video, UserCheck } from 'lucide-react';
 
 type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
 const statusOrder: ApplicantStatus[] = [
@@ -197,12 +197,33 @@ export default function KelolaRekrutmenIndex({
                 description="Kelola pelamar dan proses rekrutmen"
                 breadcrumbs={breadcrumbs}
             >
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                    <TabsList>
-                        <TabsTrigger value="applicants">Daftar Pelamar</TabsTrigger>
-                        <TabsTrigger value="interviews">Jadwal Interview</TabsTrigger>
-                        <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-                        <TabsTrigger value="calendar" className="gap-2">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6 w-full">
+                    <TabsList className="w-full justify-start p-0 h-auto bg-transparent gap-3">
+                        <TabsTrigger
+                            value="applicants"
+                            className="rounded-lg border border-input bg-background px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary font-medium gap-2 shadow-sm transition-all hover:border-primary/50"
+                        >
+                            <Users className="h-4 w-4" />
+                            Daftar Pelamar
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="interviews"
+                            className="rounded-lg border border-input bg-background px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary font-medium gap-2 shadow-sm transition-all hover:border-primary/50"
+                        >
+                            <Video className="h-4 w-4" />
+                            Jadwal Interview
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="onboarding"
+                            className="rounded-lg border border-input bg-background px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary font-medium gap-2 shadow-sm transition-all hover:border-primary/50"
+                        >
+                            <UserCheck className="h-4 w-4" />
+                            Onboarding
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="calendar"
+                            className="rounded-lg border border-input bg-background px-4 py-2.5 data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:text-primary font-medium gap-2 shadow-sm transition-all hover:border-primary/50"
+                        >
                             <CalendarIcon className="h-4 w-4" />
                             Calendar
                         </TabsTrigger>
