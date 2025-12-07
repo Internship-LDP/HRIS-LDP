@@ -359,24 +359,7 @@ export default function AdminStaffLetters() {
                 { label: 'Dashboard', href: route('admin-staff.dashboard') },
                 { label: 'Kelola Surat' },
             ]}
-            actions={
-                <ComposeLetterDialog
-                    open={composerOpen}
-                    onOpenChange={setComposerOpen}
-                    data={form.data}
-                    setData={form.setData}
-                    errors={form.errors}
-                    processing={form.processing}
-                    onSubmit={handleSubmit}
-                    userInfo={{
-                        name: auth.user.name,
-                        division: auth.user.division,
-                        role: auth.user.role,
-                    }}
-                    options={options}
-                    letterNumberPreview={nextLetterNumber}
-                />
-            }
+
         >
             <Head title="Kelola Surat" />
 
@@ -395,19 +378,38 @@ export default function AdminStaffLetters() {
                             />
                         </div>
                     </div>
-                    <div className="w-full md:w-52">
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Kategori" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
-                                {categoryOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                        {option === 'all' ? 'Semua Kategori' : option}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                        <div className="w-full md:w-52">
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Kategori" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                    {categoryOptions.map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                            {option === 'all' ? 'Semua Kategori' : option}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <ComposeLetterDialog
+                            open={composerOpen}
+                            onOpenChange={setComposerOpen}
+                            triggerLabel="Buat Surat"
+                            data={form.data}
+                            setData={form.setData}
+                            errors={form.errors}
+                            processing={form.processing}
+                            onSubmit={handleSubmit}
+                            userInfo={{
+                                name: auth.user.name,
+                                division: auth.user.division,
+                                role: auth.user.role,
+                            }}
+                            options={options}
+                            letterNumberPreview={nextLetterNumber}
+                        />
                     </div>
                 </div>
 
