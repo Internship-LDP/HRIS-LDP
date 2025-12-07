@@ -14,12 +14,18 @@
         <!-- Scripts -->
         @routes
         <style>
+            html,
+            body {
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+                background-color: #05070f;
+            }
             html {
-                overflow-y: scroll;
-                scrollbar-gutter: stable;
+                overflow-y: auto;
             }
             body {
-                overflow-y: scroll;
+                overflow-y: auto;
             }
         </style>
         @viteReactRefresh
