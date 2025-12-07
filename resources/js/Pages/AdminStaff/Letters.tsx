@@ -1410,6 +1410,7 @@ function UnarchiveConfirmButton({
 function StatusBadge({ status }: { status: string }) {
     const normalized = status.toLowerCase();
 
+    // Rejected statuses - Red
     if (normalized.includes('tolak')) {
         return (
             <Badge variant="outline" className="border-rose-500 text-rose-600">
@@ -1418,6 +1419,7 @@ function StatusBadge({ status }: { status: string }) {
         );
     }
 
+    // Completed/Finished statuses - Green
     if (normalized.includes('selesai')) {
         return (
             <Badge variant="outline" className="border-green-500 text-green-600">
@@ -1426,6 +1428,43 @@ function StatusBadge({ status }: { status: string }) {
         );
     }
 
+    // Archived statuses - Gray
+    if (normalized.includes('arsip')) {
+        return (
+            <Badge variant="outline" className="border-slate-500 text-slate-600">
+                {status}
+            </Badge>
+        );
+    }
+
+    // Finalized disposition - Emerald
+    if (normalized.includes('disposisi final')) {
+        return (
+            <Badge variant="outline" className="border-emerald-500 text-emerald-600">
+                {status}
+            </Badge>
+        );
+    }
+
+    // Disposed statuses - Blue
+    if (normalized.includes('didisposisi')) {
+        return (
+            <Badge variant="outline" className="border-blue-500 text-blue-600">
+                {status}
+            </Badge>
+        );
+    }
+
+    // Submitted/Initial statuses - Indigo
+    if (normalized.includes('diajukan') || normalized.includes('terkirim')) {
+        return (
+            <Badge variant="outline" className="border-indigo-500 text-indigo-600">
+                {status}
+            </Badge>
+        );
+    }
+
+    // Processing/Waiting statuses - Amber/Orange
     if (normalized.includes('proses') || normalized.includes('menunggu')) {
         return (
             <Badge variant="outline" className="border-amber-500 text-amber-600">
@@ -1434,6 +1473,7 @@ function StatusBadge({ status }: { status: string }) {
         );
     }
 
+    // Default fallback
     return <Badge variant="outline">{status}</Badge>;
 }
 
