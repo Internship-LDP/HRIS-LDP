@@ -1282,7 +1282,7 @@ function ArchiveConfirmButton({
     isProcessing?: boolean;
 }) {
     const [open, setOpen] = useState(false);
-    const canArchive = letter.status === 'Didisposisi';
+    const canArchive = ['Didisposisi', 'Disposisi Final', 'Ditolak HR'].includes(letter.status);
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
