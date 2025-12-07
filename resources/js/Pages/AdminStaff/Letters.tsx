@@ -65,6 +65,10 @@ import {
     Search,
     Send,
     Users,
+    Info,
+    Paperclip,
+    MessageSquare,
+    AlertCircle,
 } from 'lucide-react';
 
 import {
@@ -82,6 +86,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/Components/ui/tooltip';
+import { Separator } from '@/Components/ui/separator';
 
 type ReplyHistoryEntry = {
     id: number | null;
@@ -420,23 +425,26 @@ export default function AdminStaffLetters() {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
-                    <TabsList className="mb-5">
+                    <TabsList className="mb-5 h-auto gap-2 bg-transparent p-0">
                         <TabsTrigger
                             value="inbox"
-                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                            className="rounded-lg border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-900 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                         >
+                            <Inbox className="mr-2 h-4 w-4" />
                             Inbox
                         </TabsTrigger>
                         <TabsTrigger
                             value="outbox"
-                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                            className="rounded-lg border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-900 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                         >
+                            <Send className="mr-2 h-4 w-4" />
                             Outbox
                         </TabsTrigger>
                         <TabsTrigger
                             value="archive"
-                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 data-[state=active]:bg-blue-900 data-[state=active]:text-white"
+                            className="rounded-lg border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-900 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                         >
+                            <Archive className="mr-2 h-4 w-4" />
                             Arsip
                         </TabsTrigger>
                     </TabsList>
@@ -471,7 +479,7 @@ export default function AdminStaffLetters() {
                         />
                     </TabsContent>
                 </Tabs>
-            </Card>
+            </Card >
 
             {/* <Card className="p-6">
                 <div className="mb-4 flex items-center justify-between">
@@ -506,7 +514,7 @@ export default function AdminStaffLetters() {
                 )}
             </Card> */}
 
-            <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+            < Dialog open={detailOpen} onOpenChange={setDetailOpen} >
                 <DialogContent className="max-h-[85vh] max-w-3xl overflow-hidden border-0 bg-white p-0">
                     <DialogHeader className="space-y-1 border-b border-slate-100 px-6 py-4">
                         <DialogTitle>Detail Surat</DialogTitle>
@@ -516,7 +524,7 @@ export default function AdminStaffLetters() {
                     </DialogHeader>
                     <div className="max-h-[calc(85vh-4.5rem)] overflow-y-auto">
                         {selectedLetter ? (
-                            <div className="px-6 pb-6 pt-4">
+                            <div className="px-6 pb-8 pt-4">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900">
@@ -553,108 +561,152 @@ export default function AdminStaffLetters() {
                                     onValueChange={(value) => setDetailTab(value as 'detail' | 'tracking')}
                                     className="mt-5 space-y-4"
                                 >
-                                    <TabsList className="grid w-full grid-cols-2 gap-2 rounded-xl bg-slate-100/80 p-1">
+                                    <TabsList className="grid w-full grid-cols-2 gap-3 bg-transparent p-0">
                                         <TabsTrigger
                                             value="detail"
-                                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-900"
+                                            className="rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-900 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                                         >
+                                            <FileText className="mr-2 h-4 w-4" />
                                             Detail Surat
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="tracking"
-                                            className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-blue-900"
+                                            className="rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-900 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                                         >
+                                            <MapPin className="mr-2 h-4 w-4" />
                                             Tracking Surat
                                         </TabsTrigger>
                                     </TabsList>
 
                                     <TabsContent value="detail" className="mt-4">
-                                        <div className="space-y-6">
-                                            <section className="grid gap-4 rounded-xl border border-slate-200/80 p-4 text-sm md:grid-cols-3">
-                                                <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
-                                                <InfoTile label="Tanggal" value={selectedLetter.date} />
-                                                <InfoTile label="Pengirim" value={selectedLetter.sender} />
-                                                <InfoTile label="Divisi" value={selectedLetter.from} />
-                                                <InfoTile label="Divisi Tujuan" value={selectedLetter.targetDivision ?? selectedLetter.recipient ?? '-'} />
-                                                <InfoTile label="Kategori" value={selectedLetter.category} />
-                                                <InfoTile
-                                                    label="Prioritas"
-                                                    value={<PriorityBadge priority={selectedLetter.priority} />}
-                                                />
-                                                <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
-                                            </section>
-
-                                            <section className="space-y-3 rounded-xl border border-slate-200/80 bg-slate-50/60 p-5">
-                                                <div>
-                                                    <p className="text-xs uppercase tracking-wide text-slate-500">Subjek</p>
-                                                    <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                        {selectedLetter.subject}
-                                                    </p>
+                                        <div className="space-y-5">
+                                            {/* Information Grid */}
+                                            <Card className="overflow-hidden border-slate-200">
+                                                <div className="bg-gradient-to-r from-blue-50 to-slate-50 px-5 py-3 border-b border-slate-200">
+                                                    <div className="flex items-center gap-2">
+                                                        <Info className="h-4 w-4 text-blue-600" />
+                                                        <h3 className="text-sm font-semibold text-slate-900">Informasi Surat</h3>
+                                                    </div>
                                                 </div>
-                                                {selectedLetter.content && (
-                                                    <div>
-                                                        <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                            Isi Surat
-                                                        </p>
-                                                        <div className="mt-2 rounded-lg bg-white p-4 text-sm text-slate-700">
-                                                            {selectedLetter.content}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </section>
+                                                <div className="grid gap-4 p-5 text-sm md:grid-cols-3">
+                                                    <InfoTile label="Nomor Surat" value={selectedLetter.letterNumber} />
+                                                    <InfoTile label="Tanggal" value={selectedLetter.date} />
+                                                    <InfoTile label="Pengirim" value={selectedLetter.sender} />
+                                                    <InfoTile label="Divisi" value={selectedLetter.from} />
+                                                    <InfoTile label="Divisi Tujuan" value={selectedLetter.targetDivision ?? selectedLetter.recipient ?? '-'} />
+                                                    <InfoTile label="Kategori" value={selectedLetter.category} />
+                                                    <InfoTile
+                                                        label="Prioritas"
+                                                        value={<PriorityBadge priority={selectedLetter.priority} />}
+                                                    />
+                                                    <InfoTile label="Status" value={<StatusBadge status={selectedLetter.status} />} />
+                                                </div>
+                                            </Card>
 
+                                            {/* Subject and Content */}
+                                            <Card className="overflow-hidden border-slate-200">
+                                                <div className="bg-gradient-to-r from-blue-50 to-slate-50 px-5 py-3 border-b border-slate-200">
+                                                    <div className="flex items-center gap-2">
+                                                        <FileText className="h-4 w-4 text-blue-600" />
+                                                        <h3 className="text-sm font-semibold text-slate-900">Subjek & Isi</h3>
+                                                    </div>
+                                                </div>
+                                                <div className="p-5 space-y-4">
+                                                    <div>
+                                                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-2">Subjek</p>
+                                                        <p className="text-sm font-semibold text-slate-900 leading-relaxed">
+                                                            {selectedLetter.subject}
+                                                        </p>
+                                                    </div>
+                                                    {selectedLetter.content && (
+                                                        <>
+                                                            <Separator />
+                                                            <div>
+                                                                <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-2">
+                                                                    Isi Surat
+                                                                </p>
+                                                                <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm text-slate-700 leading-relaxed">
+                                                                    {selectedLetter.content}
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </Card>
+
+                                            {/* Attachment */}
                                             {selectedLetter.hasAttachment && selectedLetter.attachmentUrl && (
-                                                <section className="rounded-xl border border-slate-200/80 bg-white p-4">
-                                                    <div className="flex items-center justify-between gap-3">
-                                                        <div>
-                                                            <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                                Lampiran
-                                                            </p>
-                                                            <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                                {selectedLetter.subject}
-                                                            </p>
-                                                        </div>
+                                                <Card className="overflow-hidden border-blue-200 bg-gradient-to-br from-white to-blue-50/30">
+                                                    <div className="bg-blue-100/50 px-5 py-3 border-b border-blue-200">
                                                         <div className="flex items-center gap-2">
-                                                            <Button asChild variant="secondary">
-                                                                <a
-                                                                    href={selectedLetter.attachmentUrl}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                >
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    Lihat
-                                                                </a>
-                                                            </Button>
-                                                            <Button asChild variant="outline">
-                                                                <a
-                                                                    href={selectedLetter.attachmentUrl}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    download
-                                                                >
-                                                                    <Download className="mr-2 h-4 w-4" />
-                                                                    Unduh
-                                                                </a>
-                                                            </Button>
+                                                            <Paperclip className="h-4 w-4 text-blue-600" />
+                                                            <h3 className="text-sm font-semibold text-slate-900">Lampiran</h3>
                                                         </div>
                                                     </div>
-                                                </section>
+                                                    <div className="p-5">
+                                                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 flex-shrink-0">
+                                                                    <FileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="text-sm font-semibold text-slate-900 truncate">
+                                                                        {selectedLetter.subject}
+                                                                    </p>
+                                                                    <p className="text-xs text-slate-500">Dokumen surat terlampir</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                                <Button asChild size="sm" variant="outline" className="border-blue-300 hover:bg-blue-50">
+                                                                    <a
+                                                                        href={selectedLetter.attachmentUrl}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                    >
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        Lihat
+                                                                    </a>
+                                                                </Button>
+                                                                <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                                                    <a
+                                                                        href={selectedLetter.attachmentUrl}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        download
+                                                                    >
+                                                                        <Download className="mr-2 h-4 w-4" />
+                                                                        Unduh
+                                                                    </a>
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Card>
                                             )}
 
                                             {/* Disposition Document for finalized letters */}
                                             {selectedLetter.isFinalized && selectedLetter.dispositionDocumentUrl && (
-                                                <section className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-                                                    <div className="flex items-center justify-between gap-3">
-                                                        <div>
-                                                            <p className="text-xs uppercase tracking-wide text-emerald-600">
-                                                                Lampiran Disposisi Final
-                                                            </p>
-                                                            <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                                {selectedLetter.dispositionDocumentName ?? 'Surat Disposisi.docx'}
-                                                            </p>
-                                                        </div>
+                                                <Card className="overflow-hidden border-emerald-200 bg-gradient-to-br from-white to-emerald-50/30">
+                                                    <div className="bg-emerald-100/50 px-5 py-3 border-b border-emerald-200">
                                                         <div className="flex items-center gap-2">
-                                                            <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+                                                            <CheckCircle className="h-4 w-4 text-emerald-600" />
+                                                            <h3 className="text-sm font-semibold text-slate-900">Lampiran Disposisi Final</h3>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-5">
+                                                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 flex-shrink-0">
+                                                                    <FileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="text-sm font-semibold text-slate-900 truncate">
+                                                                        {selectedLetter.dispositionDocumentName ?? 'Surat Disposisi.docx'}
+                                                                    </p>
+                                                                    <p className="text-xs text-emerald-600">Dokumen disposisi resmi</p>
+                                                                </div>
+                                                            </div>
+                                                            <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 flex-shrink-0">
                                                                 <a
                                                                     href={selectedLetter.dispositionDocumentUrl}
                                                                     download
@@ -665,44 +717,59 @@ export default function AdminStaffLetters() {
                                                             </Button>
                                                         </div>
                                                     </div>
-                                                </section>
+                                                </Card>
                                             )}
 
+                                            {/* HR Notes */}
                                             {selectedLetter.dispositionNote && (
-                                                <section
+                                                <Card
                                                     className={
                                                         isSelectedLetterRejected
-                                                            ? 'rounded-xl border border-rose-200/70 bg-rose-50/80 p-4'
-                                                            : 'rounded-xl border border-slate-200/80 bg-white p-4'
+                                                            ? 'overflow-hidden border-rose-200 bg-gradient-to-br from-white to-rose-50/30'
+                                                            : 'overflow-hidden border-amber-200 bg-gradient-to-br from-white to-amber-50/20'
                                                     }
                                                 >
-                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    <div
+                                                        className={
+                                                            isSelectedLetterRejected
+                                                                ? 'bg-rose-100/50 px-5 py-3 border-b border-rose-200'
+                                                                : 'bg-amber-100/50 px-5 py-3 border-b border-amber-200'
+                                                        }
+                                                    >
+                                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <AlertCircle
+                                                                    className={
+                                                                        isSelectedLetterRejected
+                                                                            ? 'h-4 w-4 text-rose-600'
+                                                                            : 'h-4 w-4 text-amber-600'
+                                                                    }
+                                                                />
+                                                                <h3 className="text-sm font-semibold text-slate-900">
+                                                                    {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
+                                                                </h3>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-medium text-slate-600">Prioritas:</span>
+                                                                <PriorityBadge priority={selectedLetter.priority} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-5">
                                                         <p
                                                             className={
                                                                 isSelectedLetterRejected
-                                                                    ? 'text-xs uppercase tracking-wide text-rose-500'
-                                                                    : 'text-xs uppercase tracking-wide text-slate-500'
+                                                                    ? 'whitespace-pre-line text-sm text-rose-800 leading-relaxed'
+                                                                    : 'whitespace-pre-line text-sm text-slate-700 leading-relaxed'
                                                             }
                                                         >
-                                                            {isSelectedLetterRejected ? 'Catatan Penolakan HR' : 'Catatan HR'}
+                                                            {selectedLetter.dispositionNote}
                                                         </p>
-                                                        <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                                            <span>Prioritas</span>
-                                                            <PriorityBadge priority={selectedLetter.priority} />
-                                                        </div>
                                                     </div>
-                                                    <p
-                                                        className={
-                                                            isSelectedLetterRejected
-                                                                ? 'mt-2 whitespace-pre-line text-sm text-rose-700'
-                                                                : 'mt-2 whitespace-pre-line text-sm text-slate-700'
-                                                        }
-                                                    >
-                                                        {selectedLetter.dispositionNote}
-                                                    </p>
-                                                </section>
+                                                </Card>
                                             )}
 
+                                            {/* Reply History */}
                                             {(() => {
                                                 const history =
                                                     selectedLetter.replyHistory && selectedLetter.replyHistory.length > 0
@@ -725,41 +792,57 @@ export default function AdminStaffLetters() {
                                                 }
 
                                                 return (
-                                                    <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                                                        <p className="text-xs uppercase tracking-wide text-emerald-600">
-                                                            Riwayat Balasan
-                                                        </p>
-                                                        <div className="mt-3 space-y-3">
-                                                            {history.map((entry, index) => (
-                                                                <div
-                                                                    key={entry.id ?? index}
-                                                                    className="rounded-lg border border-emerald-100 bg-white/60 p-3 text-sm text-slate-800"
-                                                                >
-                                                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                                                        <div>
-                                                                            <p className="font-semibold text-emerald-800">
-                                                                                {entry.author ?? entry.division ?? 'Divisi'}
-                                                                            </p>
-                                                                            <p className="text-xs text-slate-500">
-                                                                                {entry.division ?? '-'}
-                                                                                {entry.toDivision
-                                                                                    ? ` → ${entry.toDivision}`
-                                                                                    : ''}
+                                                    <Card className="overflow-hidden border-emerald-200 bg-gradient-to-br from-white to-emerald-50/30 mb-3">
+                                                        <div className="bg-emerald-100/50 px-5 py-3 border-b border-emerald-200">
+                                                            <div className="flex items-center gap-2">
+                                                                <MessageSquare className="h-4 w-4 text-emerald-600" />
+                                                                <h3 className="text-sm font-semibold text-slate-900">Riwayat Balasan</h3>
+                                                            </div>
+                                                        </div>
+                                                        <div className="p-5">
+                                                            <div className="space-y-3">
+                                                                {history.map((entry, index) => (
+                                                                    <Card
+                                                                        key={entry.id ?? index}
+                                                                        className="border-emerald-200/60 bg-white shadow-sm hover:shadow-md transition-shadow"
+                                                                    >
+                                                                        <div className="p-4">
+                                                                            <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                                        <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                                                                            <Users className="h-4 w-4 text-emerald-600" />
+                                                                                        </div>
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="font-semibold text-sm text-emerald-900 truncate">
+                                                                                                {entry.author ?? entry.division ?? 'Divisi'}
+                                                                                            </p>
+                                                                                            <p className="text-xs text-slate-500 truncate">
+                                                                                                {entry.division ?? '-'}
+                                                                                                {entry.toDivision
+                                                                                                    ? ` → ${entry.toDivision}`
+                                                                                                    : ''}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {entry.timestamp && (
+                                                                                    <Badge variant="outline" className="text-xs border-slate-300 flex-shrink-0">
+                                                                                        <Clock className="mr-1 h-3 w-3" />
+                                                                                        {entry.timestamp}
+                                                                                    </Badge>
+                                                                                )}
+                                                                            </div>
+                                                                            <Separator className="my-3" />
+                                                                            <p className="whitespace-pre-line text-sm text-slate-700 leading-relaxed">
+                                                                                {entry.note}
                                                                             </p>
                                                                         </div>
-                                                                        {entry.timestamp && (
-                                                                            <p className="text-xs text-slate-500">
-                                                                                {entry.timestamp}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                    <p className="mt-2 whitespace-pre-line text-sm text-slate-700">
-                                                                        {entry.note}
-                                                                    </p>
-                                                                </div>
-                                                            ))}
+                                                                    </Card>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    </section>
+                                                    </Card>
                                                 );
                                             })()}
                                         </div>
@@ -778,58 +861,106 @@ export default function AdminStaffLetters() {
                         )}
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             <Dialog open={replyOpen} onOpenChange={handleReplyDialogChange}>
-                <DialogContent className="max-w-lg border-0 bg-white">
-                    <DialogHeader>
-                        <DialogTitle>Balas Surat</DialogTitle>
-                        <DialogDescription>
-                            Kirim catatan balasan untuk surat{' '}
-                            <span className="font-semibold text-slate-900">
-                                {selectedLetter?.subject ?? ''}
-                            </span>
-                            .
-                        </DialogDescription>
+                <DialogContent className="max-w-2xl border-0 bg-white p-0 overflow-hidden">
+                    <DialogHeader className="bg-gradient-to-r from-blue-50 to-slate-50 px-6 py-4 border-b border-slate-200">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                                <MessageSquare className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                                <DialogTitle className="text-lg font-semibold text-slate-900">Balas Surat</DialogTitle>
+                                <DialogDescription className="text-sm text-slate-600">
+                                    Kirim catatan balasan untuk surat yang dipilih
+                                </DialogDescription>
+                            </div>
+                        </div>
                     </DialogHeader>
-                    <form
-                        className="space-y-4"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            handleReplySubmit();
-                        }}
-                    >
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-900">
-                                Catatan Balasan
-                            </label>
-                            <Textarea
-                                rows={5}
-                                placeholder="Tulis tanggapan untuk pengirim atau HR..."
-                                value={replyForm.data.reply_note}
-                                onChange={(event) => replyForm.setData('reply_note', event.target.value)}
-                            />
-                            {replyForm.errors.reply_note && (
-                                <p className="text-xs text-rose-600">{replyForm.errors.reply_note}</p>
-                            )}
-                        </div>
-                        <div className="flex justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => handleReplyDialogChange(false)}
-                                disabled={replyForm.processing}
-                            >
-                                Batal
-                            </Button>
-                            <Button type="submit" disabled={replyForm.processing}>
-                                {replyForm.processing ? 'Mengirim...' : 'Kirim Balasan'}
-                            </Button>
-                        </div>
-                    </form>
+
+                    <div className="px-6 py-5">
+                        {/* Subject Info Card */}
+                        <Card className="mb-5 border-blue-200 bg-blue-50/50">
+                            <div className="p-4">
+                                <div className="flex items-start gap-3">
+                                    <FileText className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium uppercase tracking-wide text-blue-700 mb-1">
+                                            Subjek Surat
+                                        </p>
+                                        <p className="text-sm font-semibold text-slate-900 leading-relaxed">
+                                            {selectedLetter?.subject ?? ''}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <form
+                            className="space-y-5"
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                handleReplySubmit();
+                            }}
+                        >
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <MessageSquare className="h-4 w-4 text-slate-600" />
+                                    <label className="text-sm font-semibold text-slate-900">
+                                        Catatan Balasan <span className="text-rose-500">*</span>
+                                    </label>
+                                </div>
+                                <Textarea
+                                    rows={6}
+                                    placeholder="Tulis tanggapan untuk pengirim atau HR..."
+                                    value={replyForm.data.reply_note}
+                                    onChange={(event) => replyForm.setData('reply_note', event.target.value)}
+                                    className="resize-none border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {replyForm.errors.reply_note && (
+                                    <div className="flex items-center gap-2 text-rose-600">
+                                        <AlertCircle className="h-4 w-4" />
+                                        <p className="text-xs font-medium">{replyForm.errors.reply_note}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Separator />
+
+                            <div className="flex justify-end gap-3 pt-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleReplyDialogChange(false)}
+                                    disabled={replyForm.processing}
+                                    className="border-slate-300 hover:bg-slate-50"
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={replyForm.processing}
+                                    className="bg-blue-600 hover:bg-blue-700 shadow-sm"
+                                >
+                                    {replyForm.processing ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Mengirim...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send className="mr-2 h-4 w-4" />
+                                            Kirim Balasan
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </DialogContent>
             </Dialog>
-        </AdminStaffLayout>
+        </AdminStaffLayout >
     );
 }
 
