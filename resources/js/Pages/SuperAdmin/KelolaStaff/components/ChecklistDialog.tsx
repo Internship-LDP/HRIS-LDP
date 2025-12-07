@@ -63,20 +63,36 @@ export default function ChecklistDialog({
         checklist: defaultChecklist,
         notes: termination.notes ?? '',
         status: termination.status as TerminationRecord['status'],
+        progress: termination.progress ?? 0,
     });
 
     const totalItems = checklistTemplate.length || 1;
+    const computeProgress = (checklist: Record<string, boolean>) => {
+        const completed = Object.values(checklist).filter(Boolean).length;
+        return totalItems > 0 ? Math.round((completed / totalItems) * 100) : 0;
+    };
+    const progressValue = computeProgress(form.data.checklist);
     const completedItems = Object.values(form.data.checklist).filter(Boolean).length;
-    const progressValue = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
     const allChecklistCompleted = completedItems === totalItems;
 
     const handleSubmit = (
         statusOverride?: TerminationRecord['status'],
-        options: { closeAfterSuccess?: boolean } = {}
+        options: {
+            closeAfterSuccess?: boolean;
+            progressOverride?: number;
+        } = {}
     ) => {
+        const nextProgress =
+            typeof options.progressOverride === 'number'
+                ? options.progressOverride
+                : statusOverride === 'Selesai'
+                ? 100
+                : computeProgress(form.data.checklist);
+
         form.transform((data) => ({
             ...data,
             status: statusOverride ?? data.status,
+            progress: nextProgress,
         }));
 
         form.patch(route('super-admin.staff.update', termination.id), {
@@ -99,7 +115,10 @@ export default function ChecklistDialog({
             {}
         );
         form.setData('checklist', allTrue);
-        handleSubmit('Selesai', { closeAfterSuccess: true });
+        handleSubmit('Selesai', {
+            closeAfterSuccess: true,
+            progressOverride: 100,
+        });
     };
 
     return (

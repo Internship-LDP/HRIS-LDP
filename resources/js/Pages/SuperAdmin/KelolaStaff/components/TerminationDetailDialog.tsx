@@ -20,6 +20,14 @@ export default function TerminationDetailDialog({
   termination,
   trigger,
 }: TerminationDetailDialogProps) {
+  const getDisplayProgress = (req: TerminationRecord) => {
+    const status = (req.status || '').toLowerCase();
+    if (status.includes('diajukan') || status.includes('menunggu') || status.includes('pending')) {
+      return 0;
+    }
+    return Math.max(0, req.progress ?? 0);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -70,11 +78,11 @@ export default function TerminationDetailDialog({
                     <div className="h-2 flex-1 rounded-full bg-slate-200">
                       <div
                         className="h-2 rounded-full bg-blue-900"
-                        style={{ width: `${termination.progress}%` }}
+                        style={{ width: `${getDisplayProgress(termination)}%` }}
                       />
                     </div>
                     <span className="text-xs text-slate-500">
-                      {termination.progress}%
+                      {getDisplayProgress(termination)}%
                     </span>
                   </div>
                 </div>

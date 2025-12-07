@@ -12,6 +12,7 @@ export interface TerminationRecord {
     requestDate: string;
     effectiveDate: string;
     progress: number | null;
+    notes?: string | null;
 }
 
 export interface ResignationPageProps extends Record<string, unknown> {

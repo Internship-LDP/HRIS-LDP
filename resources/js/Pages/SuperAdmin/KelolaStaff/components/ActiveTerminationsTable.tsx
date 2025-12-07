@@ -35,6 +35,14 @@ export default function ActiveTerminationsTable({
     terminations,
     checklistTemplate,
 }: ActiveTerminationsTableProps) {
+    const getDisplayProgress = (request: TerminationRecord) => {
+        const status = (request.status || '').toLowerCase();
+        if (status.includes('diajukan') || status.includes('menunggu') || status.includes('pending')) {
+            return 0;
+        }
+        return Math.max(0, request.progress ?? 0);
+    };
+
     const handleCancelOffboarding = (terminationId: number, employeeName: string) => {
         router.delete(route('super-admin.staff.destroy', terminationId), {
             preserveScroll: true,
@@ -88,9 +96,12 @@ export default function ActiveTerminationsTable({
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 flex-1 rounded-full bg-slate-200">
-                                <div className="h-1.5 rounded-full bg-blue-900" style={{ width: `${request.progress}%` }} />
+                                <div
+                                    className="h-1.5 rounded-full bg-blue-900"
+                                    style={{ width: `${getDisplayProgress(request)}%` }}
+                                />
                             </div>
-                            <span className="text-[10px] text-slate-500">{request.progress}%</span>
+                            <span className="text-[10px] text-slate-500">{getDisplayProgress(request)}%</span>
                         </div>
                         <div className="flex items-center gap-1 pt-1 border-t border-slate-100">
                             <ChecklistDialog
@@ -204,11 +215,11 @@ export default function ActiveTerminationsTable({
                                         <div className="h-2 flex-1 rounded-full bg-slate-200">
                                             <div
                                                 className="h-2 rounded-full bg-blue-900"
-                                                style={{ width: `${request.progress}%` }}
+                                                style={{ width: `${getDisplayProgress(request)}%` }}
                                             />
                                         </div>
                                         <span className="text-xs text-slate-500">
-                                            {request.progress}%
+                                            {getDisplayProgress(request)}%
                                         </span>
                                     </div>
                                 </TableCell>

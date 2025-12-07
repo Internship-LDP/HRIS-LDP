@@ -1,4 +1,6 @@
 import { Head, useForm, usePage } from "@inertiajs/react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { CheckCircle, Clock, FileText } from "lucide-react";
 import { Card } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
@@ -40,6 +42,18 @@ export default function StaffResignation() {
     const hasActiveRequest = Boolean(activeRequest);
     const [clientError, setClientError] = useState<string | null>(null);
 
+    const getProgressValue = (req: TerminationRecord | null) => {
+        if (!req) return 0;
+        const raw = Number(req.progress ?? 0);
+        const statusLower = (req.status ?? "").toLowerCase();
+        const isInitial =
+            statusLower.includes("diajukan") ||
+            statusLower.includes("menunggu") ||
+            statusLower.includes("pending") ||
+            statusLower.includes("baru");
+        return isInitial ? 0 : Math.max(0, raw);
+    };
+
     const submit = () => {
         if (hasActiveRequest || !form.data.confirmation) return;
 
@@ -55,7 +69,13 @@ export default function StaffResignation() {
 
         form.post(route("staff.resignation.store"), {
             preserveScroll: true,
-            onSuccess: () => form.reset(),
+            onSuccess: () => {
+                toast.success("Pengajuan resign berhasil dikirim.");
+                form.reset();
+            },
+            onError: () => {
+                toast.error("Pengajuan gagal dikirim. Periksa data Anda lalu coba lagi.");
+            },
         });
     };
 
@@ -289,13 +309,24 @@ export default function StaffResignation() {
                                 </p>
 
                                 <Progress
-                                    value={activeRequest.progress ?? 0}
+                                    value={getProgressValue(activeRequest)}
                                     className="h-3 rounded-full"
                                 />
 
                                 <p className="mt-1 text-xs text-slate-500">
-                                    {activeRequest.progress ?? 0}% selesai
+                                    {getProgressValue(activeRequest)}% selesai
                                 </p>
+                            </div>
+
+                            <div className="mt-4">
+                                <p className="text-xs uppercase tracking-wide text-slate-500 font-medium mb-1">
+                                    Catatan HR
+                                </p>
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                                    {activeRequest.notes?.trim()?.length
+                                        ? activeRequest.notes
+                                        : "Belum ada catatan dari HR / Super Admin."}
+                                </div>
                             </div>
                         </div>
                     ) : (
