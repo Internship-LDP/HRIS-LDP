@@ -21,14 +21,6 @@ interface ComplaintRecord {
     date: string;
 }
 
-interface RegulationRecord {
-    id: number;
-    title: string;
-    category: string;
-    date: string;
-    attachmentUrl?: string | null;
-}
-
 interface TerminationSummary {
     reference: string;
     status: string;
@@ -40,7 +32,6 @@ interface TerminationSummary {
 interface DashboardPageProps extends Record<string, unknown> {
     stats: DashboardStats[];
     recentComplaints: ComplaintRecord[];
-    regulations: RegulationRecord[];
     termination: {
         active: TerminationSummary | null;
         history: TerminationSummary[];
@@ -56,8 +47,16 @@ const iconMap: Record<DashboardStats['icon'], JSX.Element> = {
 
 export default function StaffDashboard() {
     const {
-        props: { stats, recentComplaints, regulations, termination },
+        props: { stats, recentComplaints, termination },
     } = usePage<PageProps<DashboardPageProps>>();
+
+    // Sembunyikan statistik regulasi/dokumen
+    const filteredStats = stats.filter(
+        (item) =>
+            item.icon !== 'file' &&
+            !item.label.toLowerCase().includes('regulasi') &&
+            !item.label.toLowerCase().includes('dokumen'),
+    );
 
     return (
         <>
@@ -67,9 +66,9 @@ export default function StaffDashboard() {
                 description="Pantau status keluhan, dokumen terbaru, dan proses resign Anda."
             >
                 {/* GRID TIDAK DIUBAH DI MOBILE — HANYA SCROLL */}
-                <section className="overflow-x-auto">
-                    <div className="grid min-w-max grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                        {stats.map((item) => (
+                <section className="w-full">
+                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {filteredStats.map((item) => (
                             <StatsCard
                                 key={item.label}
                                 label={item.label}
@@ -80,9 +79,9 @@ export default function StaffDashboard() {
                     </div>
                 </section>
 
-                {/* TETAP DUA KOLOM DI DESKTOP. MOBILE = SCROLL, BUKAN STACK */}
+                {/* LIST SECTION */}
                 <section className="overflow-x-auto">
-                    <div className="grid min-w-max grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="grid min-w-max grid-cols-1 gap-6 lg:grid-cols-1">
                         <Card className="p-4 sm:p-6 w-full">
                             <h2 className="text-lg font-semibold text-blue-900">Keluhan Terbaru</h2>
                             <p className="text-sm text-slate-500">
@@ -114,39 +113,6 @@ export default function StaffDashboard() {
                             </div>
                         </Card>
 
-                        <Card className="p-4 sm:p-6 w-full">
-                            <h2 className="text-lg font-semibold text-blue-900">Regulasi & Dokumen</h2>
-                            <p className="text-sm text-slate-500">
-                                Dokumen terbaru untuk divisi Anda
-                            </p>
-
-                            <div className="mt-4 space-y-3">
-                                {regulations.length === 0 && (
-                                    <p className="text-sm text-slate-500">Tidak ada dokumen baru.</p>
-                                )}
-
-                                {regulations.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="rounded-lg border border-slate-200 p-3"
-                                    >
-                                        <p className="font-semibold text-slate-900">{item.title}</p>
-                                        <p className="text-xs text-slate-500">
-                                            {item.category} • {item.date}
-                                        </p>
-
-                                        {item.attachmentUrl && (
-                                            <a
-                                                href={item.attachmentUrl}
-                                                className="mt-2 inline-flex text-xs font-semibold text-blue-900 hover:underline"
-                                            >
-                                                Lihat Dokumen
-                                            </a>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
                     </div>
                 </section>
 
