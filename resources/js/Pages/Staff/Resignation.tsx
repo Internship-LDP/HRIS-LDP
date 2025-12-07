@@ -37,7 +37,22 @@ export default function StaffResignation() {
         confirmation: false,
     });
 
+    const hasActiveRequest = Boolean(activeRequest);
+    const [clientError, setClientError] = useState<string | null>(null);
+
     const submit = () => {
+        if (hasActiveRequest || !form.data.confirmation) return;
+
+        const trimmedReason = form.data.reason.trim();
+        const trimmedSuggestion = form.data.suggestion.trim();
+
+        if (!form.data.effective_date || !trimmedReason || !trimmedSuggestion) {
+            setClientError("Semua field wajib diisi.");
+            return;
+        }
+
+        setClientError(null);
+
         form.post(route("staff.resignation.store"), {
             preserveScroll: true,
             onSuccess: () => form.reset(),
@@ -102,6 +117,8 @@ export default function StaffResignation() {
                                     <Input
                                         type="date"
                                         value={form.data.effective_date}
+                                        disabled={hasActiveRequest}
+                                        required
                                         onChange={(e) =>
                                             form.setData(
                                                 "effective_date",
@@ -118,6 +135,8 @@ export default function StaffResignation() {
                                 <Textarea
                                     rows={4}
                                     value={form.data.reason}
+                                    disabled={hasActiveRequest}
+                                    required
                                     onChange={(e) =>
                                         form.setData("reason", e.target.value)
                                     }
@@ -130,6 +149,8 @@ export default function StaffResignation() {
                                 <Textarea
                                     rows={3}
                                     value={form.data.suggestion}
+                                    disabled={hasActiveRequest}
+                                    required
                                     onChange={(e) =>
                                         form.setData(
                                             "suggestion",
@@ -143,6 +164,7 @@ export default function StaffResignation() {
                             <div className="flex items-start gap-3 p-3 border rounded-lg bg-slate-50 w-full">
                                 <Checkbox
                                     checked={form.data.confirmation}
+                                    disabled={hasActiveRequest}
                                     onCheckedChange={(v) =>
                                         form.setData("confirmation", Boolean(v))
                                     }
@@ -157,7 +179,14 @@ export default function StaffResignation() {
                             <div className="flex flex-wrap gap-3">
                                 <Button
                                     onClick={submit}
-                                    disabled={form.processing}
+                                    disabled={
+                                        form.processing ||
+                                        !form.data.confirmation ||
+                                        !form.data.effective_date ||
+                                        !form.data.reason.trim() ||
+                                        !form.data.suggestion.trim() ||
+                                        hasActiveRequest
+                                    }
                                     className="bg-blue-900 text-white hover:bg-blue-800"
                                 >
                                     {form.processing
@@ -166,10 +195,14 @@ export default function StaffResignation() {
                                 </Button>
                                 <Button
                                     variant="outline"
+                                    disabled={hasActiveRequest}
                                     onClick={() => form.reset()}
                                 >
                                     Reset
                                 </Button>
+                                {clientError && (
+                                    <p className="text-sm text-red-500 mt-1">{clientError}</p>
+                                )}
                             </div>
                         </div>
                     </Card>
@@ -226,6 +259,9 @@ export default function StaffResignation() {
                     {/* ACTIVE REQUEST */}
                     {activeRequest ? (
                         <div className="mt-4 border rounded-xl p-5 bg-white shadow-sm">
+                            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                                Anda sudah memiliki pengajuan resign aktif. Form pengajuan dinonaktifkan sampai proses selesai.
+                            </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                                 <StatusItem
                                     label="Referensi"
