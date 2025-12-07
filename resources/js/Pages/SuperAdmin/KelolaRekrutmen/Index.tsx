@@ -9,6 +9,7 @@ import InterviewsTab from './components/InterviewsTab';
 import OnboardingTab from './components/OnboardingTab';
 import ScheduleInterviewDialog from './components/ScheduleInterviewDialog';
 import InterviewDetailDialog from './components/InterviewDetailDialog';
+import { RecruitmentCalendar } from './components/RecruitmentCalendar';
 import {
     ApplicantRecord,
     ApplicantStatus,
@@ -17,6 +18,7 @@ import {
     StatusSummary,
 } from './types';
 import { Head, router } from '@inertiajs/react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 type ApplicantActionHandler = (applicantId: number, newStatus: ApplicantStatus) => void;
 const statusOrder: ApplicantStatus[] = [
@@ -200,6 +202,10 @@ export default function KelolaRekrutmenIndex({
                         <TabsTrigger value="applicants">Daftar Pelamar</TabsTrigger>
                         <TabsTrigger value="interviews">Jadwal Interview</TabsTrigger>
                         <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
+                        <TabsTrigger value="calendar" className="gap-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            Calendar
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="applicants">
@@ -229,6 +235,10 @@ export default function KelolaRekrutmenIndex({
 
                     <TabsContent value="onboarding">
                         <OnboardingTab items={onboarding} />
+                    </TabsContent>
+
+                    <TabsContent value="calendar">
+                        <RecruitmentCalendar interviews={interviews} isEmbedded />
                     </TabsContent>
                 </Tabs>
 
