@@ -11,6 +11,13 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import type { ComplaintRecord } from '../types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 
 interface ComplaintTableProps {
     complaints: ComplaintRecord[];
@@ -167,17 +174,21 @@ export default function ComplaintTable({ complaints, onSelect }: ComplaintTableP
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                     <label className="flex items-center gap-2 text-sm text-slate-600">
                         Per halaman
-                        <select
-                            value={pageSize}
-                            onChange={(e) => setPageSize(Number(e.target.value))}
-                            className="rounded-md border border-slate-200 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        <Select
+                            value={String(pageSize)}
+                            onValueChange={(val) => setPageSize(Number(val))}
                         >
-                            {[5, 10, 15].map((size) => (
-                                <option key={size} value={size}>
-                                    {size}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue placeholder={String(pageSize)} />
+                            </SelectTrigger>
+                            <SelectContent side="top">
+                                {[5, 10, 15].map((size) => (
+                                    <SelectItem key={size} value={String(size)}>
+                                        {size}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </label>
                     <div className="flex items-center gap-2">
                         <Button
