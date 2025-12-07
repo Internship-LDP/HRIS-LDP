@@ -115,7 +115,7 @@ export default function Navbar({ }: NavbarProps) {
                             <img
                                 src="/img/LogoLDP.png"
                                 alt="LDP Logo"
-                                className="h-10 w-10 object-contain brightness-0 invert"
+                                className="h-10 w-10 object-contain"
                             />
                             <div className="hidden sm:block">
                                 <p className="text-[9px] uppercase tracking-widest text-blue-200 font-semibold">
