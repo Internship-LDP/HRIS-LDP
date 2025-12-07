@@ -1,5 +1,12 @@
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { useState } from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import {
     Table,
     TableBody,
@@ -107,12 +114,12 @@ export default function ActiveTerminationsTable({
                             <ChecklistDialog
                                 termination={request}
                                 checklistTemplate={checklistTemplate}
+                                tooltip="Checklist Offboarding"
                                 trigger={
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         className="h-7 text-xs px-2"
-                                        title="Checklist Offboarding"
                                     >
                                         <CheckSquare className="h-3 w-3" />
                                     </Button>
@@ -120,58 +127,22 @@ export default function ActiveTerminationsTable({
                             />
                             <TerminationDetailDialog
                                 termination={request}
+                                tooltip="Lihat Detail"
                                 trigger={
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         className="h-7 text-xs px-2"
-                                        title="Lihat Detail"
                                     >
                                         <FileText className="h-3 w-3" />
                                     </Button>
                                 }
                             />
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-7 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                        title="Batalkan Offboarding"
-                                    >
-                                        <XCircle className="mr-1 h-3 w-3" />
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="max-w-md bg-white border-0 rounded-2xl shadow-2xl">
-                                    <AlertDialogHeader className="relative">
-                                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-                                            <AlertTriangle className="h-7 w-7 text-red-600" />
-                                        </div>
-                                        <AlertDialogTitle className="text-center text-xl font-bold text-slate-900">
-                                            Batalkan Offboarding?
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription className="text-center text-slate-600">
-                                            Apakah Anda yakin ingin membatalkan proses offboarding untuk <span className="font-semibold text-slate-900">{request.employeeName}</span>?
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <div className="relative my-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                                        <p className="text-sm text-amber-800">
-                                            <strong>Perhatian:</strong> Tindakan ini akan menghapus semua data offboarding yang telah diinput.
-                                        </p>
-                                    </div>
-                                    <AlertDialogFooter className="relative flex-col gap-2 sm:flex-row">
-                                        <AlertDialogCancel className="m-0 w-full sm:w-auto">
-                                            Batal
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={() => handleCancelOffboarding(request.id, request.employeeName)}
-                                            className="m-0 w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
-                                        >
-                                            Ya, Batalkan
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                            <CancelTerminationButton
+                                termination={request}
+                                onConfirm={handleCancelOffboarding}
+                                mobile
+                            />
                         </div>
                     </div>
                 ))}
@@ -228,11 +199,11 @@ export default function ActiveTerminationsTable({
                                         <ChecklistDialog
                                             termination={request}
                                             checklistTemplate={checklistTemplate}
+                                            tooltip="Checklist Offboarding"
                                             trigger={
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    title="Checklist Offboarding"
                                                 >
                                                     <CheckSquare className="h-4 w-4" />
                                                 </Button>
@@ -240,57 +211,20 @@ export default function ActiveTerminationsTable({
                                         />
                                         <TerminationDetailDialog
                                             termination={request}
+                                            tooltip="Lihat Detail"
                                             trigger={
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    title="Lihat Detail"
                                                 >
                                                     <FileText className="h-4 w-4" />
                                                 </Button>
                                             }
                                         />
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    title="Batalkan Offboarding"
-                                                >
-                                                    <XCircle className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent className="max-w-md bg-white border-0 rounded-2xl shadow-2xl">
-                                                <AlertDialogHeader className="relative">
-                                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-                                                        <AlertTriangle className="h-7 w-7 text-red-600" />
-                                                    </div>
-                                                    <AlertDialogTitle className="text-center text-xl font-bold text-slate-900">
-                                                        Batalkan Offboarding?
-                                                    </AlertDialogTitle>
-                                                    <AlertDialogDescription className="text-center text-slate-600">
-                                                        Apakah Anda yakin ingin membatalkan proses offboarding untuk <span className="font-semibold text-slate-900">{request.employeeName}</span>?
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <div className="relative my-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                                                    <p className="text-sm text-amber-800">
-                                                        <strong>Perhatian:</strong> Tindakan ini akan menghapus semua data offboarding yang telah diinput.
-                                                    </p>
-                                                </div>
-                                                <AlertDialogFooter className="relative flex-col gap-2 sm:flex-row">
-                                                    <AlertDialogCancel className="m-0 w-full sm:w-auto">
-                                                        Batal
-                                                    </AlertDialogCancel>
-                                                    <AlertDialogAction
-                                                        onClick={() => handleCancelOffboarding(request.id, request.employeeName)}
-                                                        className="m-0 w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
-                                                    >
-                                                        Ya, Batalkan
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
+                                        <CancelTerminationButton
+                                            termination={request}
+                                            onConfirm={handleCancelOffboarding}
+                                        />
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -334,5 +268,72 @@ function typeBadge(type: string, small = false) {
         <Badge className={`${type === 'Resign' ? 'bg-blue-500' : 'bg-red-500'} ${sizeClass}`}>
             {type}
         </Badge>
+    );
+}
+
+function CancelTerminationButton({
+    termination,
+    onConfirm,
+    mobile = false,
+}: {
+    termination: TerminationRecord;
+    onConfirm: (id: number, name: string) => void;
+    mobile?: boolean;
+}) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`text-red-600 hover:text-red-700 hover:bg-red-50 ${mobile ? 'h-7 text-xs px-2' : ''}`}
+                            onClick={() => setOpen(true)}
+                        >
+                            <XCircle className={`h-4 w-4 ${mobile ? 'mr-1 h-3 w-3' : ''}`} />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Batalkan Offboarding</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
+            <AlertDialogContent className="max-w-md bg-white border-0 rounded-2xl shadow-2xl">
+                <AlertDialogHeader className="relative">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+                        <AlertTriangle className="h-7 w-7 text-red-600" />
+                    </div>
+                    <AlertDialogTitle className="text-center text-xl font-bold text-slate-900">
+                        Batalkan Offboarding?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-center text-slate-600">
+                        Apakah Anda yakin ingin membatalkan proses offboarding untuk <span className="font-semibold text-slate-900">{termination.employeeName}</span>?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="relative my-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                    <p className="text-sm text-amber-800">
+                        <strong>Perhatian:</strong> Tindakan ini akan menghapus semua data offboarding yang telah diinput.
+                    </p>
+                </div>
+                <AlertDialogFooter className="relative flex-col gap-2 sm:flex-row">
+                    <AlertDialogCancel className="m-0 w-full sm:w-auto">
+                        Batal
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={() => {
+                            onConfirm(termination.id, termination.employeeName);
+                            setOpen(false);
+                        }}
+                        className="m-0 w-full bg-red-600 text-white hover:bg-red-700 sm:w-auto"
+                    >
+                        Ya, Batalkan
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }

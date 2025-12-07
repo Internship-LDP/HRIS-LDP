@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,24 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { TerminationRecord } from '../types';
 
 interface TerminationDetailDialogProps {
   termination: TerminationRecord;
   trigger: ReactNode;
+  tooltip?: string;
 }
 
 export default function TerminationDetailDialog({
   termination,
   trigger,
+  tooltip,
 }: TerminationDetailDialogProps) {
   const getDisplayProgress = (req: TerminationRecord) => {
     const status = (req.status || '').toLowerCase();
@@ -29,9 +37,31 @@ export default function TerminationDetailDialog({
     return Math.max(0, req.progress ?? 0);
   };
 
+  const [open, setOpen] = useState(false);
+
+  const triggerWithOnClick = React.cloneElement(trigger as React.ReactElement, {
+    onClick: (e: React.MouseEvent) => {
+      setOpen(true);
+      (trigger as React.ReactElement).props.onClick?.(e);
+    },
+  });
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {tooltip ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {triggerWithOnClick}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        triggerWithOnClick
+      )}
       <DialogContent className="max-w-3xl h-[85vh] border-0 bg-white p-0 flex flex-col gap-0 overflow-hidden">
         {/* Header tetap, tidak ikut scroll */}
         <DialogHeader className="shrink-0 space-y-1 border-b border-slate-100 bg-white px-8 py-5 text-left">

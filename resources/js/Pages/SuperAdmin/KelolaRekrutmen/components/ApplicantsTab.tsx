@@ -9,6 +9,12 @@ import {
     PopoverTrigger,
 } from '@/Components/ui/popover';
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/Components/ui/tooltip';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -355,16 +361,24 @@ export default function ApplicantsTab({
                                         <TableCell>
                                             <div className="flex flex-wrap items-center justify-end gap-2">
                                                 {onViewProfile && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => onViewProfile(application)}
-                                                        disabled={isCurrentlyUpdating}
-                                                        title="Lihat Profil Lengkap"
-                                                    >
-                                                        <User className="h-4 w-4 mr-2 text-blue-600" />
-                                                        Profil
-                                                    </Button>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => onViewProfile(application)}
+                                                                    disabled={isCurrentlyUpdating}
+                                                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                                >
+                                                                    <User className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Lihat Profil Lengkap</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
                                                 )}
                                             </div>
                                         </TableCell>

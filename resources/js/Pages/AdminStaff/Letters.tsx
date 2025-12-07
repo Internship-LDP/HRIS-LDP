@@ -76,6 +76,12 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/Components/ui/pagination';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/Components/ui/tooltip';
 
 type ReplyHistoryEntry = {
     id: number | null;
@@ -1173,9 +1179,24 @@ function LettersTable({
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
-                                                Detail
-                                            </Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                            onClick={() => onViewDetail(letter)}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Detail Surat</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
                                             {onArchive && variant !== 'archive' && (
                                                 <ArchiveConfirmButton
                                                     letter={letter}
@@ -1265,21 +1286,28 @@ function ArchiveConfirmButton({
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-rose-600 hover:text-rose-700"
-                    disabled={disabled || letter.status === 'Diarsipkan'}
-                >
-                    {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Archive className="mr-2 h-4 w-4" />
-                    )}
-                    Arsipkan
-                </Button>
-            </AlertDialogTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            disabled={disabled || letter.status === 'Diarsipkan'}
+                            onClick={() => setOpen(true)}
+                        >
+                            {isProcessing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Archive className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Arsipkan</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
             <AlertDialogContent className="bg-white">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Arsipkan surat?</AlertDialogTitle>

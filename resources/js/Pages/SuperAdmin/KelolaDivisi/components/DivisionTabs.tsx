@@ -28,8 +28,15 @@ import {
     CheckCircle2,
     Edit,
     Settings,
+    Trash2,
     XCircle,
 } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { useState } from 'react';
 
 type DivisionTabsProps = {
@@ -322,6 +329,8 @@ function DivisionVacancySection({
     onOpenJob: () => void;
     onCloseJob: () => void;
 }) {
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+
     if (division.is_hiring && division.job_title) {
         return (
             <div className="space-y-3 md:space-y-4 rounded-xl border border-green-200 bg-green-50 p-3 md:p-4">
@@ -341,19 +350,37 @@ function DivisionVacancySection({
                         )}
                     </div>
                     <div className="flex flex-col gap-2">
-                        <Button variant="outline" size="sm" onClick={onOpenJob}>
-                            <Edit className="mr-2 h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={onOpenJob}>
+                                        <Edit className="h-4 w-4 text-blue-600" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Edit Lowongan</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                            onClick={() => setIsAlertOpen(true)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Hapus Lowongan</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                             <AlertDialogContent className="bg-white">
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Hapus Lowongan?</AlertDialogTitle>

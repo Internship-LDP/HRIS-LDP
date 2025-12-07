@@ -20,7 +20,13 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
-import { Archive, FileText, Loader2 } from 'lucide-react';
+import { Archive, Eye, Loader2 } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { PriorityBadge } from './PriorityBadge';
 
 export type ReplyHistoryEntry = {
@@ -221,15 +227,24 @@ export default function LettersTable({
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onSelect(letter)}
-                                                className="text-xs md:text-sm"
-                                            >
-                                                <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-                                                <span className="hidden md:inline">Detail</span>
-                                            </Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => onSelect(letter)}
+                                                            className="text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Detail Surat</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
                                             {onArchive && (
                                                 <ArchiveActionButton
                                                     letter={letter}
@@ -305,21 +320,29 @@ function ArchiveActionButton({
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-rose-600 hover:text-rose-700"
-                    disabled={disabled || letter.status === 'Diarsipkan'}
-                >
-                    {isProcessing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Archive className="mr-2 h-4 w-4" />
-                    )}
-                    Arsipkan
-                </Button>
-            </AlertDialogTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            disabled={disabled || letter.status === 'Diarsipkan'}
+                            onClick={() => setOpen(true)}
+                        >
+                            {isProcessing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Archive className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Arsipkan</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
             <AlertDialogContent className="bg-white">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Arsipkan surat ini?</AlertDialogTitle>

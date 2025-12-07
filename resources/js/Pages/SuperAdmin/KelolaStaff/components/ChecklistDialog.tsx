@@ -13,7 +13,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { TerminationRecord } from '../types';
 import { CheckCircle } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import {
     Select,
@@ -34,17 +34,25 @@ import {
     AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
 import { toast } from 'sonner';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 
 interface ChecklistDialogProps {
     termination: TerminationRecord;
     checklistTemplate: string[];
     trigger: React.ReactNode;
+    tooltip?: string;
 }
 
 export default function ChecklistDialog({
     termination,
     checklistTemplate,
     trigger,
+    tooltip,
 }: ChecklistDialogProps) {
     const [open, setOpen] = useState(false);
     const defaultChecklist = useMemo(
@@ -121,9 +129,29 @@ export default function ChecklistDialog({
         });
     };
 
+    const triggerWithOnClick = React.cloneElement(trigger as React.ReactElement, {
+        onClick: (e: React.MouseEvent) => {
+            setOpen(true);
+            (trigger as React.ReactElement).props.onClick?.(e);
+        },
+    });
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            {tooltip ? (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            {triggerWithOnClick}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{tooltip}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            ) : (
+                triggerWithOnClick
+            )}
 
             <DialogContent className="w-[92vw] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto border-0 bg-white p-0 rounded-xl">
                 <DialogHeader className="sticky top-0 z-10 space-y-1 border-b border-slate-200 bg-white px-6 py-4 text-left">

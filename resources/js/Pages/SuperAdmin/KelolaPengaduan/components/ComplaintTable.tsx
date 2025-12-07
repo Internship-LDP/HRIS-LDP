@@ -1,4 +1,11 @@
 import { Button } from '@/Components/ui/button';
+import { Eye } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import {
     Table,
     TableBody,
@@ -118,15 +125,24 @@ export default function ComplaintTable({
                                     {renderStatusBadge(complaint.status, complaint.statusLabel)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => onSelect(complaint)}
-                                        className="text-blue-900 hover:text-blue-800"
-                                    >
-                                        Detail
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => onSelect(complaint)}
+                                                    className="text-blue-900 hover:text-blue-800 hover:bg-blue-50"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Lihat Detail</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -150,10 +166,10 @@ export default function ComplaintTable({
                                     }
                                 }}
                                 className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${link.active
-                                        ? 'bg-blue-900 text-white'
-                                        : link.url
-                                            ? 'text-blue-900 hover:bg-blue-50'
-                                            : 'text-slate-400'
+                                    ? 'bg-blue-900 text-white'
+                                    : link.url
+                                        ? 'text-blue-900 hover:bg-blue-50'
+                                        : 'text-slate-400'
                                     }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />

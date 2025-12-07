@@ -12,6 +12,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { AccountRecord, PaginationLink } from './types';
 
 interface AccountTableProps {
@@ -55,8 +61,8 @@ export default function AccountTable({
                                     </div>
                                     <span
                                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold shrink-0 ${user.status === 'Active'
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-slate-200 text-slate-600'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-slate-200 text-slate-600'
                                             }`}
                                     >
                                         {user.status}
@@ -182,8 +188,8 @@ export default function AccountTable({
                                 <td className="px-4 py-3">
                                     <span
                                         className={`rounded-full px-3 py-1 text-xs font-semibold ${user.status === 'Active'
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-slate-200 text-slate-600'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-slate-200 text-slate-600'
                                             }`}
                                     >
                                         {user.status}
@@ -278,10 +284,10 @@ export default function AccountTable({
                                     }
                                 }}
                                 className={`rounded px-1.5 py-0.5 text-[10px] md:text-sm md:px-3 md:py-1 ${link.active
-                                        ? 'bg-blue-900 text-white'
-                                        : link.url
-                                            ? 'text-blue-900 hover:bg-blue-50'
-                                            : 'text-slate-400'
+                                    ? 'bg-blue-900 text-white'
+                                    : link.url
+                                        ? 'text-blue-900 hover:bg-blue-50'
+                                        : 'text-slate-400'
                                     }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
@@ -305,14 +311,22 @@ function IconButton({
     size?: 'sm' | 'default';
 }) {
     return (
-        <button
-            type="button"
-            onClick={onClick}
-            title={label}
-            className={`rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-blue-900 ${size === 'sm' ? 'p-1.5' : 'p-2'
-                }`}
-        >
-            {children}
-        </button>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        type="button"
+                        onClick={onClick}
+                        className={`rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-blue-900 ${size === 'sm' ? 'p-1.5' : 'p-2'
+                            }`}
+                    >
+                        {children}
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{label}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 }
