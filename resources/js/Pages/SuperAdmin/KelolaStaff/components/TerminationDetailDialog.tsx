@@ -9,6 +9,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
 import { ScrollArea } from '@/Components/ui/scroll-area';
+import { Separator } from '@/Components/ui/separator';
 import { TerminationRecord } from '../types';
 
 interface TerminationDetailDialogProps {
@@ -31,104 +32,104 @@ export default function TerminationDetailDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] border-0 bg-white p-0">
-        <div className="flex max-h-[90vh] flex-col">
-          {/* Header tetap, tidak ikut scroll */}
-          <DialogHeader className="space-y-1 border-b border-slate-200 px-6 py-4 text-left">
-            <DialogTitle>Detail Pengajuan Offboarding</DialogTitle>
-            <DialogDescription>
+      <DialogContent className="max-w-3xl h-[85vh] border-0 bg-white p-0 flex flex-col gap-0 overflow-hidden">
+        {/* Header tetap, tidak ikut scroll */}
+        <DialogHeader className="shrink-0 space-y-1 border-b border-slate-100 bg-white px-8 py-5 text-left">
+          <div>
+            <DialogTitle className="text-xl font-bold">Detail Pengajuan Offboarding</DialogTitle>
+            <DialogDescription className="mt-1.5">
               Informasi lengkap mengenai karyawan dan alasan pengajuan termination.
             </DialogDescription>
-          </DialogHeader>
+          </div>
+          <div className="pt-2">
+            {renderStatusBadge(termination.status)}
+          </div>
+        </DialogHeader>
 
-          {/* Isi dialog yang bisa discroll */}
-          <ScrollArea className="flex-1 px-6 pb-6 pt-4 text-sm">
-            <div className="space-y-6">
-              <section className="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2">
-                <Detail label="ID" value={termination.reference} />
-                <Detail label="Nama" value={termination.employeeName} />
+        {/* Isi dialog yang bisa discroll */}
+        <ScrollArea className="flex-1 w-full bg-white min-h-0">
+          <div className="px-8 pb-8 pt-6 text-sm flex flex-col gap-8">
+
+            {/* Informasi Utama */}
+            <section className="space-y-4">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                Informasi Karyawan
+              </h4>
+              <div className="grid grid-cols-2 gap-y-5 gap-x-8 rounded-xl border border-slate-300 bg-slate-50 p-5 shadow-sm">
+                <Detail label="ID Pengajuan" value={termination.reference} />
                 <Detail label="ID Karyawan" value={termination.employeeCode} />
+                <Detail label="Nama Karyawan" value={termination.employeeName} />
                 <Detail label="Divisi" value={termination.division} />
                 <Detail label="Posisi" value={termination.position} />
+                <Detail label="Tipe Offboarding" value={termination.type} />
+                <Detail label="Tanggal Pengajuan" value={termination.requestDate} />
+                <Detail label="Tanggal Efektif" value={termination.effectiveDate} />
+              </div>
+            </section>
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500">
-                    Status
-                  </p>
-                  <div className="mt-1">
-                    {renderStatusBadge(termination.status)}
-                  </div>
-                </div>
+            <Separator />
 
-                <Detail
-                  label="Tanggal Pengajuan"
-                  value={termination.requestDate}
+            {/* Progress Bar */}
+            <section>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-foreground">Status Progress</h4>
+                <span className="text-sm font-medium text-muted-foreground">{getDisplayProgress(termination)}%</span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-slate-100">
+                <div
+                  className="h-2.5 rounded-full bg-primary transition-all duration-500 ease-out"
+                  style={{ width: `${getDisplayProgress(termination)}%` }}
                 />
-                <Detail
-                  label="Tanggal Efektif"
-                  value={termination.effectiveDate}
-                />
-                <Detail label="Tipe" value={termination.type} />
+              </div>
+            </section>
 
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-500">
-                    Progress
-                  </p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <div className="h-2 flex-1 rounded-full bg-slate-200">
-                      <div
-                        className="h-2 rounded-full bg-blue-900"
-                        style={{ width: `${getDisplayProgress(termination)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-slate-500">
-                      {getDisplayProgress(termination)}%
-                    </span>
-                  </div>
-                </div>
-              </section>
+            <Separator />
 
-              <section className="space-y-2">
-                <h4 className="text-base font-semibold text-slate-900">
+            {/* Detail Alasan & Catatan */}
+            <div className="grid grid-cols-1 gap-8">
+              <section className="space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">
                   Alasan Pengajuan
                 </h4>
-                <p className="rounded-lg border border-slate-200 bg-white/70 p-3 text-slate-700 whitespace-pre-line break-words">
-                  {termination.reason ?? '-'}
-                </p>
+                <div className="rounded-lg bg-slate-50 p-4 text-slate-900 leading-relaxed text-sm border border-slate-300 shadow-sm">
+                  {termination.reason || <span className="text-muted-foreground italic">Tidak ada alasan yang dicantumkan.</span>}
+                </div>
               </section>
 
-              <section className="space-y-2">
-                <h4 className="text-base font-semibold text-slate-900">
-                  Saran / Masukan
-                </h4>
-                <p className="rounded-lg border border-slate-200 bg-white/70 p-3 text-slate-700 whitespace-pre-line break-words">
-                  {termination.suggestion ?? '-'}
-                </p>
-              </section>
+              {termination.suggestion && (
+                <section className="space-y-3">
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Saran / Masukan
+                  </h4>
+                  <div className="rounded-lg bg-slate-50 p-4 text-slate-900 leading-relaxed text-sm border border-slate-300 shadow-sm">
+                    {termination.suggestion}
+                  </div>
+                </section>
+              )}
 
-              <section className="space-y-2">
-                <h4 className="text-base font-semibold text-slate-900">
+              <section className="space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">
                   Catatan HR
                 </h4>
-                <p className="rounded-lg border border-slate-200 bg-white/70 p-3 text-slate-700 whitespace-pre-line break-words">
-                  {termination.notes ?? 'Belum ada catatan.'}
-                </p>
+                <div className="rounded-lg bg-amber-50 p-4 text-slate-900 leading-relaxed text-sm border border-amber-200 shadow-sm">
+                  {termination.notes || <span className="text-muted-foreground italic">Belum ada catatan dari HR.</span>}
+                </div>
               </section>
             </div>
-          </ScrollArea>
-        </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }
 
 function Detail({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div>
-      <p className="text-xs uppercase tracking-wide text-slate-500">
+    <div className='space-y-1'>
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
         {label}
       </p>
-      <p className="text-sm font-medium text-slate-900">
+      <p className="text-sm font-semibold text-foreground">
         {value ?? '-'}
       </p>
     </div>
@@ -139,19 +140,19 @@ function renderStatusBadge(status: string) {
   switch (status) {
     case 'Diajukan':
       return (
-        <Badge variant="outline" className="border-blue-500 text-blue-600">
+        <Badge variant="outline" className="border-blue-500 text-blue-600 bg-blue-50">
           Diajukan
         </Badge>
       );
     case 'Proses':
       return (
-        <Badge variant="outline" className="border-orange-500 text-orange-600">
+        <Badge variant="outline" className="border-orange-500 text-orange-600 bg-orange-50">
           Proses
         </Badge>
       );
     case 'Selesai':
       return (
-        <Badge variant="outline" className="border-green-500 text-green-600">
+        <Badge variant="outline" className="border-green-500 text-green-600 bg-green-50">
           Selesai
         </Badge>
       );
