@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
+import { Eye } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { Card } from '@/Components/ui/card';
 import {
     Table,
@@ -103,9 +110,18 @@ export default function ComplaintTable({ complaints, onSelect }: ComplaintTableP
                                         {resolutionText}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" onClick={() => onSelect(complaint)}>
-                                            Detail
-                                        </Button>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button variant="ghost" size="icon" onClick={() => onSelect(complaint)} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Lihat Detail</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </TableCell>
                                 </TableRow>
                             );
@@ -158,9 +174,18 @@ export default function ComplaintTable({ complaints, onSelect }: ComplaintTableP
                                         ID {complaint.id}
                                     </Badge>
                                 )}
-                                <Button variant="outline" size="sm" onClick={() => onSelect(complaint)}>
-                                    Detail
-                                </Button>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" onClick={() => onSelect(complaint)} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Lihat Detail</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
                         </Card>
                     );
