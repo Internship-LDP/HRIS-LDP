@@ -86,8 +86,8 @@ export default function ChecklistDialog({
             typeof options.progressOverride === 'number'
                 ? options.progressOverride
                 : statusOverride === 'Selesai'
-                ? 100
-                : computeProgress(form.data.checklist);
+                    ? 100
+                    : computeProgress(form.data.checklist);
 
         form.transform((data) => ({
             ...data,
@@ -219,6 +219,14 @@ export default function ChecklistDialog({
                     </div>
 
                     <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                            disabled={form.processing}
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-600"
+                        >
+                            Batal
+                        </Button>
                         <Button
                             className="bg-blue-900 text-white hover:bg-blue-800"
                             onClick={() => handleSubmit(undefined, { closeAfterSuccess: true })}
