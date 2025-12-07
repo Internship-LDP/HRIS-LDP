@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
 import { Head, usePage } from "@inertiajs/react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Card } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { MessageSquare } from "lucide-react";
@@ -11,19 +10,13 @@ import ComplaintComposerDialog from "./Complaints/components/ComplaintComposerDi
 import ComplaintDetailDialog from "./Complaints/components/ComplaintDetailDialog";
 import ComplaintFilters from "./Complaints/components/ComplaintFilters";
 import ComplaintTable from "./Complaints/components/ComplaintTable";
-import AnnouncementList from "./Complaints/components/AnnouncementList";
-import RegulationList from "./Complaints/components/RegulationList";
 
 import type { ComplaintRecord, ComplaintsPageProps } from "./Complaints/types";
 
 export default function StaffComplaints() {
     const {
-        props: { complaints, filters, regulations, announcements },
+        props: { complaints, filters },
     } = usePage<PageProps<ComplaintsPageProps>>();
-
-    const [activeTab, setActiveTab] = useState<
-        "complaints" | "regulations" | "forum"
-    >("complaints");
 
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -91,58 +84,30 @@ export default function StaffComplaints() {
                     </Button>
                 }
             >
-                <Tabs
-                    value={activeTab}
-                    onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-                    className="mt-6"
-                >
-                    <div className="overflow-x-auto">
-                        <TabsList className="flex min-w-[320px] justify-start gap-2 sm:min-w-0">
-                            <TabsTrigger value="complaints">
-                                Pengaduan
-                            </TabsTrigger>
-                            <TabsTrigger value="regulations">
-                                Regulasi
-                            </TabsTrigger>
-                            <TabsTrigger value="forum">Forum</TabsTrigger>
-                        </TabsList>
+                <Card className="mt-6 p-4 sm:p-5 md:p-6">
+                    <ComplaintFilters
+                        searchTerm={searchTerm}
+                        statusFilter={statusFilter}
+                        categoryFilter={categoryFilter}
+                        priorityFilter={priorityFilter}
+                        // Kosongkan categories agar fallback FE dipakai di FE
+                        filters={{
+                            ...filters,
+                            categories: [],
+                        }}
+                        onSearchChange={setSearchTerm}
+                        onStatusChange={setStatusFilter}
+                        onCategoryChange={setCategoryFilter}
+                        onPriorityChange={setPriorityFilter}
+                    />
+
+                    <div className="mt-4">
+                        <ComplaintTable
+                            complaints={filteredComplaints}
+                            onSelect={setDetailComplaint}
+                        />
                     </div>
-
-                    <TabsContent value="complaints" className="mt-4">
-                        <Card className="p-4 sm:p-5 md:p-6">
-                            <ComplaintFilters
-                                searchTerm={searchTerm}
-                                statusFilter={statusFilter}
-                                categoryFilter={categoryFilter}
-                                priorityFilter={priorityFilter}
-                                // Kosongkan categories agar fallback FE dipakai di FE
-                                filters={{
-                                    ...filters,
-                                    categories: [],
-                                }}
-                                onSearchChange={setSearchTerm}
-                                onStatusChange={setStatusFilter}
-                                onCategoryChange={setCategoryFilter}
-                                onPriorityChange={setPriorityFilter}
-                            />
-
-                            <div className="mt-4">
-                                <ComplaintTable
-                                    complaints={filteredComplaints}
-                                    onSelect={setDetailComplaint}
-                                />
-                            </div>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="regulations" className="mt-4">
-                        <RegulationList regulations={regulations} />
-                    </TabsContent>
-
-                    <TabsContent value="forum" className="mt-4">
-                        <AnnouncementList announcements={announcements} />
-                    </TabsContent>
-                </Tabs>
+                </Card>
             </StaffLayout>
 
             {/* Composer dialog pakai kategori FE default */}
