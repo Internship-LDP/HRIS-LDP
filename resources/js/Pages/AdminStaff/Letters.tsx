@@ -66,6 +66,16 @@ import {
     Users,
 } from 'lucide-react';
 
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/Components/ui/pagination';
+
 type ReplyHistoryEntry = {
     id: number | null;
     note: string;
@@ -1062,99 +1072,182 @@ function LettersTable({
     unarchivingId?: number | null;
     unarchiveProcessing?: boolean;
 }) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    // Reset page when letters change (e.g. switching tabs or search)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [letters, variant]);
+
     if (letters.length === 0) {
         return <EmptyState message="Belum ada surat pada tab ini." />;
     }
 
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Nomor</TableHead>
-                    <TableHead>Pengirim</TableHead>
-                    <TableHead>Subjek</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Prioritas</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {letters.map((letter) => {
-                    const latestReply =
-                        letter.replyHistory && letter.replyHistory.length > 0
-                            ? letter.replyHistory[letter.replyHistory.length - 1]
-                            : undefined;
-                    const hasReply = Boolean(latestReply || letter.replyNote);
+    const totalPages = Math.ceil(letters.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedLetters = letters.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-                    return (
-                        <TableRow key={letter.id}>
-                            <TableCell>{letter.letterNumber}</TableCell>
-                            <TableCell>
-                                <div>
-                                    <p className="text-sm font-semibold text-slate-900">
-                                        {letter.sender}
-                                    </p>
-                                    <p className="text-xs text-slate-500">{letter.from}</p>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <span>{letter.subject}</span>
-                                    {letter.hasAttachment && (
-                                        <FileText className="h-4 w-4 text-slate-400" />
-                                    )}
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <Badge variant="outline">{letter.category}</Badge>
-                            </TableCell>
-                            <TableCell>
-                                <PriorityBadge priority={letter.priority} />
-                            </TableCell>
-                            <TableCell>{letter.date}</TableCell>
-                            <TableCell>
-                                <StatusBadge status={letter.status} />
-                                {/* {letter.dispositionNote && (
-                                <p className="mt-1 text-[11px] font-medium text-rose-600">
-                                    Catatan HR tersedia
-                                </p>
-                            )} */}
-                                {hasReply && (
-                                    <p className="mt-1 text-[11px] font-medium text-emerald-600">
-                                        Balasan dikirim
-                                    </p>
-                                )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex justify-end gap-1">
-                                    <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
-                                        Detail
-                                    </Button>
-                                    {onArchive && variant !== 'archive' && (
-                                        <ArchiveConfirmButton
-                                            letter={letter}
-                                            onConfirm={onArchive}
-                                            disabled={archiveProcessing}
-                                            isProcessing={archiveProcessing && archivingId === letter.id}
-                                        />
-                                    )}
-                                    {onUnarchive && variant === 'archive' && (
-                                        <UnarchiveConfirmButton
-                                            letter={letter}
-                                            onConfirm={onUnarchive}
-                                            disabled={unarchiveProcessing}
-                                            isProcessing={unarchiveProcessing && unarchivingId === letter.id}
-                                        />
-                                    )}
-                                </div>
-                            </TableCell>
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
+    };
+
+    // Helper to generate page numbers with ellipsis
+    const getPageNumbers = () => {
+        const pages = [];
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 3) {
+                pages.push(1, 2, 3, 4, 'ellipsis', totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+            }
+        }
+        return pages;
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nomor</TableHead>
+                            <TableHead>Pengirim</TableHead>
+                            <TableHead>Subjek</TableHead>
+                            <TableHead>Kategori</TableHead>
+                            <TableHead>Prioritas</TableHead>
+                            <TableHead>Tanggal</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Aksi</TableHead>
                         </TableRow>
-                    );
-                })}
-            </TableBody>
-        </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedLetters.map((letter) => {
+                            const latestReply =
+                                letter.replyHistory && letter.replyHistory.length > 0
+                                    ? letter.replyHistory[letter.replyHistory.length - 1]
+                                    : undefined;
+                            const hasReply = Boolean(latestReply || letter.replyNote);
+
+                            return (
+                                <TableRow key={letter.id}>
+                                    <TableCell>{letter.letterNumber}</TableCell>
+                                    <TableCell>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-900">
+                                                {letter.sender}
+                                            </p>
+                                            <p className="text-xs text-slate-500">{letter.from}</p>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span>{letter.subject}</span>
+                                            {letter.hasAttachment && (
+                                                <FileText className="h-4 w-4 text-slate-400" />
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline">{letter.category}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <PriorityBadge priority={letter.priority} />
+                                    </TableCell>
+                                    <TableCell>{letter.date}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={letter.status} />
+                                        {/* {letter.dispositionNote && (
+                                        <p className="mt-1 text-[11px] font-medium text-rose-600">
+                                            Catatan HR tersedia
+                                        </p>
+                                    )} */}
+                                        {hasReply && (
+                                            <p className="mt-1 text-[11px] font-medium text-emerald-600">
+                                                Balasan dikirim
+                                            </p>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-1">
+                                            <Button variant="ghost" size="sm" onClick={() => onViewDetail(letter)}>
+                                                Detail
+                                            </Button>
+                                            {onArchive && variant !== 'archive' && (
+                                                <ArchiveConfirmButton
+                                                    letter={letter}
+                                                    onConfirm={onArchive}
+                                                    disabled={archiveProcessing}
+                                                    isProcessing={archiveProcessing && archivingId === letter.id}
+                                                />
+                                            )}
+                                            {onUnarchive && variant === 'archive' && (
+                                                <UnarchiveConfirmButton
+                                                    letter={letter}
+                                                    onConfirm={onUnarchive}
+                                                    disabled={unarchiveProcessing}
+                                                    isProcessing={unarchiveProcessing && unarchivingId === letter.id}
+                                                />
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Pagination Controls */}
+            {letters.length > ITEMS_PER_PAGE && (
+                <div className="flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-xs text-slate-500 text-center sm:text-left">
+                        Menampilkan <span className="font-medium">{startIndex + 1}</span> - <span className="font-medium">{Math.min(startIndex + ITEMS_PER_PAGE, letters.length)}</span> dari <span className="font-medium">{letters.length}</span> surat
+                    </div>
+
+                    <Pagination className="w-auto mx-0 justify-center sm:justify-end">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                                    className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+                                />
+                            </PaginationItem>
+
+                            {getPageNumbers().map((page, idx) => (
+                                <PaginationItem key={idx}>
+                                    {page === 'ellipsis' ? (
+                                        <PaginationEllipsis />
+                                    ) : (
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={currentPage === page}
+                                            onClick={(e) => { e.preventDefault(); typeof page === 'number' && handlePageChange(page); }}
+                                        >
+                                            {page}
+                                        </PaginationLink>
+                                    )}
+                                </PaginationItem>
+                            ))}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                                    className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
+        </div>
     );
 }
 
