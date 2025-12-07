@@ -1,23 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import SuperAdminLayout from '@/Pages/SuperAdmin/Layout';
-import { Button } from '@/Components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { toast } from 'sonner';
 import {
-    AnnouncementRecord,
     ComplaintRecord,
     Option,
     PaginatedComplaints,
-    RegulationRecord,
 } from './types';
 import ComplaintStats from './components/ComplaintStats';
 import ComplaintFilters from './components/ComplaintFilters';
 import ComplaintTable from './components/ComplaintTable';
 import ComplaintDetailDialog from './components/ComplaintDetailDialog';
-import RegulationList from './components/RegulationList';
-import AnnouncementList from './components/AnnouncementList';
-import { MessageSquarePlus } from 'lucide-react';
 import type { PageProps } from '@/types';
 
 type ComplaintsPageProps = PageProps<{
@@ -37,8 +30,6 @@ type ComplaintsPageProps = PageProps<{
     statusOptions: Option[];
     priorityOptions: Option[];
     categoryOptions: string[];
-    regulations: RegulationRecord[];
-    announcements: AnnouncementRecord[];
     flash?: {
         success?: string;
     };
@@ -52,14 +43,9 @@ export default function KelolaPengaduanIndex(props: ComplaintsPageProps) {
         statusOptions,
         priorityOptions,
         categoryOptions,
-        regulations,
-        announcements,
         flash,
     } = props;
 
-    const [activeTab, setActiveTab] = useState<'complaints' | 'regulations' | 'forum'>(
-        'complaints',
-    );
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? 'all');
     const [priority, setPriority] = useState(filters.priority ?? 'all');
@@ -159,43 +145,27 @@ export default function KelolaPengaduanIndex(props: ComplaintsPageProps) {
             <ComplaintStats stats={stats} />
 
             <div className="mt-8">
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-                    <TabsList>
-                        <TabsTrigger value="complaints">Pengaduan &amp; Saran</TabsTrigger>
-                        <TabsTrigger value="regulations">Regulasi</TabsTrigger>
-                        <TabsTrigger value="forum">Forum &amp; Pengumuman</TabsTrigger>
-                    </TabsList>
+                <div className="mt-6 space-y-6">
+                    <ComplaintFilters
+                        search={search}
+                        status={status}
+                        priority={priority}
+                        category={category}
+                        statusOptions={statusOptions}
+                        priorityOptions={priorityOptions}
+                        categoryOptions={categoryOptions}
+                        onSearchChange={setSearch}
+                        onStatusChange={setStatus}
+                        onPriorityChange={setPriority}
+                        onCategoryChange={setCategory}
+                    />
 
-                    <TabsContent value="complaints" className="mt-6 space-y-6">
-                        <ComplaintFilters
-                            search={search}
-                            status={status}
-                            priority={priority}
-                            category={category}
-                            statusOptions={statusOptions}
-                            priorityOptions={priorityOptions}
-                            categoryOptions={categoryOptions}
-                            onSearchChange={setSearch}
-                            onStatusChange={setStatus}
-                            onPriorityChange={setPriority}
-                            onCategoryChange={setCategory}
-                        />
-
-                        <ComplaintTable
-                            complaints={complaints.data}
-                            links={complaints.links}
-                            onSelect={handleSelectComplaint}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="regulations" className="mt-6">
-                        <RegulationList regulations={regulations} />
-                    </TabsContent>
-
-                    <TabsContent value="forum" className="mt-6">
-                        <AnnouncementList announcements={announcements} />
-                    </TabsContent>
-                </Tabs>
+                    <ComplaintTable
+                        complaints={complaints.data}
+                        links={complaints.links}
+                        onSelect={handleSelectComplaint}
+                    />
+                </div>
             </div>
 
             <ComplaintDetailDialog
