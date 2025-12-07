@@ -86,10 +86,6 @@ export default function StaffResignation() {
             <StaffLayout
                 title="Pengajuan Resign"
                 description="Ajukan permohonan resign dan pantau proses offboarding Anda."
-                breadcrumbs={[
-                    { label: "Dashboard", href: route("staff.dashboard") },
-                    { label: "Pengajuan Resign" },
-                ]}
             >
                 {/* FORM + INFO PANEL */}
                 <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">

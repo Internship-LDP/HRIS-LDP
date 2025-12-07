@@ -70,10 +70,6 @@ export default function StaffComplaints() {
             <StaffLayout
                 title="Keluhan & Saran"
                 description="Kirim pengaduan dan pantau tindak lanjut HR secara real-time."
-                breadcrumbs={[
-                    { label: "Dashboard", href: route("staff.dashboard") },
-                    { label: "Keluhan & Saran" },
-                ]}
                 actions={
                     <Button
                         className="bg-blue-900 text-white hover:bg-blue-800"
