@@ -65,18 +65,35 @@ class User extends Authenticatable
     }
 
     public static function generateEmployeeCode(string $role): string
-    {
-        $prefix = match ($role) {
-            self::ROLES['super_admin'] => 'SA',
-            self::ROLES['admin'] => 'ADM',
-            self::ROLES['staff'] => 'STF',
-            self::ROLES['pelamar'] => 'PEL',
-            default => 'EMP',
-        };
+{
+    $prefix = match ($role) {
+        self::ROLES['super_admin'] => 'SA',
+        self::ROLES['admin']       => 'ADM',
+        self::ROLES['staff']       => 'STF',
+        self::ROLES['pelamar']     => 'PEL',
+        default                    => 'EMP',
+    };
 
-        $increment = static::where('role', $role)->count() + 1;
-        return sprintf('%s%03d', $prefix, $increment);
+    // Cari employee_code terbesar berdasarkan prefix
+    $lastCode = self::where('employee_code', 'LIKE', $prefix . '%')
+        ->orderBy('employee_code', 'desc')
+        ->value('employee_code');
+
+    // Jika belum ada data sama sekali
+    if (!$lastCode) {
+        return $prefix . '001';
     }
+
+    // Ambil angka dari employee_code
+    $number = intval(substr($lastCode, strlen($prefix)));
+
+    // Naikkan angka +1
+    $next = $number + 1;
+
+    // Hasil akhir
+    return $prefix . str_pad($next, 3, '0', STR_PAD_LEFT);
+}
+
 
     /**
      * Route dashboard berdasarkan role.
