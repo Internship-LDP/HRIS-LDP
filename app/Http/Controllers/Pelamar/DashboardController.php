@@ -37,11 +37,29 @@ class DashboardController extends Controller
         ] : null;
 
         $applicationsStatus = $applications->map(function ($application) use ($statusOrder) {
-            $statusIndex = array_search($application->status, $statusOrder, true);
-            $stages = [];
             $fallbackDate = $application->updated_at ?? $application->submitted_at;
+            
+            // Build appropriate stages based on the final status
+            // - If Hired: show Applied -> Screening -> Interview -> Hired (no Rejected)
+            // - If Rejected: show Applied -> Screening -> Interview -> Rejected (no Hired)
+            // - Otherwise: show Applied -> Screening -> Interview -> Offering -> Hired (standard flow)
+            $currentStatus = $application->status;
+            
+            if ($currentStatus === 'Hired') {
+                // For Hired: show path to Hired without Rejected
+                $applicableStatuses = ['Applied', 'Screening', 'Interview', 'Offering', 'Hired'];
+            } elseif ($currentStatus === 'Rejected') {
+                // For Rejected: show path to Rejected without Hired
+                $applicableStatuses = ['Applied', 'Screening', 'Interview', 'Offering', 'Rejected'];
+            } else {
+                // For in-progress applications, show standard flow without final statuses
+                $applicableStatuses = ['Applied', 'Screening', 'Interview', 'Offering', 'Hired'];
+            }
+            
+            $statusIndex = array_search($currentStatus, $applicableStatuses, true);
+            $stages = [];
 
-            foreach ($statusOrder as $index => $status) {
+            foreach ($applicableStatuses as $index => $status) {
                 $stageStatus = 'pending';
                 if ($statusIndex !== false) {
                     if ($index < $statusIndex) {
@@ -57,6 +75,7 @@ class DashboardController extends Controller
                     'Interview' => $application->interview_date
                         ?? $application->interview_at
                         ?? $fallbackDate,
+                    'Offering'  => $application->offering_at ?? $fallbackDate,
                     'Rejected'  => $application->rejected_at ?? $fallbackDate,
                     'Hired'     => $application->hired_at ?? $fallbackDate,
                     default     => null,
@@ -73,16 +92,17 @@ class DashboardController extends Controller
 
             // Progress Calculation
             $progress = 0;
-            if ($application->status === 'Hired') {
+            $totalApplicableStatuses = count($applicableStatuses);
+            if ($currentStatus === 'Hired') {
                 $progress = 100;
-            } elseif ($application->status === 'Rejected') {
+            } elseif ($currentStatus === 'Rejected') {
                 // Calculate progress based on completed stages excluding 'Rejected' itself
                 $completed = array_filter($stages, fn($s) => $s['status'] === 'completed');
                 // Total stages excluding Rejected (assuming Rejected is last)
-                $totalStages = max(count($statusOrder) - 1, 1); 
+                $totalStages = max($totalApplicableStatuses - 1, 1); 
                 $progress = round(count($completed) / $totalStages * 100);
-            } elseif ($statusIndex !== false && count($statusOrder) > 1) {
-                $progress = round($statusIndex / (count($statusOrder) - 1) * 100);
+            } elseif ($statusIndex !== false && $totalApplicableStatuses > 1) {
+                $progress = round($statusIndex / ($totalApplicableStatuses - 1) * 100);
             }
 
             return [
