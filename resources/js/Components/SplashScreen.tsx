@@ -23,14 +23,20 @@ export default function SplashScreen() {
     };
   }, []);
 
+  // Handle skip animation on click
+  const handleSkip = () => {
+    setShow(false);
+  };
+
   return (
     <AnimatePresence>
       {show && (
         <motion.div
-          className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center"
+          className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center cursor-pointer"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
+          onClick={handleSkip}
         >
           {/* ========== SESI 1 ========== */}
           {session === 1 && (
@@ -128,6 +134,16 @@ export default function SplashScreen() {
               </div>
             </motion.div>
           )}
+
+          {/* Skip Hint */}
+          <motion.p
+            className="absolute bottom-8 text-gray-500 text-sm font-poppins"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1 }}
+          >
+            Klik di mana saja untuk skip
+          </motion.p>
         </motion.div>
       )}
     </AnimatePresence>
