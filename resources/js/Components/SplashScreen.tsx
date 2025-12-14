@@ -129,7 +129,7 @@ export default function SplashScreen() {
                     delay: 0.95,
                   }}
                 >
-                  Jadikan Satu
+                  Jadikan Satu!
                 </motion.span>
               </div>
             </motion.div>
