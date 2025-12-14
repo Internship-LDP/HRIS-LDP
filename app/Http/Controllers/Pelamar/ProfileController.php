@@ -416,21 +416,34 @@ class ProfileController extends Controller
             ->map(function (array $cert, int $index) use ($request, $existingById) {
                 $id = $cert['id'] ?? (string) Str::uuid();
 
-                // Get existing file path if any
-                $existingFilePath = $existingById->get($id)['file_path'] ?? null;
+                // Get existing file path if any (matching by ID)
+                $existingCert = $existingById->get($id);
+                $existingFilePath = $existingCert['file_path'] ?? null;
 
                 // Check if there's a new file uploaded for this certification
-                $fileKey = "certification_files.{$index}";
-                $newFilePath = $existingFilePath;
+                // FormData converts dots to underscores, so we check for underscore format
+                $fileKeyUnderscore = "certification_files_{$index}";
+                $fileKeyDot = "certification_files.{$index}";
+                
+                $newFilePath = $existingFilePath; // Keep existing by default
 
-                if ($request->hasFile($fileKey)) {
-                    $file = $request->file($fileKey);
+                // Check for file - try underscore format first (FormData format)
+                $file = null;
+                if ($request->hasFile($fileKeyUnderscore)) {
+                    $file = $request->file($fileKeyUnderscore);
+                    \Log::info('Found file with underscore key', ['key' => $fileKeyUnderscore]);
+                } elseif ($request->hasFile($fileKeyDot)) {
+                    $file = $request->file($fileKeyDot);
+                    \Log::info('Found file with dot key', ['key' => $fileKeyDot]);
+                }
 
+                if ($file) {
                     // Validate file type
                     $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
                     if (!in_array($file->getMimeType(), $allowedMimes)) {
                         \Log::warning('Invalid certification file type', [
                             'index' => $index,
+                            'id' => $id,
                             'mime' => $file->getMimeType()
                         ]);
                     } else {
@@ -439,13 +452,26 @@ class ProfileController extends Controller
                             Storage::disk('public')->delete($existingFilePath);
                         }
 
-                        // Store new file
-                        $newFilePath = $file->store('applicant-certifications', 'public');
+                        // Store new file with original name (add timestamp to avoid conflicts)
+                        $originalName = $file->getClientOriginalName();
+                        $timestamp = now()->format('YmdHis');
+                        $fileName = $timestamp . '_' . $originalName;
+                        $newFilePath = $file->storeAs('applicant-certifications', $fileName, 'public');
+                        
                         \Log::info('Certification file uploaded', [
                             'index' => $index,
-                            'path' => $newFilePath
+                            'id' => $id,
+                            'path' => $newFilePath,
+                            'originalName' => $originalName
                         ]);
                     }
+                } else {
+                    // No new file uploaded, keep existing file path
+                    \Log::info('No new file for certification, keeping existing', [
+                        'index' => $index,
+                        'id' => $id,
+                        'existingPath' => $existingFilePath
+                    ]);
                 }
 
                 return [

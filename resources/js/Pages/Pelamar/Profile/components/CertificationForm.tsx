@@ -3,14 +3,15 @@ import { Card } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
-import { Plus, Save, Trash2, Upload, FileText, Image, Download, X } from 'lucide-react';
+import { Plus, Save, Trash2, Upload, FileText, Image, Download, Eye, X } from 'lucide-react';
 import { Certification } from '../profileTypes';
-import { useRef } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
+import FileUploadDialog from './FileUploadDialog';
 
 interface CertificationFormProps {
     certifications: Certification[];
     onChange: (id: string, key: keyof Certification, value: string | File | null) => void;
+    onClearFile: (id: string) => void;
     onAdd: () => void;
     onRemove: (id: string) => void;
     onSave: () => void;
@@ -21,35 +22,14 @@ interface CertificationFormProps {
 export default function CertificationForm({
     certifications,
     onChange,
+    onClearFile,
     onAdd,
     onRemove,
     onSave,
     processing,
     disabled = false,
 }: CertificationFormProps) {
-    const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-
-    const handleFileChange = (id: string, event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-            if (!allowedTypes.includes(file.type)) {
-                toast.error('Format file tidak valid', {
-                    description: 'File harus berformat JPG, JPEG, PNG, atau PDF',
-                });
-                return;
-            }
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error('Ukuran file terlalu besar', {
-                    description: 'Ukuran file maksimal 5MB',
-                });
-                return;
-            }
-            onChange(id, 'file', file);
-        }
-    };
+    const [uploadDialogOpen, setUploadDialogOpen] = useState<string | null>(null);
 
     const getFileIcon = (certification: Certification) => {
         if (certification.file) {
@@ -78,6 +58,11 @@ export default function CertificationForm({
             return certification.file_name;
         }
         return null;
+    };
+
+    const handleFileSelect = (certId: string, file: File) => {
+        onChange(certId, 'file', file);
+        setUploadDialogOpen(null);
     };
 
     return (
@@ -189,57 +174,97 @@ export default function CertificationForm({
                                 </div>
                                 <div>
                                     <Label>Upload Sertifikat</Label>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            ref={(el) => (fileInputRefs.current[certification.id] = el)}
-                                            type="file"
-                                            accept=".jpg,.jpeg,.png,.pdf"
-                                            onChange={(e) => handleFileChange(certification.id, e)}
-                                            className="hidden"
-                                            disabled={disabled}
-                                        />
+
+                                    {/* Display uploaded file or new file */}
+                                    {(certification.file || certification.file_url) ? (
+                                        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                            <div className="flex items-center gap-3">
+                                                {getFileIcon(certification)}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-slate-700 truncate">
+                                                        {getFileName(certification)}
+                                                    </p>
+                                                    {certification.file && (
+                                                        <p className="text-xs text-slate-500">
+                                                            Baru • {(certification.file.size / 1024).toFixed(1)} KB
+                                                        </p>
+                                                    )}
+                                                    {certification.file_url && !certification.file && (
+                                                        <p className="text-xs text-green-600">
+                                                            ✓ Sudah tersimpan
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    {/* View/Download buttons for saved file */}
+                                                    {certification.file_url && !certification.file && (
+                                                        <>
+                                                            <a
+                                                                href={certification.file_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                                                                title="Lihat File"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </a>
+                                                            <a
+                                                                href={certification.file_url}
+                                                                download
+                                                                className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded"
+                                                                title="Download File"
+                                                            >
+                                                                <Download className="h-4 w-4" />
+                                                            </a>
+                                                        </>
+                                                    )}
+                                                    {/* Remove button */}
+                                                    {!disabled && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => onClearFile(certification.id)}
+                                                            className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded"
+                                                            title="Hapus File"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => fileInputRefs.current[certification.id]?.click()}
+                                            onClick={() => setUploadDialogOpen(certification.id)}
                                             disabled={disabled}
-                                            className="flex-shrink-0"
+                                            className="mt-2 w-full border-dashed border-2 h-20 hover:bg-slate-50"
                                         >
-                                            <Upload className="mr-2 h-4 w-4" />
-                                            Pilih File
-                                        </Button>
-                                        {(certification.file || certification.file_url) && (
-                                            <div className="flex flex-1 items-center gap-2 rounded-md bg-slate-50 px-3 py-2 text-sm">
-                                                {getFileIcon(certification)}
-                                                <span className="flex-1 truncate text-slate-700">
-                                                    {getFileName(certification)}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <Upload className="h-5 w-5 text-slate-400" />
+                                                <span className="text-sm text-slate-600">
+                                                    Klik untuk upload file
                                                 </span>
-                                                {certification.file_url && !certification.file && (
-                                                    <a
-                                                        href={certification.file_url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:text-blue-700"
-                                                    >
-                                                        <Download className="h-4 w-4" />
-                                                    </a>
-                                                )}
-                                                {!disabled && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => onChange(certification.id, 'file', null)}
-                                                        className="text-red-500 hover:text-red-600"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                        </Button>
+                                    )}
+
                                     <p className="mt-1 text-xs text-slate-500">
                                         Format: JPG, JPEG, PNG, atau PDF (maks. 5MB)
                                     </p>
+
+                                    {/* File Upload Dialog */}
+                                    <FileUploadDialog
+                                        open={uploadDialogOpen === certification.id}
+                                        onOpenChange={(open) => {
+                                            if (!open) setUploadDialogOpen(null);
+                                        }}
+                                        onFileSelect={(file) => handleFileSelect(certification.id, file)}
+                                        currentFileName={certification.file_name}
+                                        currentFileUrl={certification.file_url}
+                                        disabled={disabled}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -262,3 +287,4 @@ export default function CertificationForm({
         </Card>
     );
 }
+

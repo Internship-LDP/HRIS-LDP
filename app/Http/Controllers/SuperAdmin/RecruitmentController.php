@@ -81,6 +81,25 @@ class RecruitmentController extends Controller
                     ->values()
                     ->all();
 
+                $certifications = collect($profile?->certifications ?? [])
+                    ->map(function ($certification) {
+                        $filePath = $certification['file_path'] ?? null;
+
+                        return [
+                            'id' => $certification['id'] ?? null,
+                            'name' => $certification['name'] ?? null,
+                            'issuing_organization' => $certification['issuing_organization'] ?? null,
+                            'issue_date' => $certification['issue_date'] ?? null,
+                            'expiry_date' => $certification['expiry_date'] ?? null,
+                            'credential_id' => $certification['credential_id'] ?? null,
+                            'file_path' => $filePath,
+                            'file_url' => $filePath ? '/storage/' . ltrim($filePath, '/') : null,
+                            'file_name' => $filePath ? basename($filePath) : null,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
                 $primaryEducation = collect($educations)->first();
                 $primaryExperience = collect($experiences)->first();
 
@@ -117,6 +136,7 @@ class RecruitmentController extends Controller
                     'profile_date_of_birth' => $profileDateOfBirth,
                     'educations' => $educations,
                     'experiences' => $experiences,
+                    'certifications' => $certifications,
                     'interview_date' => optional($application->interview_date)->format('Y-m-d'),
                     'interview_time' => $interviewTime,
                     'interview_mode' => $application->interview_mode,

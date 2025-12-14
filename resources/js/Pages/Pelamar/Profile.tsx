@@ -56,6 +56,7 @@ export default function Profile({
         handleEducationChange,
         handleExperienceChange,
         handleCertificationChange,
+        clearCertificationFile,
         addEducation,
         removeEducation,
         addExperience,
@@ -268,6 +269,7 @@ export default function Profile({
                         <CertificationForm
                             certifications={form.data.certifications}
                             onChange={handleCertificationChange}
+                            onClearFile={clearCertificationFile}
                             onAdd={addCertification}
                             onRemove={removeCertification}
                             onSave={() => handleSaveWithConfirmation('certification')}

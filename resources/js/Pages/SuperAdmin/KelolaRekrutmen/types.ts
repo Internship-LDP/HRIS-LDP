@@ -33,6 +33,7 @@ export interface ApplicantRecord {
     profile_date_of_birth?: string | null;
     educations?: ApplicantEducation[];
     experiences?: ApplicantExperience[];
+    certifications?: ApplicantCertification[];
     interview_date?: string | null;
     interview_time?: string | null;
     interview_mode?: 'Online' | 'Offline' | null;
@@ -69,6 +70,18 @@ export interface ApplicantExperience {
     end_date?: string | null;
     description?: string | null;
     is_current?: boolean;
+}
+
+export interface ApplicantCertification {
+    id?: string;
+    name?: string | null;
+    issuing_organization?: string | null;
+    issue_date?: string | null;
+    expiry_date?: string | null;
+    credential_id?: string | null;
+    file_path?: string | null;
+    file_url?: string | null;
+    file_name?: string | null;
 }
 
 export interface InterviewSchedule {

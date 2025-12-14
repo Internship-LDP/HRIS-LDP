@@ -220,6 +220,24 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         });
     };
 
+    const clearCertificationFile = (id: string) => {
+        const updated = form.data.certifications.map((item) =>
+            item.id === id 
+                ? { 
+                    ...item, 
+                    file: null, 
+                    file_url: undefined, 
+                    file_path: undefined, 
+                    file_name: undefined 
+                } 
+                : item,
+        );
+        form.setData({
+            ...form.data,
+            certifications: updated,
+        });
+    };
+
     const addCertification = () => {
         form.setData({
             ...form.data,
@@ -239,13 +257,45 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
 
     const submitSection = (section: SectionKey) => {
         setSubmittingSection(section);
-        form.transform((data) => ({ ...data, section }));
+        
+        form.transform((data) => {
+            const transformedData: Record<string, any> = { ...data, section };
+            
+            // Handle certification files separately
+            if (section === 'certification') {
+                // Extract files from certifications and add them with the correct key
+                data.certifications.forEach((cert, index) => {
+                    if (cert.file) {
+                        transformedData[`certification_files.${index}`] = cert.file;
+                    }
+                });
+                
+                // Clean up the certifications array - include all fields except 'file'
+                // Keep file_path, file_url, file_name to preserve existing file info
+                transformedData.certifications = data.certifications.map(cert => ({
+                    id: cert.id,
+                    name: cert.name || '',
+                    issuing_organization: cert.issuing_organization || '',
+                    issue_date: cert.issue_date || '',
+                    expiry_date: cert.expiry_date || '',
+                    credential_id: cert.credential_id || '',
+                    // Include these so backend knows if there's an existing file
+                    file_path: cert.file_path || '',
+                }));
+            }
+            
+            return transformedData;
+        });
+        
         form.post(route('pelamar.profile.update'), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
                 if (section === 'personal') {
                     (form.setData as any)('profile_photo', null);
+                }
+                if (section === 'certification' || section === 'personal') {
+                    // Reload profile data from server to get updated file URLs
                     router.reload({ only: ['profile'] });
                 }
                 const messages = {
@@ -300,6 +350,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         handleEducationChange,
         handleExperienceChange,
         handleCertificationChange,
+        clearCertificationFile,
         addEducation,
         removeEducation,
         addExperience,
