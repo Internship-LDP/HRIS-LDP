@@ -36,7 +36,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                 : [],
         profile_photo: null,
     };
-    
+
     const form = useForm<ApplicantProfileForm>(initialData);
 
     const [photoPreview, setPhotoPreview] = useState<string | null>(
@@ -78,13 +78,14 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         key: keyof ApplicantProfileForm['personal'],
         value: string,
     ) => {
-        form.setData({
-            ...form.data,
+        // Use callback form to get latest state and avoid stale closure issues
+        form.setData((prevData) => ({
+            ...prevData,
             personal: {
-                ...form.data.personal,
+                ...prevData.personal,
                 [key]: value,
             },
-        });
+        }));
     };
 
     const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {

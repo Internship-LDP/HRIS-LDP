@@ -10,8 +10,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import { AutocompleteInput, AutocompleteOption } from '@/Components/ui/autocomplete-input';
 import { Save } from 'lucide-react';
 import { ApplicantProfileForm } from '../profileTypes';
+import {
+    getAllProvinces,
+    getCitiesByProvince,
+    getCityDisplayName
+} from '@/data/indonesian-locations';
 
 interface PersonalFormProps {
     data: ApplicantProfileForm['personal'];
@@ -53,18 +59,24 @@ export default function PersonalForm({
         }
     };
 
-    // Validation: Only letters and spaces for city/province
-    const handleCityChange = (value: string) => {
-        const validCityPattern = /^[a-zA-Z\s]*$/;
-        if (validCityPattern.test(value) || value === '') {
-            onChange('city', value);
-        }
-    };
+    // Province and city options
+    const provinceOptions: AutocompleteOption[] = getAllProvinces().map(province => ({
+        value: province,
+        label: province,
+    }));
+
+    const cityOptions: AutocompleteOption[] = data.province
+        ? getCitiesByProvince(data.province).map(city => ({
+            value: getCityDisplayName(city),
+            label: getCityDisplayName(city),
+        }))
+        : [];
 
     const handleProvinceChange = (value: string) => {
-        const validProvincePattern = /^[a-zA-Z\s]*$/;
-        if (validProvincePattern.test(value) || value === '') {
-            onChange('province', value);
+        onChange('province', value);
+        // Clear city when province changes
+        if (data.province !== value) {
+            onChange('city', '');
         }
     };
 
@@ -224,36 +236,40 @@ export default function PersonalForm({
 
             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                    <Label>Kota/Kabupaten *</Label>
-                    <Input
-                        value={data.city}
-                        onChange={(event) => handleCityChange(event.target.value)}
-                        placeholder="Contoh: Jakarta Selatan"
-                        disabled={disabled}
-                    />
-                    <p className="mt-1 text-xs text-slate-500">
-                        Hanya huruf dan spasi
-                    </p>
-                    {errors['personal.city'] && (
-                        <p className="mt-1 text-sm text-red-500">
-                            {errors['personal.city']}
-                        </p>
-                    )}
-                </div>
-                <div>
                     <Label>Provinsi *</Label>
-                    <Input
+                    <AutocompleteInput
+                        options={provinceOptions}
                         value={data.province}
-                        onChange={(event) => handleProvinceChange(event.target.value)}
-                        placeholder="Contoh: DKI Jakarta"
+                        onValueChange={handleProvinceChange}
+                        placeholder="Ketik provinsi..."
+                        emptyText="Provinsi tidak ditemukan"
                         disabled={disabled}
                     />
                     <p className="mt-1 text-xs text-slate-500">
-                        Hanya huruf dan spasi
+                        Ketik nama provinsi untuk mencari
                     </p>
                     {errors['personal.province'] && (
                         <p className="mt-1 text-sm text-red-500">
                             {errors['personal.province']}
+                        </p>
+                    )}
+                </div>
+                <div>
+                    <Label>Kota/Kabupaten *</Label>
+                    <AutocompleteInput
+                        options={cityOptions}
+                        value={data.city}
+                        onValueChange={(value) => onChange('city', value)}
+                        placeholder={data.province ? "Ketik kota/kabupaten..." : "Pilih provinsi terlebih dahulu"}
+                        emptyText="Kota/kabupaten tidak ditemukan"
+                        disabled={disabled || !data.province}
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                        {data.province ? "Ketik nama kota/kabupaten untuk mencari" : "Pilih provinsi terlebih dahulu"}
+                    </p>
+                    {errors['personal.city'] && (
+                        <p className="mt-1 text-sm text-red-500">
+                            {errors['personal.city']}
                         </p>
                     )}
                 </div>
