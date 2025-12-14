@@ -33,7 +33,7 @@ class ProfileController extends Controller
         ];
 
         $filledCount = collect($requiredFields)
-            ->filter(fn (string $field) => filled($profile->{$field}))
+            ->filter(fn(string $field) => filled($profile->{$field}))
             ->count();
 
         $completion = (int) round(($filledCount / count($requiredFields)) * 100);
@@ -105,7 +105,7 @@ class ProfileController extends Controller
             'educations.*.degree' => ['required', 'string', 'max:120'],
             'educations.*.field_of_study' => ['required', 'string', 'max:255'],
             'educations.*.start_year' => ['required', 'string', 'regex:/^\d{4}$/'],
-            'educations.*.end_year' => ['required', 'string', 'regex:/^\d{4}$/'],
+            'educations.*.end_year' => ['required', 'string', 'regex:/^\d{4}$/', 'lte:' . date('Y')],
             'educations.*.gpa' => ['nullable', 'numeric', 'between:0,4.00'],
         ];
 
@@ -137,7 +137,7 @@ class ProfileController extends Controller
 
         // Check if this is a photo-only update
         $isPhotoOnly = in_array($section, ['photo'], true)
-            || ($section === 'personal' && $request->hasFile('profile_photo') && ! $request->has('personal'));
+            || ($section === 'personal' && $request->hasFile('profile_photo') && !$request->has('personal'));
 
         \Log::info('Profile update request received', [
             'user_id' => $user->id,
@@ -160,72 +160,73 @@ class ProfileController extends Controller
             'personal.full_name.required' => 'Nama lengkap wajib diisi.',
             'personal.full_name.string' => 'Nama lengkap harus berupa teks.',
             'personal.full_name.max' => 'Nama lengkap maksimal 255 karakter.',
-            
+
             'personal.email.required' => 'Email wajib diisi.',
             'personal.email.email' => 'Format email tidak valid.',
             'personal.email.max' => 'Email maksimal 255 karakter.',
             'personal.email.unique' => 'Email sudah digunakan.',
-            
+
             'personal.phone.required' => 'Nomor telepon wajib diisi.',
             'personal.phone.string' => 'Nomor telepon harus berupa teks.',
             'personal.phone.max' => 'Nomor telepon maksimal 30 karakter.',
-            
+
             'personal.date_of_birth.required' => 'Tanggal lahir wajib diisi.',
             'personal.date_of_birth.date' => 'Format tanggal lahir tidak valid.',
             'personal.date_of_birth.before' => 'Tanggal lahir harus sebelum hari ini.',
-            
+
             'personal.gender.required' => 'Jenis kelamin wajib diisi.',
             'personal.gender.string' => 'Jenis kelamin harus berupa teks.',
             'personal.gender.max' => 'Jenis kelamin maksimal 20 karakter.',
-            
+
             'personal.religion.required' => 'Agama wajib diisi.',
             'personal.religion.string' => 'Agama harus berupa teks.',
             'personal.religion.max' => 'Agama maksimal 50 karakter.',
-            
+
             'personal.address.required' => 'Alamat lengkap wajib diisi.',
             'personal.address.string' => 'Alamat harus berupa teks.',
-            
+
             'personal.city.required' => 'Kota/Kabupaten wajib diisi.',
             'personal.city.string' => 'Kota/Kabupaten harus berupa teks.',
             'personal.city.max' => 'Kota/Kabupaten maksimal 120 karakter.',
-            
+
             'personal.province.required' => 'Provinsi wajib diisi.',
             'personal.province.string' => 'Provinsi harus berupa teks.',
             'personal.province.max' => 'Provinsi maksimal 120 karakter.',
-            
+
             // Profile photo messages
             'profile_photo.required' => 'Foto profil wajib diisi.',
             'profile_photo.image' => 'File harus berupa gambar.',
             'profile_photo.max' => 'Ukuran foto maksimal 5MB.',
-            
+
             // Education messages
             'educations.required' => 'Data pendidikan wajib diisi.',
             'educations.array' => 'Data pendidikan harus berupa array.',
             'educations.min' => 'Minimal satu data pendidikan harus diisi.',
-            
+
             'educations.*.institution.required' => 'Nama institusi wajib diisi.',
             'educations.*.institution.string' => 'Nama institusi harus berupa teks.',
             'educations.*.institution.max' => 'Nama institusi maksimal 255 karakter.',
-            
+
             'educations.*.degree.required' => 'Jenjang pendidikan wajib diisi.',
             'educations.*.degree.string' => 'Jenjang pendidikan harus berupa teks.',
             'educations.*.degree.max' => 'Jenjang pendidikan maksimal 120 karakter.',
-            
+
             'educations.*.field_of_study.required' => 'Jurusan wajib diisi.',
             'educations.*.field_of_study.string' => 'Jurusan harus berupa teks.',
             'educations.*.field_of_study.max' => 'Jurusan maksimal 255 karakter.',
-            
+
             'educations.*.start_year.required' => 'Tahun mulai wajib diisi.',
             'educations.*.start_year.string' => 'Tahun mulai harus berupa teks.',
             'educations.*.start_year.regex' => 'Tahun mulai harus 4 digit angka.',
-            
+
             'educations.*.end_year.required' => 'Tahun selesai wajib diisi.',
             'educations.*.end_year.string' => 'Tahun selesai harus berupa teks.',
             'educations.*.end_year.regex' => 'Tahun selesai harus 4 digit angka.',
-            
+            'educations.*.end_year.lte' => 'Tahun selesai tidak boleh melebihi tahun ' . date('Y') . '.',
+
             'educations.*.gpa.numeric' => 'IPK harus berupa angka.',
             'educations.*.gpa.between' => 'IPK harus antara 0 sampai 4.00.',
-            
+
             // Experience messages
             'experiences.array' => 'Data pengalaman harus berupa array.',
             'experiences.*.company.string' => 'Nama perusahaan harus berupa teks.',
@@ -340,7 +341,7 @@ class ProfileController extends Controller
             ->filter(function (array $item) {
                 return collect($item)
                     ->except(['id', 'is_current'])
-                    ->contains(fn ($value) => filled($value));
+                    ->contains(fn($value) => filled($value));
             })
             ->values()
             ->all();
@@ -348,7 +349,7 @@ class ProfileController extends Controller
 
     private function photoDataUri(?string $path): ?string
     {
-        if (! $path || ! Storage::disk('public')->exists($path)) {
+        if (!$path || !Storage::disk('public')->exists($path)) {
             return null;
         }
 

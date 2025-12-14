@@ -175,12 +175,21 @@ export default function EducationForm({
                                 <Input
                                     type="number"
                                     value={education.end_year ?? ''}
-                                    onChange={(event) =>
-                                        onChange(education.id, 'end_year', event.target.value)
-                                    }
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        const currentYear = new Date().getFullYear();
+                                        // Only allow if empty or <= current year
+                                        if (value === '' || (parseInt(value, 10) <= currentYear)) {
+                                            onChange(education.id, 'end_year', value);
+                                        }
+                                    }}
+                                    max={new Date().getFullYear()}
                                     placeholder="2023"
                                     disabled={disabled}
                                 />
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Maksimal tahun {new Date().getFullYear()}
+                                </p>
                                 {getFieldError(index, 'end_year') && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {getFieldError(index, 'end_year')}
