@@ -38,8 +38,16 @@ class ProfileController extends Controller
 
         $completion = (int) round(($filledCount / count($requiredFields)) * 100);
 
-        // Check if user has any applications
-        $hasApplications = \App\Models\Application::where('user_id', $user->id)->exists();
+        // Check application status - profile is locked only during active application process
+        $inProgressStatuses = ['Applied', 'Screening', 'Interview'];
+        $hasActiveApplication = \App\Models\Application::where('user_id', $user->id)
+            ->whereIn('status', $inProgressStatuses)
+            ->exists();
+        
+        // Check if user has any completed applications (Hired or Rejected)
+        $hasCompletedApplication = \App\Models\Application::where('user_id', $user->id)
+            ->whereIn('status', ['Hired', 'Rejected'])
+            ->exists();
 
         return Inertia::render('Pelamar/Profile', [
             'profile' => [
@@ -61,7 +69,8 @@ class ProfileController extends Controller
                 'completion_percentage' => max(min($completion, 100), 0),
             ],
             'profileReminderMessage' => session('profile_reminder'),
-            'hasApplications' => $hasApplications,
+            'hasActiveApplication' => $hasActiveApplication,
+            'hasCompletedApplication' => $hasCompletedApplication,
         ]);
     }
 
@@ -70,12 +79,16 @@ class ProfileController extends Controller
         $user = $request->user();
         abort_unless($user && $user->role === User::ROLES['pelamar'], 403);
 
-        // Block updates if user has already applied
-        $hasApplications = \App\Models\Application::where('user_id', $user->id)->exists();
-        if ($hasApplications) {
+        // Block updates only if user has active application in progress
+        $inProgressStatuses = ['Applied', 'Screening', 'Interview'];
+        $hasActiveApplication = \App\Models\Application::where('user_id', $user->id)
+            ->whereIn('status', $inProgressStatuses)
+            ->exists();
+            
+        if ($hasActiveApplication) {
             return redirect()
                 ->back()
-                ->with('error', 'Profil tidak dapat diubah karena Anda sudah mengajukan lamaran.');
+                ->with('error', 'Profil tidak dapat diubah karena lamaran Anda sedang dalam proses.');
         }
 
         $profile = $user->ensureApplicantProfile();

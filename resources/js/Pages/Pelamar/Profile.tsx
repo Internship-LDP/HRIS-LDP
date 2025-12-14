@@ -9,7 +9,7 @@ import {
     TabsTrigger,
 } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
-import { Edit, X, Lock, AlertTriangle } from 'lucide-react';
+import { Edit, X, Lock, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import ProfileHeader from './Profile/components/ProfileHeader';
 import PersonalForm from './Profile/components/PersonalForm';
 import EducationForm from './Profile/components/EducationForm';
@@ -31,7 +31,8 @@ import {
 type ProfilePageProps = PageProps<{
     profile: ApplicantProfilePayload;
     profileReminderMessage?: string | null;
-    hasApplications?: boolean;
+    hasActiveApplication?: boolean;
+    hasCompletedApplication?: boolean;
 }>;
 
 const AVATAR_SIZE = 160;
@@ -39,7 +40,8 @@ const AVATAR_SIZE = 160;
 export default function Profile({
     profile,
     profileReminderMessage,
-    hasApplications = false,
+    hasActiveApplication = false,
+    hasCompletedApplication = false,
 }: ProfilePageProps) {
     const {
         form,
@@ -70,6 +72,9 @@ export default function Profile({
     const [isEditing, setIsEditing] = useState(false);
     const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
     const [pendingSaveSection, setPendingSaveSection] = useState<SectionKey | null>(null);
+
+    // Profile is locked only during active application process
+    const isProfileLocked = hasActiveApplication;
 
     useEffect(() => {
         setReminderOpen(Boolean(profileReminderMessage));
@@ -141,17 +146,30 @@ export default function Profile({
                     email={form.data.personal.email}
                     completion={completionPercentage}
                     savingPhoto={form.processing && submittingSection === 'photo'}
-                    disabled={hasApplications}
+                    disabled={isProfileLocked}
                 />
 
-                {/* Locked Profile Warning */}
-                {hasApplications && (
+                {/* Locked Profile Warning - During Active Application */}
+                {isProfileLocked && (
                     <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                        <Lock className="h-5 w-5 text-amber-600" />
+                        <Lock className="h-5 w-5 flex-shrink-0 text-amber-600" />
                         <div>
                             <p className="font-medium text-amber-800">Profil Terkunci</p>
                             <p className="text-sm text-amber-700">
-                                Anda sudah mengajukan lamaran. Profil tidak dapat diubah untuk menjaga konsistensi data.
+                                Anda tidak dapat mengedit data profil karena lamaran Anda sedang dalam proses. Profil akan dapat diedit kembali setelah proses lamaran selesai.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Profile Unlocked Notice - After Application Completed */}
+                {!isProfileLocked && hasCompletedApplication && (
+                    <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
+                        <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
+                        <div>
+                            <p className="font-medium text-green-800">Profil Dapat Diedit</p>
+                            <p className="text-sm text-green-700">
+                                Proses lamaran Anda sudah selesai. Anda dapat memperbarui data profil untuk melamar pekerjaan lain.
                             </p>
                         </div>
                     </div>
@@ -159,7 +177,7 @@ export default function Profile({
 
                 {/* Edit Mode Toggle Button */}
                 <div className="mb-6 flex justify-end">
-                    {hasApplications ? (
+                    {isProfileLocked ? (
                         <Button disabled variant="outline" className="cursor-not-allowed opacity-60">
                             <Lock className="mr-2 h-4 w-4" />
                             Profil Terkunci
@@ -211,7 +229,7 @@ export default function Profile({
                             processing={
                                 form.processing && submittingSection === 'personal'
                             }
-                            disabled={!isEditing || hasApplications}
+                            disabled={!isEditing || isProfileLocked}
                         />
                     </TabsContent>
 
@@ -228,7 +246,7 @@ export default function Profile({
                                 form.processing && submittingSection === 'education'
                             }
                             getFieldError={getEducationError}
-                            disabled={!isEditing || hasApplications}
+                            disabled={!isEditing || isProfileLocked}
                         />
                     </TabsContent>
 
@@ -242,7 +260,7 @@ export default function Profile({
                             processing={
                                 form.processing && submittingSection === 'experience'
                             }
-                            disabled={!isEditing || hasApplications}
+                            disabled={!isEditing || isProfileLocked}
                         />
                     </TabsContent>
 
@@ -256,7 +274,7 @@ export default function Profile({
                             processing={
                                 form.processing && submittingSection === 'certification'
                             }
-                            disabled={!isEditing || hasApplications}
+                            disabled={!isEditing || isProfileLocked}
                         />
                     </TabsContent>
                 </Tabs>
