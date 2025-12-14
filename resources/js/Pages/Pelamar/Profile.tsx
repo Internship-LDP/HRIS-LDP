@@ -14,6 +14,7 @@ import ProfileHeader from './Profile/components/ProfileHeader';
 import PersonalForm from './Profile/components/PersonalForm';
 import EducationForm from './Profile/components/EducationForm';
 import ExperienceForm from './Profile/components/ExperienceForm';
+import CertificationForm from './Profile/components/CertificationForm';
 import { useProfileForm } from './Profile/useProfileForm';
 import { ApplicantProfilePayload, SectionKey } from './Profile/profileTypes';
 import {
@@ -52,10 +53,13 @@ export default function Profile({
         handlePhotoCancel,
         handleEducationChange,
         handleExperienceChange,
+        handleCertificationChange,
         addEducation,
         removeEducation,
         addExperience,
         removeExperience,
+        addCertification,
+        removeCertification,
         submitSection,
         getEducationError,
         handleReset,
@@ -182,7 +186,7 @@ export default function Profile({
                 </div>
 
                 <Tabs defaultValue="personal" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-3 gap-1 bg-transparent">
+                    <TabsList className="grid w-full grid-cols-4 gap-1 bg-transparent">
                         <TabsTrigger value="personal" className={getTabClassName(isPersonalComplete)}>
                             Data Pribadi
                         </TabsTrigger>
@@ -191,6 +195,9 @@ export default function Profile({
                         </TabsTrigger>
                         <TabsTrigger value="experience" className={getTabClassName(false)}>
                             Pengalaman
+                        </TabsTrigger>
+                        <TabsTrigger value="certification" className={getTabClassName(false)}>
+                            Sertifikasi
                         </TabsTrigger>
                     </TabsList>
 
@@ -234,6 +241,20 @@ export default function Profile({
                             onSave={() => handleSaveWithConfirmation('experience')}
                             processing={
                                 form.processing && submittingSection === 'experience'
+                            }
+                            disabled={!isEditing || hasApplications}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="certification">
+                        <CertificationForm
+                            certifications={form.data.certifications}
+                            onChange={handleCertificationChange}
+                            onAdd={addCertification}
+                            onRemove={removeCertification}
+                            onSave={() => handleSaveWithConfirmation('certification')}
+                            processing={
+                                form.processing && submittingSection === 'certification'
                             }
                             disabled={!isEditing || hasApplications}
                         />

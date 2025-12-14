@@ -18,6 +18,19 @@ export interface Experience {
     is_current?: boolean;
 }
 
+export interface Certification {
+    id: string;
+    name?: string;
+    issuing_organization?: string;
+    issue_date?: string;
+    expiry_date?: string;
+    credential_id?: string;
+    file_path?: string;
+    file_url?: string;
+    file_name?: string;
+    file?: File | null;
+}
+
 export interface ApplicantProfilePayload {
     id: number;
     full_name?: string | null;
@@ -32,6 +45,7 @@ export interface ApplicantProfilePayload {
     profile_photo_url?: string | null;
     educations: Education[];
     experiences: Experience[];
+    certifications: Certification[];
     completion_percentage?: number;
     is_complete?: boolean;
 }
@@ -50,10 +64,11 @@ export interface ApplicantProfileForm {
     };
     educations: Education[];
     experiences: Experience[];
+    certifications: Certification[];
     profile_photo: File | null;
 }
 
-export type SectionKey = 'personal' | 'education' | 'experience' | 'photo';
+export type SectionKey = 'personal' | 'education' | 'experience' | 'certification' | 'photo';
 
 export type RequiredEducationField = Exclude<keyof Education, 'id'>;
 
@@ -85,6 +100,16 @@ export const createEmptyExperience = (): Experience => ({
     end_date: '',
     description: '',
     is_current: false,
+});
+
+export const createEmptyCertification = (): Certification => ({
+    id: generateId(),
+    name: '',
+    issuing_organization: '',
+    issue_date: '',
+    expiry_date: '',
+    credential_id: '',
+    file: null,
 });
 
 export const GPA_REQUIRED_DEGREES = ['D3', 'D4', 'S1', 'S2', 'S3'];

@@ -56,6 +56,7 @@ class ProfileController extends Controller
                 'profile_photo_url' => $this->photoDataUri($profile->profile_photo_path),
                 'educations' => $profile->educations ?? [],
                 'experiences' => $profile->experiences ?? [],
+                'certifications' => $this->formatCertifications($profile->certifications ?? []),
                 'is_complete' => $profile->is_complete,
                 'completion_percentage' => max(min($completion, 100), 0),
             ],
@@ -123,10 +124,20 @@ class ProfileController extends Controller
             'experiences.*.is_current' => ['nullable', 'boolean'],
         ];
 
+        $certificationRules = [
+            'certifications' => ['nullable', 'array'],
+            'certifications.*.name' => ['required', 'string', 'max:255'],
+            'certifications.*.issuing_organization' => ['required', 'string', 'max:255'],
+            'certifications.*.issue_date' => ['required', 'string', 'max:20'],
+            'certifications.*.expiry_date' => ['nullable', 'string', 'max:20'],
+            'certifications.*.credential_id' => ['nullable', 'string', 'max:255'],
+        ];
+
         $rules = match ($section) {
             'personal' => $personalRules,
             'education' => $educationRules,
             'experience' => $experienceRules,
+            'certification' => $certificationRules,
             'photo' => $photoRules,
             default => array_merge($personalRules, $educationRules),
         };
@@ -239,6 +250,22 @@ class ProfileController extends Controller
             'experiences.*.end_date.max' => 'Tanggal selesai maksimal 20 karakter.',
             'experiences.*.description.string' => 'Deskripsi harus berupa teks.',
             'experiences.*.is_current.boolean' => 'Status pekerjaan sekarang harus benar/salah.',
+
+            // Certification messages
+            'certifications.array' => 'Data sertifikasi harus berupa array.',
+            'certifications.*.name.required' => 'Nama sertifikasi wajib diisi.',
+            'certifications.*.name.string' => 'Nama sertifikasi harus berupa teks.',
+            'certifications.*.name.max' => 'Nama sertifikasi maksimal 255 karakter.',
+            'certifications.*.issuing_organization.required' => 'Organisasi penerbit wajib diisi.',
+            'certifications.*.issuing_organization.string' => 'Organisasi penerbit harus berupa teks.',
+            'certifications.*.issuing_organization.max' => 'Organisasi penerbit maksimal 255 karakter.',
+            'certifications.*.issue_date.required' => 'Tanggal terbit wajib diisi.',
+            'certifications.*.issue_date.string' => 'Tanggal terbit harus berupa teks.',
+            'certifications.*.issue_date.max' => 'Tanggal terbit maksimal 20 karakter.',
+            'certifications.*.expiry_date.string' => 'Tanggal kadaluarsa harus berupa teks.',
+            'certifications.*.expiry_date.max' => 'Tanggal kadaluarsa maksimal 20 karakter.',
+            'certifications.*.credential_id.string' => 'ID kredensial harus berupa teks.',
+            'certifications.*.credential_id.max' => 'ID kredensial maksimal 255 karakter.',
         ];
 
         try {
@@ -312,6 +339,15 @@ class ProfileController extends Controller
             $profile->experiences = $experiences;
         }
 
+        if ($section === 'certification') {
+            $certifications = $this->processCertifications(
+                $request,
+                $validated['certifications'] ?? [],
+                $profile->certifications ?? []
+            );
+            $profile->certifications = $certifications;
+        }
+
         $profile->syncCompletionFlag();
         $profile->save();
 
@@ -357,5 +393,82 @@ class ProfileController extends Controller
         $mime = Storage::disk('public')->mimeType($path) ?? 'image/jpeg';
 
         return 'data:' . $mime . ';base64,' . base64_encode($contents);
+    }
+
+    private function processCertifications(Request $request, array $certifications, array $existingCertifications): array
+    {
+        $existingById = collect($existingCertifications)->keyBy('id');
+
+        return collect($certifications)
+            ->map(function (array $cert, int $index) use ($request, $existingById) {
+                $id = $cert['id'] ?? (string) Str::uuid();
+
+                // Get existing file path if any
+                $existingFilePath = $existingById->get($id)['file_path'] ?? null;
+
+                // Check if there's a new file uploaded for this certification
+                $fileKey = "certification_files.{$index}";
+                $newFilePath = $existingFilePath;
+
+                if ($request->hasFile($fileKey)) {
+                    $file = $request->file($fileKey);
+
+                    // Validate file type
+                    $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+                    if (!in_array($file->getMimeType(), $allowedMimes)) {
+                        \Log::warning('Invalid certification file type', [
+                            'index' => $index,
+                            'mime' => $file->getMimeType()
+                        ]);
+                    } else {
+                        // Delete old file if exists
+                        if ($existingFilePath && Storage::disk('public')->exists($existingFilePath)) {
+                            Storage::disk('public')->delete($existingFilePath);
+                        }
+
+                        // Store new file
+                        $newFilePath = $file->store('applicant-certifications', 'public');
+                        \Log::info('Certification file uploaded', [
+                            'index' => $index,
+                            'path' => $newFilePath
+                        ]);
+                    }
+                }
+
+                return [
+                    'id' => $id,
+                    'name' => trim($cert['name'] ?? ''),
+                    'issuing_organization' => trim($cert['issuing_organization'] ?? ''),
+                    'issue_date' => trim($cert['issue_date'] ?? ''),
+                    'expiry_date' => trim($cert['expiry_date'] ?? ''),
+                    'credential_id' => trim($cert['credential_id'] ?? ''),
+                    'file_path' => $newFilePath,
+                ];
+            })
+            ->filter(function (array $cert) {
+                return filled($cert['name']) && filled($cert['issuing_organization']);
+            })
+            ->values()
+            ->all();
+    }
+
+    private function formatCertifications(array $certifications): array
+    {
+        return collect($certifications)
+            ->map(function (array $cert) {
+                $fileUrl = null;
+                $fileName = null;
+
+                if (!empty($cert['file_path']) && Storage::disk('public')->exists($cert['file_path'])) {
+                    $fileUrl = asset('storage/' . $cert['file_path']);
+                    $fileName = basename($cert['file_path']);
+                }
+
+                return array_merge($cert, [
+                    'file_url' => $fileUrl,
+                    'file_name' => $fileName,
+                ]);
+            })
+            ->all();
     }
 }

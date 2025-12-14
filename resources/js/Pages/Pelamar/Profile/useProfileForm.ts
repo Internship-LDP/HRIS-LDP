@@ -6,8 +6,10 @@ import {
     ApplicantProfileForm,
     createEmptyEducation,
     createEmptyExperience,
+    createEmptyCertification,
     Education,
     Experience,
+    Certification,
     RequiredEducationField,
     SectionKey,
     isEducationComplete,
@@ -33,6 +35,10 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         experiences:
             profile.experiences.length > 0
                 ? profile.experiences.map((item) => ({ ...item }))
+                : [],
+        certifications:
+            profile.certifications?.length > 0
+                ? profile.certifications.map((item) => ({ ...item, file: null }))
                 : [],
         profile_photo: null,
     };
@@ -200,6 +206,37 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         });
     };
 
+    const handleCertificationChange = (
+        id: string,
+        key: keyof Certification,
+        value: string | File | null,
+    ) => {
+        const updated = form.data.certifications.map((item) =>
+            item.id === id ? { ...item, [key]: value } : item,
+        );
+        form.setData({
+            ...form.data,
+            certifications: updated,
+        });
+    };
+
+    const addCertification = () => {
+        form.setData({
+            ...form.data,
+            certifications: [
+                ...form.data.certifications,
+                createEmptyCertification(),
+            ],
+        });
+    };
+
+    const removeCertification = (id: string) => {
+        form.setData({
+            ...form.data,
+            certifications: form.data.certifications.filter((item) => item.id !== id),
+        });
+    };
+
     const submitSection = (section: SectionKey) => {
         setSubmittingSection(section);
         form.transform((data) => ({ ...data, section }));
@@ -215,6 +252,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                     personal: 'Data pribadi berhasil disimpan.',
                     education: 'Data pendidikan berhasil disimpan.',
                     experience: 'Data pengalaman berhasil disimpan.',
+                    certification: 'Data sertifikasi berhasil disimpan.',
                     photo: 'Foto profil berhasil disimpan.',
                 };
                 toast.success('Berhasil! ', {
@@ -227,6 +265,7 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
                     personal: 'Gagal menyimpan data pribadi, silakan coba lagi.',
                     education: 'Periksa kembali data pendidikan yang wajib diisi.',
                     experience: 'Gagal menyimpan data pengalaman, silakan coba lagi.',
+                    certification: 'Gagal menyimpan data sertifikasi, silakan coba lagi.',
                     photo: 'Gagal menyimpan foto profil, silakan coba lagi.',
                 };
                 toast.error('Gagal Menyimpan ', {
@@ -260,10 +299,13 @@ export function useProfileForm(profile: ApplicantProfilePayload) {
         handlePhotoCancel,
         handleEducationChange,
         handleExperienceChange,
+        handleCertificationChange,
         addEducation,
         removeEducation,
         addExperience,
         removeExperience,
+        addCertification,
+        removeCertification,
         submitSection,
         getEducationError,
         handleReset,

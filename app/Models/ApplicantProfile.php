@@ -24,6 +24,7 @@ class ApplicantProfile extends Model
         'profile_photo_path',
         'educations',
         'experiences',
+        'certifications',
         'completed_at',
     ];
 
@@ -31,6 +32,7 @@ class ApplicantProfile extends Model
         'date_of_birth' => 'date',
         'educations' => 'array',
         'experiences' => 'array',
+        'certifications' => 'array',
         'completed_at' => 'datetime',
     ];
 
