@@ -10,7 +10,7 @@ import {
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
-import { AlertCircle, XCircle } from 'lucide-react';
+import { AlertCircle, XCircle, User, Briefcase } from 'lucide-react';
 import { ApplicantRecord } from '../types';
 
 interface RejectionModalProps {
@@ -49,81 +49,100 @@ export default function RejectionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[405px] gap-5">
-                <DialogHeader className="space-y-3">
-                    <div className="flex items-start gap-4">
-                        {/* <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100">
+            <DialogContent className="sm:max-w-lg p-8 gap-8">
+                <DialogHeader>
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 ring-4 ring-red-50">
                             <XCircle className="h-6 w-6 text-red-600" />
-                        </div> */}
-                        <div className="space-y-1.5">
-                            <DialogTitle className="text-xl font-semibold leading-none tracking-tight">
+                        </div>
+                        <div className="space-y-1">
+                            <DialogTitle className="text-xl font-bold text-slate-900">
                                 Tolak Pelamar
                             </DialogTitle>
-                            <DialogDescription className="text-sm text-slate-600">
-                                Anda akan menolak pelamar berikut
+                            <DialogDescription className="text-slate-500 text-base">
+                                Anda akan menolak pelamar berikut.
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="space-y-5">
+                <div className="space-y-6">
                     {applicant && (
-                        <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 space-y-3">
-                            <div className="space-y-1.5">
-                                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                                    Nama Pelamar
-                                </p>
-                                <p className="text-base font-semibold text-slate-900">
-                                    {applicant.name}
-                                </p>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-5 space-y-4">
+                            <div className="flex items-start gap-3">
+                                <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-slate-200 mt-0.5">
+                                    <User className="h-4 w-4 text-slate-600" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                                        Nama Pelamar
+                                    </p>
+                                    <p className="text-lg font-bold text-slate-900 leading-none">
+                                        {applicant.name}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="h-px bg-slate-200" />
-                            <div className="space-y-1.5">
-                                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                                    Posisi yang Dilamar
-                                </p>
-                                <p className="text-base font-medium text-slate-700">
-                                    {applicant.position}
-                                </p>
+
+                            <div className="h-px bg-slate-200/80" />
+
+                            <div className="flex items-start gap-3">
+                                <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-slate-200 mt-0.5">
+                                    <Briefcase className="h-4 w-4 text-slate-600" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                                        Posisi yang Dilamar
+                                    </p>
+                                    <p className="text-lg font-bold text-slate-900 leading-none">
+                                        {applicant.position}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    <div className="space-y-3">
-                        <Label htmlFor="rejection-reason" className="text-sm font-medium text-slate-900">
-                            Alasan Penolakan <span className="text-red-600">*</span>
-                        </Label>
-                        <Textarea
-                            id="rejection-reason"
-                            placeholder="Tuliskan alasan penolakan secara detail dan profesional..."
-                            value={reason}
-                            onChange={(e) => {
-                                setReason(e.target.value);
-                                if (error) setError('');
-                            }}
-                            className={`min-h-[110px] resize-none text-sm ${error ? 'border-red-500 focus-visible:ring-red-500' : ''
-                                }`}
-                            disabled={isSubmitting}
-                        />
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rejection-reason" className="text-sm font-semibold text-slate-900 flex items-center gap-1">
+                                Alasan Penolakan <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                                id="rejection-reason"
+                                placeholder="Tuliskan alasan penolakan secara detail dan profesional..."
+                                value={reason}
+                                onChange={(e) => {
+                                    setReason(e.target.value);
+                                    if (error) setError('');
+                                }}
+                                className={`min-h-[120px] resize-none text-base p-4 rounded-lg bg-white ${error
+                                        ? 'border-red-300 focus-visible:ring-red-200'
+                                        : 'border-slate-200 focus-visible:ring-slate-200'
+                                    }`}
+                                disabled={isSubmitting}
+                            />
+                        </div>
+
                         {error && (
-                            <div className="flex items-center gap-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700 animate-in fade-in slide-in-from-top-1">
                                 <AlertCircle className="h-4 w-4 shrink-0" />
-                                <span>{error}</span>
+                                <span className="font-medium">{error}</span>
                             </div>
                         )}
-                        <p className="text-xs leading-relaxed text-slate-500">
-                            Alasan ini akan dikirimkan kepada pelamar sebagai feedback.
-                        </p>
+
+                        <div className="flex items-start gap-2 text-xs text-slate-500">
+                            <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                            <p>Alasan ini akan dikirimkan kepada pelamar sebagai feedback resmi.</p>
+                        </div>
                     </div>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-2">
+                <DialogFooter className="gap-3 sm:gap-0">
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         onClick={handleClose}
                         disabled={isSubmitting}
-                        className="min-w-[75px]"
+                        className="text-slate-500 hover:text-slate-900 h-11 px-6"
                     >
                         Batal
                     </Button>
@@ -131,7 +150,7 @@ export default function RejectionModal({
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="min-w-[120px] bg-red-600 hover:bg-red-700 focus-visible:ring-red-600"
+                        className="bg-red-600 hover:bg-red-700 text-white shadow-sm h-11 px-6"
                     >
                         {isSubmitting ? 'Memproses...' : 'Konfirmasi Penolakan'}
                     </Button>

@@ -5,9 +5,10 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import { Upload, FileText, Image, X, Check } from 'lucide-react';
+import { Upload, FileText, Image, X, Check, CloudUpload } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FileUploadDialogProps {
@@ -125,145 +126,154 @@ export default function FileUploadDialog({
         setPreviewUrl(null);
     };
 
-    const getFileIcon = (file: File | null, isPdf: boolean) => {
-        if (isPdf) {
-            return <FileText className="h-12 w-12 text-red-500" />;
-        }
-        return <Image className="h-12 w-12 text-blue-500" />;
-    };
-
     const isPdf = previewFile?.type === 'application/pdf';
     const hasExistingFile = currentFileName && currentFileUrl;
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-xl p-8 gap-8">
                 <DialogHeader>
-                    <DialogTitle>Upload File Sertifikat</DialogTitle>
-                    <DialogDescription>
-                        Seret dan lepas file atau klik untuk memilih. Format: JPG, PNG, PDF (maks. 5MB)
+                    <DialogTitle className="text-xl font-bold text-slate-900">Upload Sertifikat</DialogTitle>
+                    <DialogDescription className="text-slate-500">
+                        Unggah file sertifikat Anda dalam format PDF atau Gambar.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {/* Existing File Info */}
                     {hasExistingFile && !previewFile && (
-                        <div className="rounded-lg border border-green-200 bg-green-50 p-3">
-                            <p className="text-sm font-medium text-green-800 mb-2">File Saat Ini:</p>
-                            <div className="flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-green-600" />
-                                <a
-                                    href={currentFileUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-green-700 hover:text-green-900 underline truncate max-w-[200px]"
-                                >
-                                    {currentFileName}
-                                </a>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 transition-all hover:bg-slate-50">
+                            <div className="flex items-start gap-3">
+                                <div className="rounded-full bg-white p-2 shadow-sm ring-1 ring-slate-200">
+                                    <FileText className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <p className="text-sm font-medium text-slate-900">File Saat Ini</p>
+                                    <a
+                                        href={currentFileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all block"
+                                    >
+                                        {currentFileName}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Drop Zone */}
-                    <div
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={() => !disabled && fileInputRef.current?.click()}
-                        className={`
-                            relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer
-                            transition-all duration-200
-                            ${isDragging
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-                            }
-                            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                        `}
-                    >
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.pdf"
-                            onChange={handleFileChange}
-                            className="hidden"
-                            disabled={disabled}
-                        />
-
-                        {previewFile ? (
-                            <div className="space-y-3">
-                                {/* Preview */}
-                                <div className="flex justify-center">
+                    {/* Preview Area or Drop Zone */}
+                    {previewFile ? (
+                        <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                            <div className="flex p-4 gap-4 items-center">
+                                {/* Thumbnail */}
+                                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
                                     {previewUrl && !isPdf ? (
                                         <img
                                             src={previewUrl}
                                             alt="Preview"
-                                            className="h-32 w-32 object-cover rounded-lg border-2 border-gray-200"
+                                            className="h-full w-full object-cover"
                                         />
                                     ) : (
-                                        getFileIcon(previewFile, isPdf)
+                                        <div className="flex h-full w-full items-center justify-center">
+                                            {isPdf ? (
+                                                <FileText className="h-10 w-10 text-red-500" />
+                                            ) : (
+                                                <Image className="h-10 w-10 text-blue-500" />
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-gray-900 truncate max-w-full">
+                                {/* File Details */}
+                                <div className="flex-1 min-w-0 pr-8">
+                                    <h4 className="text-sm font-semibold text-slate-900 truncate">
                                         {previewFile.name}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {(previewFile.size / 1024).toFixed(1)} KB • {isPdf ? 'PDF Document' : 'Image'}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        {(previewFile.size / 1024).toFixed(1)} KB
-                                    </p>
+                                    <div className="mt-2 flex items-center text-xs text-green-600 font-medium">
+                                        <Check className="mr-1 h-3 w-3" />
+                                        Siap diupload
+                                    </div>
                                 </div>
 
+                                {/* Remove Button */}
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRemovePreview();
-                                    }}
-                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    size="icon"
+                                    onClick={handleRemovePreview}
+                                    className="absolute top-2 right-2 h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full"
                                 >
-                                    <X className="h-4 w-4 mr-1" />
-                                    Hapus
+                                    <X className="h-4 w-4" />
                                 </Button>
                             </div>
-                        ) : (
-                            <div className="space-y-3">
-                                <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <Upload className={`h-8 w-8 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-gray-700">
-                                        {isDragging ? 'Lepas file di sini' : 'Seret file ke sini'}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        atau klik untuk memilih file
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => !disabled && fileInputRef.current?.click()}
+                            className={`
+                                group relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-10 text-center cursor-pointer
+                                transition-all duration-300 ease-in-out
+                                ${isDragging
+                                    ? 'border-blue-500 bg-blue-50/50 scale-[0.99]'
+                                    : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50/50'
+                                }
+                                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                            `}
+                        >
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                onChange={handleFileChange}
+                                className="hidden"
+                                disabled={disabled}
+                            />
 
-                    {/* Actions */}
-                    <div className="flex justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleClose}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={handleConfirm}
-                            disabled={!previewFile || disabled}
-                            className="bg-blue-900 hover:bg-blue-800"
-                        >
-                            <Check className="h-4 w-4 mr-2" />
-                            Pilih File
-                        </Button>
-                    </div>
+                            {/* Icon Circle */}
+                            <div className={`
+                                flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 ring-1 ring-slate-100 transition-all duration-300
+                                group-hover:bg-white group-hover:scale-110 group-hover:ring-blue-100 group-hover:shadow-md
+                            `}>
+                                <CloudUpload className={`h-8 w-8 transition-colors duration-300 ${isDragging ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`} />
+                            </div>
+
+                            <div className="space-y-1">
+                                <p className="text-sm font-semibold text-slate-900">
+                                    <span className="text-blue-600 hover:underline">Klik untuk upload</span> atau seret file
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                    JPG, PNG, atau PDF (Maks. 5MB)
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
+                <DialogFooter className="gap-2 sm:gap-0">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleClose}
+                        className="text-slate-500 hover:text-slate-900"
+                    >
+                        Batal
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleConfirm}
+                        disabled={!previewFile || disabled}
+                        className="bg-blue-900 hover:bg-blue-800 text-white shadow-sm"
+                    >
+                        Pilih File Ini
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
