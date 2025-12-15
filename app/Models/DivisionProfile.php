@@ -15,12 +15,14 @@ class DivisionProfile extends Model
         'job_title',
         'job_description',
         'job_requirements',
+        'job_eligibility_criteria',
         'hiring_opened_at',
     ];
 
     protected $casts = [
         'is_hiring' => 'boolean',
         'job_requirements' => 'array',
+        'job_eligibility_criteria' => 'array',
         'hiring_opened_at' => 'datetime',
     ];
 }

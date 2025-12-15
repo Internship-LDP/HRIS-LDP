@@ -8,6 +8,14 @@ export type StaffMember = {
     join_date: string | null;
 };
 
+export type EligibilityCriteria = {
+    min_age?: number | null;
+    max_age?: number | null;
+    gender?: string | null;
+    min_education?: string | null;
+    min_experience_years?: number | null;
+};
+
 export type DivisionRecord = {
     id: number;
     name: string;
@@ -20,6 +28,7 @@ export type DivisionRecord = {
     job_title: string | null;
     job_description: string | null;
     job_requirements: string[];
+    job_eligibility_criteria: EligibilityCriteria | null;
     staff: StaffMember[];
 };
 

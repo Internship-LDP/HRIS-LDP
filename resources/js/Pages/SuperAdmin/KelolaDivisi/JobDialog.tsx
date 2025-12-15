@@ -10,17 +10,39 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
 import type { InertiaFormProps } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
-import type { DivisionRecord } from './types';
+import { Plus, Trash2, Filter } from 'lucide-react';
+import type { DivisionRecord, EligibilityCriteria } from './types';
 import type { FormEvent } from 'react';
 
 const MAX_REQUIREMENTS = 5;
+
+const EDUCATION_LEVELS = [
+    { value: 'SMA', label: 'SMA/SMK' },
+    { value: 'D3', label: 'Diploma (D3)' },
+    { value: 'S1', label: 'Sarjana (S1)' },
+    { value: 'S2', label: 'Magister (S2)' },
+    { value: 'S3', label: 'Doktor (S3)' },
+];
+
+const GENDER_OPTIONS = [
+    { value: '', label: 'Semua (Tidak Dibatasi)' },
+    { value: 'Laki-laki', label: 'Laki-laki' },
+    { value: 'Perempuan', label: 'Perempuan' },
+];
 
 export type JobFormFields = {
     job_title: string;
     job_description: string;
     job_requirements: string[];
+    job_eligibility_criteria: EligibilityCriteria;
 };
 
 type JobDialogProps = {
@@ -51,6 +73,16 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
             'job_requirements',
             form.data.job_requirements.filter((_, idx) => idx !== index),
         );
+    };
+
+    const updateCriteria = <K extends keyof EligibilityCriteria>(
+        key: K,
+        value: EligibilityCriteria[K]
+    ) => {
+        form.setData('job_eligibility_criteria', {
+            ...form.data.job_eligibility_criteria,
+            [key]: value,
+        });
     };
 
     const validateRequirements = () => {
@@ -180,6 +212,104 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                 {form.errors.job_requirements && (
                                     <p className="text-xs text-destructive">{form.errors.job_requirements}</p>
                                 )}
+                            </div>
+
+                            {/* Eligibility Criteria Section */}
+                            <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-4 w-4 text-amber-600" />
+                                    <Label className="text-amber-900 font-semibold">Kriteria Kelayakan Otomatis</Label>
+                                </div>
+                                <p className="text-xs text-amber-700">
+                                    Pelamar yang tidak memenuhi kriteria akan ditolak otomatis dengan notifikasi spesifik.
+                                </p>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {/* Min Age */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="min-age" className="text-sm">Umur Minimal</Label>
+                                        <Input
+                                            id="min-age"
+                                            type="number"
+                                            min={17}
+                                            max={65}
+                                            value={form.data.job_eligibility_criteria?.min_age ?? ''}
+                                            onChange={(e) => updateCriteria('min_age', e.target.value ? Number(e.target.value) : null)}
+                                            placeholder="Contoh: 21"
+                                        />
+                                    </div>
+
+                                    {/* Max Age */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="max-age" className="text-sm">Umur Maksimal</Label>
+                                        <Input
+                                            id="max-age"
+                                            type="number"
+                                            min={17}
+                                            max={65}
+                                            value={form.data.job_eligibility_criteria?.max_age ?? ''}
+                                            onChange={(e) => updateCriteria('max_age', e.target.value ? Number(e.target.value) : null)}
+                                            placeholder="Contoh: 35"
+                                        />
+                                    </div>
+
+                                    {/* Gender */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="gender" className="text-sm">Jenis Kelamin</Label>
+                                        <Select
+                                            value={form.data.job_eligibility_criteria?.gender ?? ''}
+                                            onValueChange={(value) => updateCriteria('gender', value || null)}
+                                        >
+                                            <SelectTrigger id="gender">
+                                                <SelectValue placeholder="Pilih jenis kelamin" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {GENDER_OPTIONS.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value || 'any'}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Min Education */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="min-education" className="text-sm">Pendidikan Minimal</Label>
+                                        <Select
+                                            value={form.data.job_eligibility_criteria?.min_education ?? ''}
+                                            onValueChange={(value) => updateCriteria('min_education', value || null)}
+                                        >
+                                            <SelectTrigger id="min-education">
+                                                <SelectValue placeholder="Pilih tingkat pendidikan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {EDUCATION_LEVELS.map((level) => (
+                                                    <SelectItem key={level.value} value={level.value}>
+                                                        {level.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Min Experience Years */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="min-experience" className="text-sm">Pengalaman Kerja Minimal (Tahun)</Label>
+                                        <Input
+                                            id="min-experience"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            value={form.data.job_eligibility_criteria?.min_experience_years ?? ''}
+                                            onChange={(e) => updateCriteria('min_experience_years', e.target.value ? Number(e.target.value) : null)}
+                                            placeholder="Contoh: 2"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Kosongkan field yang tidak ingin dijadikan kriteria filter.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

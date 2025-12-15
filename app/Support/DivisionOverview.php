@@ -39,6 +39,7 @@ class DivisionOverview
                 'job_title' => $profile->job_title,
                 'job_description' => $profile->job_description,
                 'job_requirements' => $profile->job_requirements ?? [],
+                'job_eligibility_criteria' => $profile->job_eligibility_criteria,
                 'staff' => $staff,
             ];
         })->values();

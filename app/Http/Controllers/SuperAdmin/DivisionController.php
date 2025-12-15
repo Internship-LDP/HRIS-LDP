@@ -74,6 +74,12 @@ class DivisionController extends Controller
             'job_description' => ['required', 'string', 'max:5000'],
             'job_requirements' => ['required', 'array', 'min:1'],
             'job_requirements.*' => ['required', 'string', 'max:500'],
+            'job_eligibility_criteria' => ['nullable', 'array'],
+            'job_eligibility_criteria.min_age' => ['nullable', 'integer', 'min:17', 'max:65'],
+            'job_eligibility_criteria.max_age' => ['nullable', 'integer', 'min:17', 'max:65'],
+            'job_eligibility_criteria.gender' => ['nullable', 'string', 'max:50'],
+            'job_eligibility_criteria.min_education' => ['nullable', 'string', 'max:50'],
+            'job_eligibility_criteria.min_experience_years' => ['nullable', 'integer', 'min:0', 'max:50'],
         ]);
 
         $requirements = collect($validated['job_requirements'])
@@ -88,12 +94,17 @@ class DivisionController extends Controller
             ]);
         }
 
+        // Clean up eligibility criteria - remove empty/null values
+        $eligibilityCriteria = $validated['job_eligibility_criteria'] ?? [];
+        $eligibilityCriteria = array_filter($eligibilityCriteria, fn ($value) => $value !== null && $value !== '' && $value !== 'any');
+
         $division
             ->forceFill([
                 'is_hiring' => true,
                 'job_title' => $validated['job_title'],
                 'job_description' => $validated['job_description'],
                 'job_requirements' => $requirements,
+                'job_eligibility_criteria' => empty($eligibilityCriteria) ? null : $eligibilityCriteria,
                 'hiring_opened_at' => now(),
             ])
             ->save();

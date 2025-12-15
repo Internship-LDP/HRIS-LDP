@@ -26,6 +26,7 @@ export default function KelolaDivisiIndex({ divisions, stats, flash }: KelolaDiv
         job_title: '',
         job_description: '',
         job_requirements: [''],
+        job_eligibility_criteria: {},
     });
 
     useEffect(() => {
@@ -56,6 +57,7 @@ export default function KelolaDivisiIndex({ divisions, stats, flash }: KelolaDiv
                 division.job_requirements && division.job_requirements.length > 0
                     ? division.job_requirements
                     : [''],
+            job_eligibility_criteria: division.job_eligibility_criteria ?? {},
         });
         jobForm.clearErrors();
     };

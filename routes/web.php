@@ -88,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('pelamar.applications');
     Route::post('/pelamar/lamaran-saya', [PelamarApplicationController::class, 'store'])
         ->name('pelamar.applications.store');
+    Route::post('/pelamar/lamaran-saya/check-eligibility', [PelamarApplicationController::class, 'checkEligibility'])
+        ->name('pelamar.applications.check-eligibility');
 });
 
 Route::middleware('auth')->group(function () {

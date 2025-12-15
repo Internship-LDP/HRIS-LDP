@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState, FormEvent } from 'react';
 import { toast } from 'sonner';
+import axios from 'axios';
 import PelamarLayout from '@/Pages/Pelamar/Layout';
 import ApplicationForm, {
     ApplicationFormData,
@@ -8,6 +9,9 @@ import ApplicationForm, {
 import ApplicationHistory, {
     ApplicationHistoryItem,
 } from '@/Pages/Pelamar/components/applications/ApplicationHistory';
+import EligibilityRejectDialog, {
+    EligibilityCriteriaResult,
+} from '@/Pages/Pelamar/components/applications/EligibilityRejectDialog';
 import { PageProps } from '@/types';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -21,6 +25,7 @@ import {
     XCircle,
     Send,
     X,
+    Loader2,
 } from 'lucide-react';
 import {
     Dialog,
@@ -30,6 +35,14 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/Components/ui/dialog';
+
+type EligibilityCriteria = {
+    min_age?: number | null;
+    max_age?: number | null;
+    gender?: string | null;
+    min_education?: string | null;
+    min_experience_years?: number | null;
+};
 
 type DivisionSummary = {
     id: number;
@@ -43,6 +56,7 @@ type DivisionSummary = {
     job_title: string | null;
     job_description: string | null;
     job_requirements: string[];
+    job_eligibility_criteria?: EligibilityCriteria | null;
 };
 
 type ApplicationsPageProps = PageProps<{
@@ -74,6 +88,11 @@ export default function Applications({
         firstOpenDivision,
     );
     const [formOpen, setFormOpen] = useState(false);
+    const [checkingEligibility, setCheckingEligibility] = useState(false);
+    const [eligibilityDialogOpen, setEligibilityDialogOpen] = useState(false);
+    const [eligibilityFailures, setEligibilityFailures] = useState<EligibilityCriteriaResult[]>([]);
+    const [eligibilityPassed, setEligibilityPassed] = useState<EligibilityCriteriaResult[]>([]);
+    const [rejectedJobTitle, setRejectedJobTitle] = useState<string | null>(null);
 
     const form = useForm<ApplicationFormData>({
         division_id: formDivision?.id ?? null,
@@ -131,9 +150,34 @@ export default function Applications({
         });
     };
 
-    const handleOpenForm = (division: DivisionSummary) => {
+    const handleOpenForm = async (division: DivisionSummary) => {
         if (!division.is_hiring || division.available_slots <= 0) {
             return;
+        }
+
+        // Check eligibility if criteria exists
+        if (division.job_eligibility_criteria && Object.keys(division.job_eligibility_criteria).length > 0) {
+            setCheckingEligibility(true);
+            try {
+                const response = await axios.post(route('pelamar.applications.check-eligibility'), {
+                    division_id: division.id,
+                });
+
+                if (!response.data.eligible) {
+                    setEligibilityFailures(response.data.failures);
+                    setEligibilityPassed(response.data.passed || []);
+                    setRejectedJobTitle(division.job_title);
+                    setEligibilityDialogOpen(true);
+                    setCheckingEligibility(false);
+                    return;
+                }
+            } catch (error) {
+                console.error('Eligibility check failed:', error);
+                toast.error('Gagal memeriksa kelayakan. Silakan coba lagi.');
+                setCheckingEligibility(false);
+                return;
+            }
+            setCheckingEligibility(false);
         }
 
         setFormDivision(division);
@@ -319,6 +363,15 @@ export default function Applications({
                 </Dialog>
 
                 <ApplicationHistory items={applications} />
+
+                {/* Eligibility Reject Dialog */}
+                <EligibilityRejectDialog
+                    open={eligibilityDialogOpen}
+                    onClose={() => setEligibilityDialogOpen(false)}
+                    failures={eligibilityFailures}
+                    passed={eligibilityPassed}
+                    jobTitle={rejectedJobTitle ?? undefined}
+                />
             </PelamarLayout>
         </>
     );
@@ -365,7 +418,7 @@ function DivisionCard({
             : 0;
     const canApply = division.is_hiring && division.available_slots > 0 && !isApplied;
     const disabled = !canApply;
-    
+
     let statusLabel;
     if (isApplied) {
         statusLabel = (
@@ -410,9 +463,8 @@ function DivisionCard({
             type="button"
             onClick={onApply}
             disabled={disabled}
-            className={`rounded-2xl border p-4 text-left transition ${
-                disabled ? 'cursor-not-allowed opacity-60' : 'hover:border-blue-300'
-            } border-slate-200`}
+            className={`rounded-2xl border p-4 text-left transition ${disabled ? 'cursor-not-allowed opacity-60' : 'hover:border-blue-300'
+                } border-slate-200`}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -440,11 +492,10 @@ function DivisionCard({
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-slate-200">
                     <div
-                        className={`h-1.5 rounded-full ${
-                            division.available_slots === 0
-                                ? 'bg-red-500'
-                                : 'bg-gradient-to-r from-blue-600 to-cyan-500'
-                        }`}
+                        className={`h-1.5 rounded-full ${division.available_slots === 0
+                            ? 'bg-red-500'
+                            : 'bg-gradient-to-r from-blue-600 to-cyan-500'
+                            }`}
                         style={{ width: `${ratio}%` }}
                     />
                 </div>
