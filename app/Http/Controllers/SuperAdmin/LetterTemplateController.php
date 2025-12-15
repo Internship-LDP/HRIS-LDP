@@ -27,6 +27,9 @@ class LetterTemplateController extends Controller
                 'id' => $template->id,
                 'name' => $template->name,
                 'fileName' => $template->file_name,
+                'headerText' => $template->header_text,
+                'footerText' => $template->footer_text,
+                'logoUrl' => $template->logo_url,
                 'isActive' => $template->is_active,
                 'createdBy' => $template->creator?->name ?? '-',
                 'createdAt' => $template->created_at->format('d M Y H:i'),
@@ -64,18 +67,31 @@ class LetterTemplateController extends Controller
             'marginRight' => 1440,
         ]);
 
+        // === LOGO PLACEHOLDER ===
         $section->addText(
-            'PT. LINTAS DAYA PRIMA',
-            ['bold' => true, 'size' => 16],
+            '${logo}',
+            ['size' => 10, 'color' => '666666', 'italic' => true],
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
         );
-        $section->addText(
-            'Jl. Alamat Perusahaan, Kota',
-            ['size' => 10],
-            ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
-        );
-        $section->addTextBreak(2);
+        $section->addTextBreak(1);
 
+        // === HEADER PLACEHOLDER ===
+        $section->addText(
+            '${header}',
+            ['bold' => true, 'size' => 14],
+            ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
+        );
+        $section->addTextBreak(1);
+
+        // Horizontal line
+        $section->addText(
+            '────────────────────────────────────────────────────────────',
+            ['size' => 8, 'color' => 'CCCCCC'],
+            ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
+        );
+        $section->addTextBreak(1);
+
+        // === SURAT INFO ===
         $section->addText('Nomor: ${nomor_surat}', ['bold' => true]);
         $section->addText('Tanggal: ${tanggal}');
         $section->addText('Prioritas: ${prioritas}');
@@ -92,9 +108,11 @@ class LetterTemplateController extends Controller
         $section->addText('Dengan hormat,');
         $section->addTextBreak(1);
 
+        // === ISI SURAT ===
         $section->addText('${isi_surat}');
         $section->addTextBreak(2);
 
+        // === DISPOSISI INFO ===
         $section->addText('Catatan Disposisi:', ['bold' => true, 'color' => '0000FF']);
         $section->addText('${catatan_disposisi}', ['italic' => true]);
         $section->addTextBreak(1);
@@ -104,13 +122,22 @@ class LetterTemplateController extends Controller
         $section->addText('Oleh: ${oleh}');
         $section->addTextBreak(2);
 
+        // === PENGIRIM INFO ===
         $section->addText('Pengirim:');
         $section->addText('${pengirim}', ['bold' => true]);
         $section->addText('Divisi: ${divisi_pengirim}');
         $section->addTextBreak(2);
 
+        // Horizontal line
         $section->addText(
-            'Dokumen ini telah didisposisi dan bersifat final.',
+            '────────────────────────────────────────────────────────────',
+            ['size' => 8, 'color' => 'CCCCCC'],
+            ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
+        );
+
+        // === FOOTER PLACEHOLDER ===
+        $section->addText(
+            '${footer}',
             ['size' => 9, 'italic' => true, 'color' => '888888'],
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]
         );
@@ -164,15 +191,27 @@ class LetterTemplateController extends Controller
                 'mimetypes:application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'max:5120', // 5MB
             ],
+            'header_text' => ['nullable', 'string', 'max:1000'],
+            'footer_text' => ['nullable', 'string', 'max:1000'],
+            'logo_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5048'], // 5MB
         ]);
 
         $file = $request->file('template_file');
-        $path = $file->store('letter-templates', 'local');
+        $path = $file->store('letter-templates', 'public');
+
+        // Handle logo upload
+        $logoPath = null;
+        if ($request->hasFile('logo_file')) {
+            $logoPath = $request->file('logo_file')->store('letter-templates/logos', 'public');
+        }
 
         LetterTemplate::create([
             'name' => $validated['name'],
             'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
+            'header_text' => $validated['header_text'] ?? null,
+            'footer_text' => $validated['footer_text'] ?? null,
+            'logo_path' => $logoPath,
             'is_active' => true,
             'created_by' => $request->user()->id,
         ]);
@@ -226,17 +265,127 @@ class LetterTemplateController extends Controller
     }
 
     /**
-     * Download template for reference.
+     * Download template with header/footer/logo injected.
      */
     public function download(Request $request, LetterTemplate $template)
     {
         $this->authorizeAccess($request->user());
 
         if (!file_exists($template->full_path)) {
-            return redirect()->back()->with('error', 'File template tidak ditemukan.');
+            return response()->json([
+                'error' => 'File template tidak ditemukan. Silakan upload ulang.',
+                'path' => $template->full_path,
+            ], 404);
         }
 
-        return response()->download($template->full_path, $template->file_name);
+        // Use TemplateProcessor to inject header/footer/logo
+        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($template->full_path);
+
+        // Replace header placeholder
+        if ($template->header_text) {
+            $templateProcessor->setValue('header', $template->header_text);
+        }
+
+        // Replace footer placeholder
+        if ($template->footer_text) {
+            $templateProcessor->setValue('footer', $template->footer_text);
+        }
+
+        // Replace logo placeholder with image if exists
+        if ($template->logo_path) {
+            $logoFullPath = storage_path('app/public/' . $template->logo_path);
+            if (file_exists($logoFullPath)) {
+                try {
+                    $templateProcessor->setImageValue('logo', [
+                        'path' => $logoFullPath,
+                        'width' => 150,
+                        'height' => 50,
+                        'ratio' => true,
+                    ]);
+                } catch (\Exception $e) {
+                    // If image replacement fails, just replace with text
+                    $templateProcessor->setValue('logo', '[Logo]');
+                }
+            } else {
+                $templateProcessor->setValue('logo', '');
+            }
+        } else {
+            $templateProcessor->setValue('logo', '');
+        }
+
+        // Save to temp file
+        $tempFile = tempnam(sys_get_temp_dir(), 'template_preview_') . '.docx';
+        $templateProcessor->saveAs($tempFile);
+
+        $filename = 'Preview_' . $template->file_name;
+
+        // Return file download with explicit headers to bypass Inertia
+        return response()->file($tempFile, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'X-Vapor-Base64-Encode' => 'True',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Update existing template.
+     */
+    public function update(Request $request, LetterTemplate $template): RedirectResponse
+    {
+        $this->authorizeAccess($request->user());
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'template_file' => [
+                'nullable',
+                'file',
+                'mimetypes:application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'max:5120', // 5MB
+            ],
+            'header_text' => ['nullable', 'string', 'max:1000'],
+            'footer_text' => ['nullable', 'string', 'max:1000'],
+            'logo_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5048'], // 5MB
+            'remove_logo' => ['nullable', 'boolean'],
+        ]);
+
+        // Update name and text fields
+        $template->name = $validated['name'];
+        $template->header_text = $validated['header_text'] ?? null;
+        $template->footer_text = $validated['footer_text'] ?? null;
+
+        // Handle template file update
+        if ($request->hasFile('template_file')) {
+            // Delete old file
+            if ($template->file_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($template->file_path);
+            }
+
+            $file = $request->file('template_file');
+            $path = $file->store('letter-templates', 'public');
+            $template->file_path = $path;
+            $template->file_name = $file->getClientOriginalName();
+        }
+
+        // Handle logo update or removal
+        if ($request->boolean('remove_logo')) {
+            // Remove existing logo
+            if ($template->logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($template->logo_path);
+                $template->logo_path = null;
+            }
+        } elseif ($request->hasFile('logo_file')) {
+            // Delete old logo if exists
+            if ($template->logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($template->logo_path);
+            }
+            $template->logo_path = $request->file('logo_file')->store('letter-templates/logos', 'public');
+        }
+
+        $template->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Template berhasil diperbarui.');
     }
 
     private function authorizeAccess(?User $user): void

@@ -14,6 +14,9 @@ class LetterTemplate extends Model
         'name',
         'file_path',
         'file_name',
+        'header_text',
+        'footer_text',
+        'logo_path',
         'is_active',
         'created_by',
     ];
@@ -32,7 +35,18 @@ class LetterTemplate extends Model
      */
     public function getFullPathAttribute(): string
     {
-        return storage_path('app/' . $this->file_path);
+        return storage_path('app/public/' . $this->file_path);
+    }
+
+    /**
+     * Get the full logo path URL.
+     */
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo_path) {
+            return null;
+        }
+        return asset('storage/' . $this->logo_path);
     }
 
     /**
@@ -41,6 +55,8 @@ class LetterTemplate extends Model
     public static function placeholders(): array
     {
         return [
+            '{{logo}}' => 'Logo Perusahaan',
+            '{{header}}' => 'Header Surat',
             '{{nomor_surat}}' => 'Nomor Surat',
             '{{tanggal}}' => 'Tanggal Surat',
             '{{pengirim}}' => 'Nama Pengirim',
@@ -52,6 +68,7 @@ class LetterTemplate extends Model
             '{{catatan_disposisi}}' => 'Catatan Disposisi',
             '{{tanggal_disposisi}}' => 'Tanggal Disposisi',
             '{{oleh}}' => 'HR yang Mendisposisi',
+            '{{footer}}' => 'Footer Surat',
         ];
     }
 }

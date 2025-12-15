@@ -24,7 +24,6 @@ class StoreSuratRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'penerima' => ['required', 'string', 'max:255'],
             'perihal' => ['required', 'string', 'max:255'],
             'isi_surat' => ['required', 'string'],
             'jenis_surat' => ['required', 'string', 'max:100'],

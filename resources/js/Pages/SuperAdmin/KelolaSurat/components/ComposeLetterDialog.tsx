@@ -29,7 +29,6 @@ interface ComposeLetterDialogProps {
     onOpenChange: (value: boolean) => void;
     triggerLabel?: string;
     data: {
-        penerima: string;
         perihal: string;
         isi_surat: string;
         jenis_surat: string;
@@ -73,12 +72,10 @@ export default function ComposeLetterDialog({
         () => Object.entries(options.priorities),
         [options.priorities]
     );
+    // Super Admin has no division, so show all divisions
     const divisionOptions = useMemo(
-        () =>
-            options.divisions.filter(
-                (division) => !userInfo.division || division !== userInfo.division,
-            ),
-        [options.divisions, userInfo.division],
+        () => options.divisions,
+        [options.divisions],
     );
 
     const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -158,15 +155,11 @@ export default function ComposeLetterDialog({
                         <p className="text-xs font-semibold uppercase tracking-wide text-blue-900">
                             Informasi Pengirim
                         </p>
-                        <div className="mt-3 grid gap-4 md:grid-cols-2">
+                        <div className="mt-3 grid gap-4 md:grid-cols-3">
                             <InfoItem label="Nama Pengirim" value={userInfo.name} />
                             <InfoItem
                                 label="Jabatan"
-                                value={userInfo.role ?? 'Tidak diketahui'}
-                            />
-                            <InfoItem
-                                label="Divisi"
-                                value={userInfo.division ?? 'Tidak diketahui'}
+                                value={userInfo.role ?? 'Super Admin'}
                             />
                             <InfoItem
                                 label="Nomor Surat (Preview)"
@@ -184,10 +177,10 @@ export default function ComposeLetterDialog({
                                 value={data.jenis_surat}
                                 onValueChange={(value) => setData('jenis_surat', value)}
                             >
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Pilih jenis surat" />
-                            </SelectTrigger>
-                                        <SelectContent className="bg-white">
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Pilih jenis surat" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
                                     {options.letterTypes.map((type) => (
                                         <SelectItem key={type} value={type}>
                                             {type}
@@ -215,68 +208,49 @@ export default function ComposeLetterDialog({
                         </div>
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <Label>
-                                Divisi Tujuan <span className="text-red-500">*</span>
-                            </Label>
-                            <div className="mt-3 grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-white p-3">
-                                <label className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200">
-                                    <span className="font-semibold text-slate-800">Pilih Semua Divisi</span>
-                                    <Checkbox
-                                        checked={allDivisionsSelected}
-                                        onCheckedChange={(value) => toggleAllDivisions(Boolean(value))}
-                                    />
-                                </label>
-                                {divisionOptions.length === 0 && (
-                                    <p className="text-sm text-slate-500">
-                                        Tidak ada divisi lain yang tersedia.
-                                    </p>
-                                )}
-                                {divisionOptions.map((division) => {
-                                    const checked = data.target_divisions.includes(division);
-                                    return (
-                                        <label
-                                            key={division}
-                                            className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200"
-                                        >
-                                            <span className="text-slate-800">{division}</span>
-                                            <Checkbox
-                                                checked={checked}
-                                                onCheckedChange={(value) =>
-                                                    toggleDivision(division, Boolean(value))
-                                                }
-                                            />
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                            {errors.target_divisions && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {errors.target_divisions as string}
+                    <div>
+                        <Label>
+                            Divisi Tujuan <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="mt-3 grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-white p-3 max-h-48 overflow-y-auto">
+                            <label className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200">
+                                <span className="font-semibold text-slate-800">Pilih Semua Divisi</span>
+                                <Checkbox
+                                    checked={allDivisionsSelected}
+                                    onCheckedChange={(value) => toggleAllDivisions(Boolean(value))}
+                                />
+                            </label>
+                            {divisionOptions.length === 0 && (
+                                <p className="text-sm text-slate-500">
+                                    Tidak ada divisi yang tersedia.
                                 </p>
                             )}
-                            <p className="mt-1 text-xs text-slate-500">
-                                Divisi Anda tidak ditampilkan dan tidak dapat dipilih.
+                            {divisionOptions.map((division) => {
+                                const checked = data.target_divisions.includes(division);
+                                return (
+                                    <label
+                                        key={division}
+                                        className="flex items-center justify-between rounded-md border border-slate-100 px-3 py-2 text-sm hover:border-blue-200"
+                                    >
+                                        <span className="text-slate-800">{division}</span>
+                                        <Checkbox
+                                            checked={checked}
+                                            onCheckedChange={(value) =>
+                                                toggleDivision(division, Boolean(value))
+                                            }
+                                        />
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        {errors.target_divisions && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {errors.target_divisions as string}
                             </p>
-                        </div>
-                        <div>
-                            <Label>
-                                Kepada <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                value={data.penerima}
-                                onChange={(event) =>
-                                    setData('penerima', event.target.value)
-                                }
-                                placeholder="Nama penerima / divisi / instansi"
-                            />
-                            {errors.penerima && (
-                                <p className="mt-1 text-sm text-red-500">
-                                    {errors.penerima}
-                                </p>
-                            )}
-                        </div>
+                        )}
+                        <p className="mt-1 text-xs text-slate-500">
+                            Surat akan langsung dikirim ke divisi yang dipilih tanpa disposisi.
+                        </p>
                     </div>
 
                     <div>
@@ -302,10 +276,10 @@ export default function ComposeLetterDialog({
                                 value={data.kategori}
                                 onValueChange={(value) => setData('kategori', value)}
                             >
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Pilih kategori" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Pilih kategori" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
                                     {options.categories.map((category) => (
                                         <SelectItem key={category} value={category}>
                                             {category}
@@ -327,10 +301,10 @@ export default function ComposeLetterDialog({
                                 value={data.prioritas}
                                 onValueChange={(value) => setData('prioritas', value)}
                             >
-                            <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Pilih prioritas" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
+                                <SelectTrigger className="bg-white">
+                                    <SelectValue placeholder="Pilih prioritas" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
                                     {priorityEntries.map(([value, label]) => (
                                         <SelectItem key={value} value={value}>
                                             {label}

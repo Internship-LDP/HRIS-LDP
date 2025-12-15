@@ -144,9 +144,13 @@ class LetterController extends Controller
         $data['departemen_id'] = $departemen?->id;
         $data['tipe_surat'] = $data['tipe_surat'] ?? 'keluar';
         $data['tanggal_surat'] = now()->toDateString();
-        $data['status_persetujuan'] = 'Terkirim';
-        $data['previous_division'] = $user->division ?? $departemen?->nama;
-        $data['current_recipient'] = 'hr';
+        $data['previous_division'] = $user->division ?? 'Super Admin';
+
+        // Super Admin letters go directly to target division (skip disposition)
+        $data['status_persetujuan'] = 'Didisposisi';
+        $data['disposed_at'] = now();
+        $data['disposed_by'] = $user->id;
+        $data['disposition_note'] = 'Dikirim langsung oleh Super Admin';
 
         if ($request->hasFile('lampiran')) {
             $file = $request->file('lampiran');
@@ -170,6 +174,8 @@ class LetterController extends Controller
         foreach ($targetDivisions as $divisionName) {
             $payload = $data;
             $payload['target_division'] = $divisionName;
+            // For Super Admin, set current_recipient directly to target division
+            $payload['current_recipient'] = $divisionName;
             $payload['nomor_surat'] = Surat::generateNomorSurat($departemen?->kode);
             $newSurat = Surat::create($payload);
 
@@ -181,8 +187,8 @@ class LetterController extends Controller
             ->with(
                 'success',
                 $targetDivisions->count() > 1
-                    ? 'Surat berhasil dikirim ke '.$targetDivisions->count().' divisi.'
-                    : 'Surat berhasil dikirim.'
+                    ? 'Surat berhasil dikirim langsung ke '.$targetDivisions->count().' divisi.'
+                    : 'Surat berhasil dikirim langsung ke divisi tujuan.'
             );
     }
 
@@ -532,17 +538,14 @@ class LetterController extends Controller
 
     private function divisionOptions(): Collection
     {
-        $divisions = User::query()
+        // Only return divisions that have an Admin account
+        return User::query()
+            ->where('role', User::ROLES['admin'])
             ->whereNotNull('division')
+            ->where('status', 'Active')
             ->distinct()
             ->pluck('division')
             ->filter()
             ->values();
-
-        if ($divisions->isEmpty()) {
-            $divisions = collect(User::DIVISIONS);
-        }
-
-        return $divisions;
     }
 }

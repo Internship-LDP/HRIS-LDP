@@ -38,7 +38,6 @@ export function useKelolaSuratState({
     const [unarchivingLetterId, setUnarchivingLetterId] = useState<number | null>(null);
 
     const form = useForm({
-        penerima: '',
         perihal: '',
         isi_surat: '',
         jenis_surat: '',
