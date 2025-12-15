@@ -181,4 +181,14 @@ class User extends Authenticatable
         return $this->hasMany(Application::class);
     }
 
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
 }
