@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'employee_code' => User::generateEmployeeCode($defaultRole),
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => strtolower($request->email),
             'role' => $defaultRole,
             'status' => 'Active',
             'registered_at' => now()->format('Y-m-d'),

@@ -151,7 +151,7 @@ export default function Register() {
                                             autoComplete="username"
                                             className="h-12 rounded-[16px] border-white/30 bg-white/15 pl-11 text-base text-white placeholder:text-white/60 focus-visible:border-cyan-400/50 focus-visible:ring-cyan-400/50 backdrop-blur-sm"
                                             onChange={(e) =>
-                                                setData("email", e.target.value)
+                                                setData("email", e.target.value.toLowerCase())
                                             }
                                             required
                                         />

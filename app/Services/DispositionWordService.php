@@ -52,6 +52,42 @@ class DispositionWordService
             $templateProcessor->setValue($key, $value ?? '-');
         }
 
+        // Replace header placeholder from template settings
+        if ($template->header_text) {
+            $templateProcessor->setValue('header', $template->header_text);
+        } else {
+            $templateProcessor->setValue('header', '');
+        }
+
+        // Replace footer placeholder from template settings
+        if ($template->footer_text) {
+            $templateProcessor->setValue('footer', $template->footer_text);
+        } else {
+            $templateProcessor->setValue('footer', '');
+        }
+
+        // Replace logo placeholder with image if exists
+        if ($template->logo_path) {
+            $logoFullPath = storage_path('app/public/' . $template->logo_path);
+            if (file_exists($logoFullPath)) {
+                try {
+                    $templateProcessor->setImageValue('logo', [
+                        'path' => $logoFullPath,
+                        'width' => 150,
+                        'height' => 50,
+                        'ratio' => true,
+                    ]);
+                } catch (\Exception $e) {
+                    // If image replacement fails, just replace with empty text
+                    $templateProcessor->setValue('logo', '');
+                }
+            } else {
+                $templateProcessor->setValue('logo', '');
+            }
+        } else {
+            $templateProcessor->setValue('logo', '');
+        }
+
         // Save to temp file
         $tempFile = tempnam(sys_get_temp_dir(), 'disposition_') . '.docx';
         $templateProcessor->saveAs($tempFile);
