@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         'name' => 'Super Admin',
         'email' => 'superadmin@example.com',
         'role' => User::ROLES['super_admin'],
+        'division' => null,
         'status' => 'Active',
         'registered_at' => now()->format('Y-m-d'),
     ]);
