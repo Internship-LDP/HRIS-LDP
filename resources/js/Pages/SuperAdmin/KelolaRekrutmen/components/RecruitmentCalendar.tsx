@@ -143,15 +143,13 @@ export function RecruitmentCalendar({
                 <div
                     key={day}
                     onClick={() => setSelectedDate(date)}
-                    className={`min-h-[100px] border-b border-r p-2 transition-colors cursor-pointer hover:bg-blue-50/50 ${
-                        isSelected ? 'bg-blue-50 ring-2 ring-inset ring-blue-500' : 'bg-white'
-                    } ${isToday ? 'bg-blue-50/30' : ''}`}
+                    className={`min-h-[100px] border-b border-r p-2 transition-colors cursor-pointer hover:bg-blue-50/50 ${isSelected ? 'bg-blue-50 ring-2 ring-inset ring-blue-500' : 'bg-white'
+                        } ${isToday ? 'bg-blue-50/30' : ''}`}
                 >
                     <div className="flex justify-between items-start mb-2">
                         <span
-                            className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${
-                                isToday ? 'bg-blue-600 text-white' : 'text-gray-700'
-                            }`}
+                            className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white' : 'text-gray-700'
+                                }`}
                         >
                             {day}
                         </span>
@@ -170,19 +168,16 @@ export function RecruitmentCalendar({
                                     e.stopPropagation();
                                     setDetailApplicant(toApplicantRecord(interview));
                                 }}
-                                className={`text-[10px] p-1.5 rounded border border-l-2 truncate cursor-pointer hover:opacity-80 ${
-                                    interview.status === 'completed'
+                                className={`text-[10px] p-1.5 rounded border border-l-2 truncate cursor-pointer hover:opacity-80 ${interview.status === 'completed'
                                         ? 'bg-green-50 border-green-200 border-l-green-500 text-green-700'
                                         : ''
-                                } ${
-                                    interview.status === 'cancelled'
+                                    } ${interview.status === 'cancelled'
                                         ? 'bg-red-50 border-red-200 border-l-red-500 text-red-700'
                                         : ''
-                                } ${
-                                    interview.status === 'scheduled'
+                                    } ${interview.status === 'scheduled'
                                         ? 'bg-blue-50 border-blue-200 border-l-blue-500 text-blue-700'
                                         : ''
-                                }`}
+                                    }`}
                             >
                                 <span className="font-semibold mr-1">{interview.startTime}</span>
                                 {interview.candidateName}
@@ -235,7 +230,6 @@ export function RecruitmentCalendar({
         interview_mode: interview.type === 'online' ? 'Online' : 'Offline',
         interviewer_name: interview.interviewer,
         meeting_link: interview.link ?? undefined,
-        interview_link: interview.link ?? undefined,
         interview_notes: interview.notes ?? undefined,
     });
 
@@ -299,9 +293,9 @@ export function RecruitmentCalendar({
                             <Clock className="w-4 h-4" />
                             {selectedDate
                                 ? `Schedule for ${selectedDate.toLocaleDateString('en-US', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                  })}`
+                                    month: 'short',
+                                    day: 'numeric',
+                                })}`
                                 : 'Upcoming Interviews'}
                         </h3>
 

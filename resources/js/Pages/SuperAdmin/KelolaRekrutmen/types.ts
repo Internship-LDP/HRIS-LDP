@@ -94,6 +94,8 @@ export interface InterviewSchedule {
     end_time?: string | null;
     mode: 'Online' | 'Offline';
     interviewer: string;
+    meeting_link?: string | null;
+    interview_notes?: string | null;
 }
 
 export interface OnboardingItem {
