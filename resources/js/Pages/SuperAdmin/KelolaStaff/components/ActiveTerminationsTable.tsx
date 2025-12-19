@@ -43,10 +43,6 @@ export default function ActiveTerminationsTable({
     checklistTemplate,
 }: ActiveTerminationsTableProps) {
     const getDisplayProgress = (request: TerminationRecord) => {
-        const status = (request.status || '').toLowerCase();
-        if (status.includes('diajukan') || status.includes('menunggu') || status.includes('pending')) {
-            return 0;
-        }
         return Math.max(0, request.progress ?? 0);
     };
 
