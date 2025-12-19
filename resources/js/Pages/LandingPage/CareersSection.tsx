@@ -69,16 +69,16 @@ export function CareersSection({ jobs }: CareersSectionProps) {
         {/* Job Listings */}
         {hasJobs ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {availableJobs.map((job, index) => {
-            const canApply = job.isHiring;
-            const title = canApply
-              ? job.title ?? `Lowongan ${job.division}`
-              : `Belum ada lowongan di ${job.division}`;
-            const location = job.location ?? job.division;
-            const type = job.type ?? 'Full-time';
-            const slots =
-              typeof job.availableSlots === 'number' && job.availableSlots > 0
-                ? `${job.availableSlots} posisi tersedia`
+            {availableJobs.map((job, index) => {
+              const canApply = job.isHiring;
+              const title = canApply
+                ? job.title ?? `Lowongan ${job.division}`
+                : `Belum ada lowongan di ${job.division}`;
+              const location = job.location ?? job.division;
+              const type = job.type ?? 'Full-time';
+              const slots =
+                typeof job.availableSlots === 'number' && job.availableSlots > 0
+                  ? `${job.availableSlots} posisi tersedia`
                   : null;
 
               return (
@@ -86,9 +86,8 @@ export function CareersSection({ jobs }: CareersSectionProps) {
                   key={`${job.division}-${index}`}
                   data-aos="fade-up"
                   data-aos-delay={index * 50}
-                  className={`relative group bg-white/15 backdrop-blur-[30px] border border-white/30 rounded-[24px] p-6 transition-all duration-300 hover:shadow-[0_8px_32px_rgba(34,211,238,0.4)] hover:border-cyan-400/50 ${
-                    canApply ? 'hover:-translate-y-1 cursor-pointer' : 'opacity-95'
-                  }`}
+                  className={`relative group bg-white/15 backdrop-blur-[30px] border border-white/30 rounded-[24px] p-6 transition-all duration-300 hover:shadow-[0_8px_32px_rgba(34,211,238,0.4)] hover:border-cyan-400/50 ${canApply ? 'hover:-translate-y-1 cursor-pointer' : 'opacity-95'
+                    }`}
                 >
                   {canApply && (
                     <Link
@@ -127,9 +126,8 @@ export function CareersSection({ jobs }: CareersSectionProps) {
                     </div>
 
                     <div
-                      className={`flex items-center justify-between text-sm font-medium ${
-                        canApply ? 'text-cyan-300' : 'text-white/50'
-                      }`}
+                      className={`flex items-center justify-between text-sm font-medium ${canApply ? 'text-cyan-300' : 'text-white/50'
+                        }`}
                     >
                       <span>{canApply ? 'Klik untuk melamar' : 'Belum membuka lowongan'}</span>
                       {canApply && <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />}
@@ -147,19 +145,6 @@ export function CareersSection({ jobs }: CareersSectionProps) {
             </p>
           </div>
         )}
-
-        {/* Bottom CTA */}
-        <div className="mt-12 text-center" data-aos="fade-up">
-          <p className="text-white/80 mb-4">
-            Tidak menemukan posisi yang tepat? Kirimkan CV Anda kepada kami!
-          </p>
-          <Button
-            variant="outline"
-            className="border-white/40 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm rounded-[20px]"
-          >
-            Kirim CV
-          </Button>
-        </div>
       </div>
     </section>
   );
