@@ -83,6 +83,26 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
             ...form.data.job_eligibility_criteria,
             [key]: value,
         });
+
+        // Validate max_age when it changes
+        if (key === 'max_age' && value) {
+            const minAge = form.data.job_eligibility_criteria?.min_age;
+            if (minAge && Number(value) < minAge) {
+                form.setError('job_eligibility_criteria.max_age', `Umur maksimal tidak boleh kurang dari umur minimal (${minAge} tahun)`);
+            } else {
+                form.clearErrors('job_eligibility_criteria.max_age');
+            }
+        }
+
+        // Validate max_age when min_age changes
+        if (key === 'min_age' && value) {
+            const maxAge = form.data.job_eligibility_criteria?.max_age;
+            if (maxAge && Number(value) > maxAge) {
+                form.setError('job_eligibility_criteria.max_age', `Umur maksimal tidak boleh kurang dari umur minimal (${value} tahun)`);
+            } else {
+                form.clearErrors('job_eligibility_criteria.max_age');
+            }
+        }
     };
 
     const validateRequirements = () => {
@@ -245,12 +265,16 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                         <Input
                                             id="max-age"
                                             type="number"
-                                            min={17}
+                                            min={form.data.job_eligibility_criteria?.min_age ?? 17}
                                             max={65}
                                             value={form.data.job_eligibility_criteria?.max_age ?? ''}
                                             onChange={(e) => updateCriteria('max_age', e.target.value ? Number(e.target.value) : null)}
                                             placeholder="Contoh: 35"
+                                            className={form.errors['job_eligibility_criteria.max_age'] ? 'border-red-500' : ''}
                                         />
+                                        {form.errors['job_eligibility_criteria.max_age'] && (
+                                            <p className="text-xs text-red-600">{form.errors['job_eligibility_criteria.max_age']}</p>
+                                        )}
                                     </div>
 
                                     {/* Gender */}
@@ -291,20 +315,6 @@ export default function JobDialog({ division, form, onClose, onSubmit }: JobDial
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    </div>
-
-                                    {/* Min Experience Years */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="min-experience" className="text-sm">Pengalaman Kerja Minimal (Tahun)</Label>
-                                        <Input
-                                            id="min-experience"
-                                            type="number"
-                                            min={0}
-                                            max={30}
-                                            value={form.data.job_eligibility_criteria?.min_experience_years ?? ''}
-                                            onChange={(e) => updateCriteria('min_experience_years', e.target.value ? Number(e.target.value) : null)}
-                                            placeholder="Contoh: 2"
-                                        />
                                         <p className="text-xs text-muted-foreground">
                                             Kosongkan field yang tidak ingin dijadikan kriteria filter.
                                         </p>
